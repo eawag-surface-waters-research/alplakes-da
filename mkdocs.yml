@@ -29,6 +29,7 @@ nav:
   - Home: index.md
   - Project Proposal: project-proposal.md
   - Literature Review: literature-review.md
+  - Onboarding: onboarding.md
   - Getting Started: getting-started.md
 
 markdown_extensions:
