@@ -139,23 +139,69 @@ Link brings to the Chen paper already summarized
 **Anderson, J., et al. (2019-2022). *Frameworks for automated calibration \+ DA in 3-D lake models*** — workflow papers showing automated calibration \+ DA (reduce manual tuning).   
  Example: "An automated calibration framework..." (scoped in literature). [ScienceDirect](https://www.sciencedirect.com/science/article/abs/pii/S1364815219304839?utm_source=chatgpt.com) 
 Link to Baracchini calibration paper.
-Comment: similar but different purpose
+Comment: similar but different purpose.
 This paper is not a classic sequential DA paper (like EnKF), but it addresses a closely related problem: Model calibration = inverse problem = offline data assimilation. Instead of updating states in time, it estimates optimal model parameters using observations minimiying mismatch between model outputs and observations. 
 
 **Wang, X., et al. (2018). *Adaptive EnKF for multisensor water temperature into hydrodynamic models*** — adaptive EnKF methods for multi-sensor data types (in situ \+ satellite).   
  Research note / article: [https://www.researchgate.net/publication/331724513](https://www.researchgate.net/publication/331724513) . [ResearchGate](https://www.researchgate.net/publication/331724513_An_adaptive_ensemble_Kalman_filter_for_assimilation_of_multi-sensor_multi-modal_water_temperature_observations_into_hydrodynamic_model_of_shallow_rivers?utm_source=chatgpt.com) 
 
+Comment: Slightly different domain, optimal data fusion from multiple sources, use of ensemble KF
+Authors got allucinated: Javaheri et al 2019
+The paper develops an adaptive Ensemble Kalman Filter (EnKF) to assimilate heterogeneous temperature observations into a hydrodynamic river model. Central contribution: Improve DA performance by adapting error statistics dynamically when assimilating multi-sensor, multi-modal data.
+Hydrodynamic model of a shallow river: water temperature, flow dynamics
+In-situ sensors: High accuracy, sparse
+Remote sensing / distributed sensors: Lower accuracy, High spatial coverage
+challenge: Data sources have different error structures and resolutions
+Adaptive Ensemble Kalman Filter: They introduce adaptive estimation of error covariances:
+1. Adaptive observation error (R): Adjusts trust in each sensor dynamically
+2. Adaptive model error (Q): Adjusts uncertainty in the model
+3. Multi-modal weighting: Different data types are weighted automatically
+Avoids: Overfitting to one data source, bias from inconsistent observations. DA improves: 1. State estimation, 2. Robustness, 3. Multi-source fusion
+Adaptive approach: Learns error structure from data. Multi-sensor DA requires weighting. Model error matters as much as observation error. Self-tuning data assimilation systems/Learning uncertainty online.
+
 **Recknagel / Stelzer / others (various). *1-D DA experiments for lakes (temperature profile, ice) using Kalman filters*** — multiple smaller studies showing EKF/EnKF gains in 1-D models/parameterisations (FLake, Hostetler, etc.).   
  Representative EKF study: Kourzeneva (Tellus A) above. [a.tellusjournals.se](https://a.tellusjournals.se/articles/10.3402/tellusa.v66.21510?utm_source=chatgpt.com) 
+ see above comments...
 
 **Thomas, S.M., et al. (2024). *A framework for developing automated real-time lake phytoplankton forecasting*** — coupling DA for physical state with ecological forecasts (PMCID open access).   
  Article / PMC: [https://pmc.ncbi.nlm.nih.gov/articles/PMC11780027/](https://pmc.ncbi.nlm.nih.gov/articles/PMC11780027/?utm_source=chatgpt.com) . [PMC](https://pmc.ncbi.nlm.nih.gov/articles/PMC11780027/?utm_source=chatgpt.com) 
 
+Carey et al. (2024)
+Comment: Concept paper, proposes ideas and challenges
+The paper proposes a framework for a full forecasting system architecture, where data assimilation (DA) should play a central operational component enabling continuous updating of ecological models with real-time observations to forecast phytoplankton blooms with uncertainty. 
+Identifies five major bottlenecks, three of which are directly DA-related:
+1. Poor model skill, DA becomes essential: Phytoplankton models alone are unreliable; DA compensates 
+2. Need for uncertainty-aware DA: Without uncertainty, forecasts are not actionable
+3. Multi-source data assimilation, DA must fuse: Sparse + accurate data, Dense + noisy data
+4. Computational constraints - Real-time DA requires: fast models, efficient ensemble methods
+5. Automation of DA pipelines: automated data pipelines, cloud/edge computing systems
+
+
 **Li, Y., et al. (2020–2023). *DA for lake ice phenology and ice thickness (satellite LSWT \+ in situ)*** — applications showing DA improves ice timing predictions (important for high-latitude lake modelling).   
  Example method reference: [https://agupubs.onlinelibrary.wiley.com/](https://agupubs.onlinelibrary.wiley.com/) (search results). [AGU Publications](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2021MS002533?utm_source=chatgpt.com)[Taylor & Francis Online](https://www.tandfonline.com/doi/abs/10.3402%2Ftellusa.v66.21395?utm_source=chatgpt.com) 
 
+Comment: NWP examples 
+See above for Pour et al 2014... 
+Batrak, 2021: Implementation of an Adaptive Bias-Aware Extended Kalman Filter for Sea-Ice Data Assimilation in the HARMONIE-AROME Numerical Weather Prediction System
+Sea ice surface temperature is an important variable for short-range numerical weather prediction systems operating in the Arctic. Variable is seldomly constrained by the observations, thus introducing errors and biases in the simulated near-surface atmospheric fields. New sea ice data assimilation framework is introduced in the HARMONIE-AROME numerical weather prediction system to assimilate satellite sea ice surface temperature products. The impact of the new data assimilation procedure on the model forecast is assessed through a series of model experiments and validated against sea ice satellite products and in-situ land observations. The validation results showed that using sea ice data assimilation reduces the analyzed and forecasted ice surface temperature root mean square error (RMSE) by 0.4 °C on average. This positive impact is still traceable after 3 h of model forecast. It also reduces the 2 m temperature RMSE on average by 0.2 °C at the analysis time with effects persisting for up to 24 h forecast over the Svalbard and Franz Josef Land archipelagos. As for the 2 m specific humidity and 10 m wind speed, no effect was observed. 
+Parameterization package SURFEX. Assimilation framework over land allowing a choice between optimal interpolation (OI), simplified extended Kalman filter, and ensemble Kalman filter. A dedicated data assimilation procedure is introduced for sea ice data assimilation. Search … SICE EKF framework in the text for more details.
+
+
 **Giering, S., et al. (2022). *Coupling particle tracking \+ remote sensing to estimate transport in lakes: DA implications*** — uses hydrodynamic model \+ DA and particle tracking to constrain transport.   
  Article: [https://www.sciencedirect.com/science/article/pii/S1569843222000115](https://www.sciencedirect.com/science/article/pii/S1569843222000115?utm_source=chatgpt.com) . [ScienceDirect](https://www.sciencedirect.com/science/article/pii/S1569843222000115?utm_source=chatgpt.com) 
+
+Comment: Validation, multisource data fusion, satellite data handling
+Authors got allucinated: Li et al 2022 
+Monitoring and simulation of hydrodynamics in lakes has steadily advanced, but water quality simulations remain more difficult to implement, due to the difficulty in obtaining large-scale, spatially resolved field observations for model validation and the number of interacting processes to be parameterized. The overarching goal was to develop a framework applicable to the transport of health-relevant microorganisms (e.g., pathogens from river inflows) in Lake Geneva. Remote sensing inputs: Sentinel-2 satellites with 10–60 m spatial resolution and a 5-day joint revisit time, and Sentinel-3 satellites with 300 m spatial resolution and daily joint revisit— providing complementary spatial and temporal resolution.
+Key tracer: Total suspended matter (TSM) was used as a parameter that can be both estimated from the backscattering in satellite images and modelled in terms of particle abundance.
+Hydrodynamic model: Delft3D (sigma-layer configuration), calibrated against temperature profiles from the SHL2 monitoring station and the LéXPLORE platform, with turbidity from a Seapoint Turbidity Meter.
+The coupling was bidirectional: RS → model: Satellite-derived TSM maps provided spatial initialization and validation constraints for the Lagrangian particle tracking model (Delft3D-PART).
+Model - RS: The particle tracking model was used to temporally interpolate between satellite overpasses (filling the temporal gap between images).
+The results demonstrate that remote sensing images can serve to calibrate and validate particle tracking models with independent observations. The model was able to capture both the position of a TSM cloud arising 5 days after an instantaneous point source release, and the direction of particle transport and TSM plume size resulting from a continuous source. Even when simulating the whole lake domain, model results closely approximated the satellite-derived TSM concentrations along lake transects within 9%. 
+The three headline findings highlighted by the authors: Particle tracking model validated by satellite TSM imagery, model and satellite observations correspond well over a 5-day window
+The particle tracking model can interpolate between remote sensing images — bridging the temporal gap between satellite overpasses, it demonstrates a proof-of-concept for using satellite imagery as spatially distributed validation data for Lagrangian models, which is methodologically novel compared to the more common point-based (buoy/drifter) validation.
+The approach is directly relevant to applications like pathogen transport (e.g., after wastewater overflows), microplastic dispersion, and sediment plume tracking in large lakes — contexts where field campaigns cannot provide the spatial coverage that satellites offer.
+
 
 **Review: *Data assimilation in surface water quality modeling: A review* (Science of the Total Environment, 2020\)** — comprehensive review of DA algorithms (EnKF, EKF, particle filters, variational) applied to lakes/reservoirs and surface water quality.   
  Review article: [https://www.sciencedirect.com/science/article/abs/pii/S0043135420308435](https://www.sciencedirect.com/science/article/abs/pii/S0043135420308435?utm_source=chatgpt.com) . [ScienceDirect](https://www.sciencedirect.com/science/article/abs/pii/S0043135420308435?utm_source=chatgpt.com) 
