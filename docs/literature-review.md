@@ -190,8 +190,8 @@ Parameterization package SURFEX. Assimilation framework over land allowing a cho
 **Giering, S., et al. (2022). *Coupling particle tracking \+ remote sensing to estimate transport in lakes: DA implications*** — uses hydrodynamic model \+ DA and particle tracking to constrain transport.   
  Article: [https://www.sciencedirect.com/science/article/pii/S1569843222000115](https://www.sciencedirect.com/science/article/pii/S1569843222000115?utm_source=chatgpt.com) . [ScienceDirect](https://www.sciencedirect.com/science/article/pii/S1569843222000115?utm_source=chatgpt.com) 
 
-Comment: Validation, multisource data fusion, satellite data handling
-Authors got allucinated: Li et al 2022 
+Comment: Validation, multisource data fusion, satellite data handling.
+Authors got allucinated: Li et al 2022 .
 Monitoring and simulation of hydrodynamics in lakes has steadily advanced, but water quality simulations remain more difficult to implement, due to the difficulty in obtaining large-scale, spatially resolved field observations for model validation and the number of interacting processes to be parameterized. The overarching goal was to develop a framework applicable to the transport of health-relevant microorganisms (e.g., pathogens from river inflows) in Lake Geneva. Remote sensing inputs: Sentinel-2 satellites with 10–60 m spatial resolution and a 5-day joint revisit time, and Sentinel-3 satellites with 300 m spatial resolution and daily joint revisit— providing complementary spatial and temporal resolution.
 Key tracer: Total suspended matter (TSM) was used as a parameter that can be both estimated from the backscattering in satellite images and modelled in terms of particle abundance.
 Hydrodynamic model: Delft3D (sigma-layer configuration), calibrated against temperature profiles from the SHL2 monitoring station and the LéXPLORE platform, with turbidity from a Seapoint Turbidity Meter.
@@ -206,13 +206,36 @@ The approach is directly relevant to applications like pathogen transport (e.g.,
 **Review: *Data assimilation in surface water quality modeling: A review* (Science of the Total Environment, 2020\)** — comprehensive review of DA algorithms (EnKF, EKF, particle filters, variational) applied to lakes/reservoirs and surface water quality.   
  Review article: [https://www.sciencedirect.com/science/article/abs/pii/S0043135420308435](https://www.sciencedirect.com/science/article/abs/pii/S0043135420308435?utm_source=chatgpt.com) . [ScienceDirect](https://www.sciencedirect.com/science/article/abs/pii/S0043135420308435?utm_source=chatgpt.com) 
 
+Data assimilation techniques are powerful means of dynamic natural system modeling that allow for the use of data as soon as it appears to improve model predictions and reduce prediction uncertainty by correcting state variables, model parameters, and boundary and initial conditions. 
+Mathematical framework for merging observations (field measurements, remote sensing) with model predictions in a statistically optimal way. The objectives of this review are to explore existing approaches and advances in DA applications for surface water quality modeling and to identify future research prospects. The authors first reviewed the DA methods used in water quality modeling as reported in the literature, then addressed observations and suggestions regarding various factors of DA performance, such as the mismatch between both lateral and vertical spatial detail of measurements and modeling, subgrid heterogeneity, presence of temporally stable spatial patterns in water quality parameters and related biases, evaluation of uncertainty in data and modeling results, mismatch between scales and schedules of data from multiple sources, selection of parameters to be updated along with state variables, update frequency and forecast skill. 
+The paper covers the main DA families applied to water quality:
+
+Sequential / filter-based methods: Extended Kalman Filter (EKF) — the workhorse of early DA applications. Subsequent studies with EKF generated state-parameter vectors to simultaneously update the state variable and associated parameters; early work explored the uncertainty of algae-associated parameters to determine state variables such as dissolved oxygen concentrations, selecting significant parameters via sensitivity analysis. Ensemble Kalman Filter (EnKF) — the dominant modern approach; handles nonlinearity via Monte Carlo ensembles. Particle filters — fully nonlinear, computationally expensive.
+
+Variational methods: 3D-Var, 4D-Var — minimize a cost function over a time window; common in meteorology, less so in water quality.
+
+The review identifies sources, magnitudes, and controls of uncertainty as the critical DA research field, highlights that new and multiple sources of data for DA are becoming available, and flags that more needs to be learned with simultaneous water quality state and parameter updates. DA assessment is of interest to changes in forecast skill as related to update scheduling, and the need and feasibility of expanding DA applications exist and can be explored. One particularly important finding concerns timing: DA performance is very sensitive to the update time interval. Sensitivity analysis to determine the optimal assimilation window found 7 days to be sufficient for watershed-scale modeling. In simulations of algal bloom dynamics, environmental data from multiple sources with different observation frequencies were assimilated — chlorophyll at 1-day intervals, dissolved oxygen every 2 hours, hydro-meteorological data every hour, and nutrient data at varying schedules. The review concludes with an outlook section outlining current challenges and opportunities related to the growing role of novel data sources, scale mismatch between model discretization and observation, structural uncertainty of models and conversion of measured to simulated values, experimentation with DA prior to applications, using DA performance for model selection, the role of sensitivity analysis, and the expanding use of DA in water quality management. A major challenge in assimilating Earth observation data into water quality models lies in the uncertainty of EO observations and the spatiotemporal mismatches between measurement scales and the model grid and time domains.
+
 **Method comparison / review papers: “Which filter for water quality & hydrodynamics?”** — several comparative studies discussing PF vs EnKF vs EKF pros & cons in aquatic contexts (helpful for selecting an algorithm).   
  Representative: methodological reviews returned in searches. [ResearchGate+1](https://www.researchgate.net/publication/371060334_Data_assimilation_experiments_inform_monitoring_needs_for_near-term_ecological_forecasts_in_a_eutrophic_reservoir?utm_source=chatgpt.com) 
+
+ See Wander 2023 above …
 
 **OpenDA community examples \+ tutorials: DA applied to inland water models** — OpenDA provides documented examples for EnKF assimilation into Delft3D and other models (practical resource).   
  OpenDA / GMD tutorial: [https://gmd.copernicus.org/articles/13/1267/2020/](https://gmd.copernicus.org/articles/13/1267/2020/?utm_source=chatgpt.com) . [GMD](https://gmd.copernicus.org/articles/13/1267/2020/?utm_source=chatgpt.com) 
 
+ See Baracchini 2019 above ...
+
 **Case study papers applying DA to combined hydrodynamic \+ water-quality forecasts (nutrients, oxygen)** — several applied publications show DA improving coupled forecasts (state-parameter estimation).   
  Representative search / example: [https://www.sciencedirect.com/science/article/abs/pii/S1364815218304687](https://www.sciencedirect.com/science/article/abs/pii/S1364815218304687?utm_source=chatgpt.com) . [ScienceDirect](https://www.sciencedirect.com/science/article/abs/pii/S1364815218304687?utm_source=chatgpt.com) 
+
+ see Chen 2019 above
+
+
+Possible addition more on technical integration of OpenDA: Data assimilation framework - Ridler et al (2014): Linking an open data assimilation library (OpenDA) to a widely adopted model interface (OpenMI)
+https://www.sciencedirect.com/science/article/pii/S1364815214000590?via%3Dihub
+
+
+ 
 
  
