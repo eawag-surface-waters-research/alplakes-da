@@ -3,7 +3,7 @@
 **Baracchini, T., Chu, P.Y., Šukys, J., Lieberherr, G., Wunderle, S., Wüest, A., Bouffard, D. (2020). *Data assimilation of in situ and satellite remote sensing data to 3D hydrodynamic lake models: a case study using Delft3D-FLOW and OpenDA*** — EnKF with Delft3D; Lake Geneva demonstration.   
  PDF / article: [https://doi.org/10.5194/gmd-13-1267-2020](https://doi.org/10.5194/gmd-13-1267-2020) (GMD). [GMD+1](https://gmd.copernicus.org/articles/13/1267/2020/?utm_source=chatgpt.com) 
 
-Important paper # 1: Similarity and approach
+**Important paper # 1: Similarity and approach**
 
 **Brief Summary:**
 
