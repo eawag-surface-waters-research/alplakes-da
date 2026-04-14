@@ -50,12 +50,53 @@ This paper presents a Bayesian inference framework for a 3D hydrodynamic model o
 The DA improvements were more modest than in Baracchini et al.: the overall improvement in RMSE and MAE across the various datasets was 4–15 %. However, the framework used 798 AVHRR images (compared to ~124 in the Baracchini study), and did so without requiring manual image-by-image quality thresholding. The BiLSTM network achieved a 33 % reduction in RMSE for the test set, though in the assimilation run, it increased RMSE by about 10 %, most likely due to differences between the training data and the assimilation process.
 The authors are candid about the method's trade-offs: the particle filter provides a relatively small improvement to model predictions in contrast to other popular DA schemes, but at no cost to the quality of the physical model. However, this approach requires a highly robust hydrodynamic model, as its corrective powers are limited. The approach is also quite computationally costly; simulations ran at the Swiss National Supercomputing Center over approximately 3 months. This paper sits neatly between Baracchini et al. (2020) and the broader literature: it swaps Gaussian-assumption-based EnKF for a fully Bayesian particle MCMC approach — gaining physics consistency and non-Gaussian flexibility, but trading some correction power and incurring far greater computational cost. The authors suggest that a cheaper parameter optimization method combined with an improved particle filter would be the more productive path forward for operational use.
 
+**Anderson, J., Collins, S., et al. (various). *Operational ensemble DA for short-term lake forecasts (FLAREr toolset)*** — open-source R tools (FLAREr) and implementations for ensemble DA in lake forecasting.   
+ FLAREr docs / code: [https://flare-forecast.org/FLAREr/](https://flare-forecast.org/FLAREr/?utm_source=chatgpt.com) . [FLARE](https://flare-forecast.org/FLAREr/?utm_source=chatgpt.com) 
+
+**Important paper # 3:** 
+FLAREr is very interesting. Many papers demonstrating the use. Good for inspiration.
+example paper where the framework was first presented): https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2019WR026138
+The study “A Near-Term Iterative Forecasting System Successfully Predicts Reservoir Hydrodynamics and Partitions Uncertainty in Real Time” by R. Quinn Thomas and colleagues presents a data-driven, real-time forecasting system that continuously updates and improves predictions of reservoir hydrodynamics.
+
+**Brief Summary:**
+Objective: To develop and test a near-term iterative forecasting system that predicts the physical behavior (hydrodynamics) of reservoirs while quantifying different sources of uncertainty.
+Approach: The system combines data assimilation (regularly incorporating new measurements) with iterative model updating, allowing forecasts to adjust in real time as new data arrive.
+Key innovation: It explicitly partitions uncertainty into components such as model structure, parameters, and drivers (e.g., weather inputs), giving clearer insight into which factors most influence forecast reliability.
+Results: The method effectively improved accuracy in predicting reservoir temperature and water column dynamics over various time horizons.
+Implications: This framework can be scaled for use in environmental management, water quality forecasting, and adaptive reservoir operations — offering a generalizable approach for ecological forecasting systems.
+
+**Architecture**
+
+FLARE couples three components into a daily iterative cycle:
+
+In-situ sensors — a thermistor chain plus an inflow discharge sensor stream data continuously to the cloud, where they're picked up daily by the workflow.
+
+General Lake Model (GLM) — a 1D process-based hydrodynamic model that runs the forward simulation, driven by NOAA Global Ensemble Forecast System (GEFS) 16-day meteorological forecasts (21 members).
+
+Ensemble Kalman Filter (EnKF) — runs at each daily timestep to update both the model state (water temperature profile) and three sensitivity-selected GLM parameters (a longwave radiation scaling factor and two sediment temperature parameters) using the most recent observations. State augmentation is used so the filter estimates parameters and states jointly.
+
+**Uncertainty partitioning:** the key methodological contribution. This is what the paper's title emphasizes and what makes it foundational. FLARE represents and propagates five distinct sources of uncertainty through the ensemble, and it can quantify each one's contribution by selectively turning sources on and off:
+
+Driver (meteorological) uncertainty: each FLARE ensemble member is paired with one of the 21 NOAA GEFS members, propagating weather forecast spread directly into the lake model.
+
+Initial condition uncertainty: spread across ensemble members on day 0 of each forecast, set either by the previous day's forecast or by the post-DA analysis.
+
+Process uncertainty: random Gaussian noise added to water temperature predictions at each daily timestep, spatially correlated across depths.
+
+Parameter uncertainty: each member draws from distributions for the three EnKF-tuned parameters; the spread across members represents how well-constrained each parameter is.
+
+Observation uncertainty: the sensor measurement error feeds into the EnKF's R matrix and determines how strongly the filter trusts each observation.
+
+**Major results: ** FLARE successfully produced skillful 16-day water temperature forecasts in real time at FCR. Forecast skill degraded with horizon as expected, but stayed within useful bounds across the 16-day window for most depths. The uncertainty partitioning revealed the headline finding that drove all subsequent FLARE work: process uncertainty and meteorological driver uncertainty dominated total forecast variance, with initial condition uncertainty playing only a minor role except at the very shortest horizons. Parameter uncertainty contributed measurably but less than process and driver. This finding is the opposite of the situation in numerical weather prediction, where IC uncertainty dominates and frequent DA always pays off. It set up the question that Wander et al. (2024) later answered systematically: if IC uncertainty isn't the dominant source, how often do you actually need to assimilate? The Thomas paper also showed that EnKF-based parameter tuning was essential — running FLARE with constant parameters (only updating initial conditions) substantially degraded skill, because GLM out of the box is not well-calibrated to FCR's specific dynamics.
+
+**Interesting: 1D model framework, ensemble sizes for computationally light simulations ~ 400, uncertainity partitioning, various considerations useful for us.**
+
 **Thomas, S.M., et al. (2020). *Data assimilation experiments inform monitoring needs for near-term ecological forecasts in a eutrophic reservoir (FLARE system)*** — FLARE forecasting system; ensemble DA for water temperature and short-term forecasts.   
  Article: [https://esajournals.onlinelibrary.wiley.com/doi/10.1002/ecs2.4752](https://esajournals.onlinelibrary.wiley.com/doi/10.1002/ecs2.4752?utm_source=chatgpt.com) . [ESAJournals](https://esajournals.onlinelibrary.wiley.com/doi/10.1002/ecs2.4752?utm_source=chatgpt.com)[VTechWorks](https://vtechworks.lib.vt.edu/bitstream/10919/104566/1/Advancing%20lake%20and%20reservoir%20water%20quality%20management%20with%20near%20term%20iterative%20ecological%20forecasting.pdf?utm_source=chatgpt.com) 
 
 Authors got allucinated: correct ones Heather L. Wander et. al. 2024
 
-**Important paper # 3: Practical dimension, focusing on the needs**
+**Important paper # 4: Practical dimension, focusing on the needs, application of FLARE**
 
 **Brief Summary:**
 Many forecasting systems have been developed using high temporal frequency (minute to hourly resolution) data streams for assimilation, but this approach may be cost-prohibitive or impossible for variables that lack high-frequency sensors or have high data latency. Rather than asking how to do DA, the paper asks a more practical question: how often do you actually need to assimilate data to produce skillful forecasts? Starting in June 2020, real-time water column data were recorded in Beaverdam Reservoir, Virginia. Multiple temperature sensors were deployed at 1 m intervals from the surface to the sediment, and a multi-parameter sonde monitored water temperature at 1.5 m at the deepest site. Sensors collected data every 10 minutes, which were then assimilated into the FLARE (Forecasting Lake And Reservoir Ecosystems) system at different rates. DA experiments: The data assimilation frequencies tested were daily, weekly, fortnightly, or monthly, and the forecast horizons ranged from 1-, 7-, and 35-day-ahead forecasts. Observations were selectively withheld to simulate lower-frequency monitoring scenarios, allowing a clean comparison of DA frequency effects. What assimilation frequency produces the most skilful forecasts; how skill varies across depth and season (mixed vs. stratified); and how DA frequency influences total forecast uncertainty and the contribution of initial condition uncertainty. For a 1-day-ahead forecast horizon, daily assimilation was the most skilled. Weekly data assimilation was most skilled at longer horizons (8–35 days). Overall, the study notes a trend of lower-frequency data assimilation outperforming daily assimilation as the forecast horizon increased. The study concludes that weekly water temperature observations are likely "good enough" to set up a skillful forecasting system for many management applications, while daily assimilation would be most useful for applications requiring high forecast accuracy in deeper waters or at shorter forecast horizons. Where other studies focused on physical limnology and 3D model state correction for large, deep lakes, Wander et al. operate in the ecological forecasting tradition — using a 1D process model (FLARE), targeting a small eutrophic drinking water reservoir, and asking practical monitoring design questions relevant to water managers. Key insight: you don't necessarily need high-frequency data streams to produce useful forecasts, and that the optimal frequency depends on the forecast horizon. This has direct implications for sensor deployment decisions and monitoring costs.
@@ -130,24 +171,6 @@ DART? : https://journals.ametsoc.org/view/journals/bams/106/11/BAMS-D-24-0214.1.
  (Representative applied article / DOI available in GMD & related works). [GMD](https://gmd.copernicus.org/articles/13/1267/2020/?utm_source=chatgpt.com)[American Meteorological Society Journals](https://journals.ametsoc.org/abstract/journals/mwre/126/6/1520-0493_1998_126_1719_asitek_2.0.co_2.xml?utm_source=chatgpt.com) 
 
 I don’t find …?
-
-**Anderson, J., Collins, S., et al. (various). *Operational ensemble DA for short-term lake forecasts (FLAREr toolset)*** — open-source R tools (FLAREr) and implementations for ensemble DA in lake forecasting.   
- FLAREr docs / code: [https://flare-forecast.org/FLAREr/](https://flare-forecast.org/FLAREr/?utm_source=chatgpt.com) . [FLARE](https://flare-forecast.org/FLAREr/?utm_source=chatgpt.com) 
-
-Important paper # 5: 
-FLAREr is very interesting. Many papers demonstrating the use. Good for inspiration.
-example paper (the first where framework presented): https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2019WR026138
-A Near-Term Iterative Forecasting System Successfully Predicts Reservoir Hydrodynamics and Partitions Uncertainty in Real Time
-
-The study “A Near-Term Iterative Forecasting System Successfully Predicts Reservoir Hydrodynamics and Partitions Uncertainty” by R. Quinn Thomas and colleagues presents a data-driven, real-time forecasting system that continuously updates and improves predictions of reservoir hydrodynamics.
-
-Brief Summary:
-Objective: To develop and test a near-term iterative forecasting system that predicts the physical behavior (hydrodynamics) of reservoirs while quantifying different sources of uncertainty.
-Approach: The system combines data assimilation (regularly incorporating new measurements) with iterative model updating, allowing forecasts to adjust in real time as new data arrive.
-Key innovation: It explicitly partitions uncertainty into components such as model structure, parameters, and drivers (e.g., weather inputs), giving clearer insight into which factors most influence forecast reliability.
-Results: The method effectively improved accuracy in predicting reservoir temperature and water column dynamics over various time horizons.
-Implications: This framework can be scaled for use in environmental management, water quality forecasting, and adaptive reservoir operations — offering a generalizable approach for ecological forecasting systems.
-Essentially, the paper demonstrates how iterative forecasting supported by continuous data assimilation can produce adaptive, transparent, and testable predictions of environmental systems in real time.
 
 **Savina, M., et al. (2024). *Multi-satellite data assimilation with local EnKF variants (MoLEnKF)*** — method paper for merging many observation types (relevant if you plan multi-sensor LSWT \+ altimetry \+ in situ).   
  Article (WRR): [https://doi.org/10.1029/2024WR037155](https://doi.org/10.1029/2024WR037155) . [AGU Publications](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2024WR037155?utm_source=chatgpt.com) 
