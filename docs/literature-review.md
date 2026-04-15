@@ -62,6 +62,9 @@ Particle filtering degenerates badly with dense, informative observations
  FLAREr docs / code: [https://flare-forecast.org/FLAREr/](https://flare-forecast.org/FLAREr/?utm_source=chatgpt.com) . [FLARE](https://flare-forecast.org/FLAREr/?utm_source=chatgpt.com) 
 
 **Important paper # 3:** 
+
+Updates Temperature + model parameters using EnKF. 441! ensembles built in a non very clear manner...
+
 FLAREr is very interesting. Many papers demonstrating the use. Good for inspiration.
 example paper where the framework was first presented): https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2019WR026138
 The study “A Near-Term Iterative Forecasting System Successfully Predicts Reservoir Hydrodynamics and Partitions Uncertainty in Real Time” by R. Quinn Thomas and colleagues presents a data-driven, real-time forecasting system that continuously updates and improves predictions of reservoir hydrodynamics.
