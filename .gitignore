@@ -1,0 +1,19 @@
+# Ignore data folders
+data/
+datasets/
+output/
+
+# Ignore large files
+*.csv
+*.nc
+*.tif
+*.h5
+
+# Ignore temporary files
+*.log
+*.tmp
+
+# R / Python specific
+.Rhistory
+.RData
+__pycache__/
