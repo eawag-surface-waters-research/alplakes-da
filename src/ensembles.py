@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -43,7 +44,7 @@ obs = df_obs.rename(columns={
     "u": "U_obs",
     "v": "V_obs",
     "global_radiation": "GLOB_obs"
-})[["time", "U_obs", "V_obs", "GLOB_obs"]] # "T_obs" start without
+})[["time", "U_obs", "V_obs", "GLOB_obs", "vapour_pressure", "cloud_cover", "precipitation"]] # "T_obs" start without
 
 # merge
 df = pd.merge(icon, obs, on="time", how="inner")
@@ -113,6 +114,41 @@ for name, (_, obs_col, clip_zero) in VARIABLES.items():
 print("\nEnsemble spread (std across members, time-mean):")
 for name, arr in perturbed.items():
     print(f"  {name:4s}  mean spread = {arr.std(axis=1).mean():.3f}")
+
+# ----------------------------
+# Save ensemble Forcing.dat files
+# ----------------------------
+
+t0 = df["time"].dt.tz_convert("UTC").dt.tz_localize(None).iloc[0].replace(month=1, day=1, hour=0, minute=0, second=0)
+df["time_days"] = (df["time"].dt.tz_convert("UTC").dt.tz_localize(None) - t0) / pd.Timedelta("1D") + 1
+
+HEADER = "Time [d]    u [m/s]    v [m/s]  Tair [°C] sol [W/m2] vap [mbar]  cloud [-] rain [m/hr]"
+BASE_OUT = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assimilation", "upperlugano")
+
+for i in range(N_MEMBERS):
+    out_dir = os.path.join(BASE_OUT, f"ensemble{i + 1}")
+    os.makedirs(out_dir, exist_ok=True)
+
+    rows = np.column_stack([
+        df["time_days"].values,
+        perturbed["U"][:, i],
+        perturbed["V"][:, i],
+        df["T"].values,
+        perturbed["GLOB"][:, i],
+        df["vapour_pressure"].fillna(0).values,
+        df["cloud_cover"].fillna(0).values,
+        df["precipitation"].fillna(0).values / 1000,  # mm to m/hr
+    ])
+
+    np.savetxt(
+        os.path.join(out_dir, "Forcing.dat"),
+        rows,
+        fmt="%10.4f",
+        header=HEADER,
+        comments="",
+    )
+
+print(f"Saved {N_MEMBERS} Forcing.dat files to {BASE_OUT}")
 
 # ----------------------------
 # Visual diagnostics

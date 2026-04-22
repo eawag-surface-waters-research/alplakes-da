@@ -8,6 +8,7 @@ output/
 *.nc
 *.tif
 *.h5
+*.dat
 
 # Ignore temporary files
 *.log
