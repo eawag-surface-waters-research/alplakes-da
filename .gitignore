@@ -9,6 +9,8 @@ output/
 *.tif
 *.h5
 *.dat
+*.nml
+*.par
 
 # Ignore temporary files
 *.log

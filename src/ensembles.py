@@ -15,6 +15,7 @@ from statsmodels.graphics.tsaplots import plot_acf
 # load observations
 df_obs = pd.read_csv("../data/obs_2025.csv")
 df_obs["time"] = pd.to_datetime(df_obs["time"])
+df_obs = df_obs.drop_duplicates(subset="time").reset_index(drop=True)
 
 # generate u and v components of wind
 theta = np.deg2rad(df_obs["wind_direction"])
@@ -119,7 +120,7 @@ for name, arr in perturbed.items():
 # Save ensemble Forcing.dat files
 # ----------------------------
 
-t0 = df["time"].dt.tz_convert("UTC").dt.tz_localize(None).iloc[0].replace(month=1, day=1, hour=0, minute=0, second=0)
+t0 = pd.Timestamp("1981-01-01", tz="UTC").tz_localize(None)
 df["time_days"] = (df["time"].dt.tz_convert("UTC").dt.tz_localize(None) - t0) / pd.Timedelta("1D") + 1
 
 HEADER = "Time [d]    u [m/s]    v [m/s]  Tair [°C] sol [W/m2] vap [mbar]  cloud [-] rain [m/hr]"
@@ -136,7 +137,7 @@ for i in range(N_MEMBERS):
         df["T"].values,
         perturbed["GLOB"][:, i],
         df["vapour_pressure"].fillna(0).values,
-        df["cloud_cover"].fillna(0).values,
+        df["cloud_cover"].fillna(0).values / 100,
         df["precipitation"].fillna(0).values / 1000,  # mm to m/hr
     ])
 
@@ -212,3 +213,4 @@ for row, name in enumerate(VARIABLES):
 
 plt.suptitle("Noise model diagnostics (no zero-mean centering)", fontsize=14, y=1.01)
 plt.show()
+
