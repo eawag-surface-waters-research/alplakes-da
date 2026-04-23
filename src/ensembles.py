@@ -1,4 +1,5 @@
 import os
+import shutil
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -45,13 +46,13 @@ obs = df_obs.rename(columns={
     "u": "U_obs",
     "v": "V_obs",
     "global_radiation": "GLOB_obs"
-})[["time", "U_obs", "V_obs", "GLOB_obs", "vapour_pressure", "cloud_cover", "precipitation"]] # "T_obs" start without
+})[["time", "T_obs", "U_obs", "V_obs", "GLOB_obs", "vapour_pressure", "cloud_cover", "precipitation"]]
 
 # merge
 df = pd.merge(icon, obs, on="time", how="inner")
 
 # Compute deltas
-# df["dT"] = df["T"] - df["T_obs"] # start without
+df["dT"] = df["T"] - df["T_obs"]
 df["dU"] = df["U"] - df["U_obs"]
 df["dV"] = df["V"] - df["V_obs"]
 df["dGLOB"] = df["GLOB"] - df["GLOB_obs"]
@@ -64,8 +65,10 @@ print(df.head())
 
 N_MEMBERS = 20
 RNG_SEED = 42
+SIGMA_SCALE = 1.0 # increase if needed
 
 VARIABLES = {
+    # "T":    ("dT",    "T_obs",    False),
     "U":    ("dU",    "U_obs",    False),
     "V":    ("dV",    "V_obs",    False),
     "GLOB": ("dGLOB", "GLOB_obs", True), # clipping!! true for radiation
@@ -103,7 +106,7 @@ n = len(df)
 perturbed = {}
 for name, (_, obs_col, clip_zero) in VARIABLES.items():
     m = models[name]
-    pert = simulate_ar1(m["phi"], m["sigma"], n, N_MEMBERS, rng)
+    pert = simulate_ar1(m["phi"], m["sigma"] * SIGMA_SCALE, n, N_MEMBERS, rng)
     obs_vals = df[obs_col].values[:, None]
     if clip_zero:
         pert[obs_vals[:, 0] == 0] = 0.0
@@ -126,6 +129,32 @@ df["time_days"] = (df["time"].dt.tz_convert("UTC").dt.tz_localize(None) - t0) / 
 HEADER = "Time [d]    u [m/s]    v [m/s]  Tair [°C] sol [W/m2] vap [mbar]  cloud [-] rain [m/hr]"
 BASE_OUT = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assimilation", "upperlugano")
 
+# ensemble0 — unperturbed control run
+SRC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "standard_inputs")
+e0_dir = os.path.join(BASE_OUT, "ensemble0")
+os.makedirs(e0_dir, exist_ok=True)
+for fname in os.listdir(SRC_DIR):
+    src = os.path.join(SRC_DIR, fname)
+    if os.path.isfile(src):
+        shutil.copy2(src, os.path.join(e0_dir, fname))
+    elif os.path.isdir(src):
+        dest_sub = os.path.join(e0_dir, fname)
+        if os.path.exists(dest_sub):
+            shutil.rmtree(dest_sub)
+        shutil.copytree(src, dest_sub)
+e0_rows = np.column_stack([
+    df["time_days"].values,
+    df["U_obs"].values,
+    df["V_obs"].values,
+    df["T_obs"].values,
+    np.clip(df["GLOB_obs"].values, 0, None),
+    df["vapour_pressure"].fillna(0).values,
+    df["cloud_cover"].fillna(0).values / 100,
+    df["precipitation"].fillna(0).values / 1000,
+])
+np.savetxt(os.path.join(e0_dir, "Forcing.dat"), e0_rows, fmt="%10.4f", header=HEADER, comments="")
+print(f"Saved unperturbed ensemble0 to {e0_dir}")
+
 for i in range(N_MEMBERS):
     out_dir = os.path.join(BASE_OUT, f"ensemble{i + 1}")
     os.makedirs(out_dir, exist_ok=True)
@@ -134,7 +163,7 @@ for i in range(N_MEMBERS):
         df["time_days"].values,
         perturbed["U"][:, i],
         perturbed["V"][:, i],
-        df["T"].values,
+        df["T_obs"].values,
         perturbed["GLOB"][:, i],
         df["vapour_pressure"].fillna(0).values,
         df["cloud_cover"].fillna(0).values / 100,
@@ -157,9 +186,9 @@ print(f"Saved {N_MEMBERS} Forcing.dat files to {BASE_OUT}")
 # For each variable: residual ACF (observed vs. AR(1) theoretical),
 # residual histogram, and ensemble fan over time.
 
-DELTA_COLS = {"U": "dU", "V": "dV", "GLOB": "dGLOB"}
-OBS_COLS   = {"U": "U_obs", "V": "V_obs", "GLOB": "GLOB_obs"}
-UNITS      = {"U": "m/s", "V": "m/s", "GLOB": "W/m²"}
+DELTA_COLS = {"T": "dT", "U": "dU", "V": "dV", "GLOB": "dGLOB"}
+OBS_COLS   = {"T": "T_obs", "U": "U_obs", "V": "V_obs", "GLOB": "GLOB_obs"}
+UNITS      = {"T": "°C", "U": "m/s", "V": "m/s", "GLOB": "W/m²"}
 time       = df["time"].values
 
 fig = plt.figure(figsize=(16, 4 * len(VARIABLES)))

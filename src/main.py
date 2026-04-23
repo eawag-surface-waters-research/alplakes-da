@@ -556,7 +556,13 @@ ENSEMBLE_BASE = os.path.join(ROOT, "assimilation", "upperlugano")
 # _run_one(i) — builds the Docker command for ensemble{i}, creates its Results/ directory, runs it, and prints OK / FAILED as each finishes.
 def _run_one(i):
     ensemble_dir = os.path.join(ENSEMBLE_BASE, f"ensemble{i}")
-    os.makedirs(os.path.join(ensemble_dir, "Results"), exist_ok=True)
+    results_dir = os.path.join(ensemble_dir, "Results")
+    if os.path.exists(results_dir):
+        shutil.rmtree(results_dir)
+    os.makedirs(results_dir)
+    snapshots = sorted(f for f in os.listdir(ensemble_dir) if f.startswith("simulation-snapshot_"))
+    if snapshots:
+        shutil.copy(os.path.join(ensemble_dir, snapshots[-1]), os.path.join(results_dir, "simulation-snapshot.dat"))
     # Docker Desktop on Windows accepts forward-slash paths in -v mounts
     mount = ensemble_dir.replace("\\", "/")
     cmd = (
@@ -571,20 +577,22 @@ def _run_one(i):
 
 # run_ensembles_parallel() — submits all 20 runs to a ThreadPoolExecutor (threads are the right choice here since the bottleneck is Docker I/O, not Python CPU). 
 # max_workers=None lets the executor pick a sensible default; you can pass e.g. max_workers=4 to cap concurrency.
-def run_ensembles_parallel(max_workers=None):
-    """Run all ensemble Simstrat simulations in parallel via Docker."""
+def run_ensembles_parallel(max_workers=None, members=None):
+    """Run ensemble Simstrat simulations in parallel via Docker."""
+    if members is None:
+        members = range(0, N_MEMBERS + 1)
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as pool:
-        futures = {pool.submit(_run_one, i): i for i in range(1, N_MEMBERS + 1)}
+        futures = {pool.submit(_run_one, i): i for i in members}
         failed = []
-        for future in tqdm(concurrent.futures.as_completed(futures), total=N_MEMBERS, desc="ensembles"):
+        for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures), desc="ensembles"):
             i, code = future.result()
             if code != 0:
                 failed.append(i)
     if failed:
         print(f"Failed ensembles: {failed}")
     else:
-        print(f"All {N_MEMBERS} ensembles completed successfully.")
+        print(f"All {len(futures)} ensembles completed successfully.")
 
 
 if __name__ == "__main__":
-    run_ensembles_parallel()
+    run_ensembles_parallel() # if want to run 1 members=[1]
