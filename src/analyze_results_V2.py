@@ -13,12 +13,15 @@ REF_DATE = pd.Timestamp("1981-01-01", tz="UTC")
 DEPTHS = [-1, -5, -9, -15, -19, -40]
 
 
+PF_RESULTS = "Results_PF"
+
 def load_T(ensemble_dir):
-    path = os.path.join(ensemble_dir, "Results", "T_out.dat")
+    path = os.path.join(ensemble_dir, PF_RESULTS, "T_out_full.dat")
     df = pd.read_csv(path, header=0)
     df.columns = [c.strip().strip('"') for c in df.columns]
     df["time"] = REF_DATE + pd.to_timedelta(df["Datetime"], unit="D")
     df = df.drop(columns=["Datetime"]).set_index("time")
+    df = df[~df.index.duplicated(keep="first")]
     df.columns = df.columns.astype(float)
     return df
 
@@ -37,28 +40,23 @@ obs_gandria = pd.read_csv(OBS_GANDRIA_PATH, parse_dates=["time"])
 obs_gandria["time"] = pd.to_datetime(obs_gandria["time"], utc=True)
 obs_gandria_depths = np.sort(obs_gandria["depth"].unique())
 
-e0_path = os.path.join(ENSEMBLE_BASE, "ensemble0", "Results", "T_out.dat")
+e0_path = os.path.join(ENSEMBLE_BASE, "ensemble0", PF_RESULTS, "T_out_full.dat")
 ensemble0 = load_T(os.path.join(ENSEMBLE_BASE, "ensemble0")) if os.path.exists(e0_path) else None
 
-def load_traj(path):
-    if not os.path.exists(path):
-        return None
-    df = pd.read_csv(path, header=0)
-    df.columns = [c.strip().strip('"') for c in df.columns]
-    df["time"] = REF_DATE + pd.to_timedelta(df["Datetime"], unit="D")
-    df = df.drop(columns=["Datetime"]).set_index("time")
-    df = df[~df.index.duplicated(keep="first")]
-    df.columns = df.columns.astype(float)
-    return df
-
-best_traj    = load_traj(os.path.join(ENSEMBLE_BASE, "T_out_best.dat"))
-ens_traj     = load_traj(os.path.join(ENSEMBLE_BASE, "T_out_ens.dat"))
-persist_traj = load_traj(os.path.join(ENSEMBLE_BASE, "T_out_persist.dat"))
+best_path = os.path.join(ENSEMBLE_BASE, "T_out_best.dat")
+best_traj = None
+if os.path.exists(best_path):
+    best_traj = pd.read_csv(best_path, header=0)
+    best_traj.columns = [c.strip().strip('"') for c in best_traj.columns]
+    best_traj["time"] = REF_DATE + pd.to_timedelta(best_traj["Datetime"], unit="D")
+    best_traj = best_traj.drop(columns=["Datetime"]).set_index("time")
+    best_traj = best_traj[~best_traj.index.duplicated(keep="first")]
+    best_traj.columns = best_traj.columns.astype(float)
 
 members = []
 for i in range(1, N_MEMBERS + 1):
     d = os.path.join(ENSEMBLE_BASE, f"ensemble{i}")
-    if not os.path.exists(os.path.join(d, "Results", "T_out.dat")):
+    if not os.path.exists(os.path.join(d, PF_RESULTS, "T_out_full.dat")):
         print(f"Missing: ensemble{i}")
         continue
     members.append(load_T(d))
@@ -75,7 +73,7 @@ if ensemble0 is not None:
 time = common_index
 
 fig, axes = plt.subplots(len(DEPTHS), 1, figsize=(14, 4 * len(DEPTHS)), sharex=True)
-fig.suptitle("Temperature ensemble spread — Upper Lugano", fontsize=13)
+fig.suptitle("Temperature ensemble spread — Upper Lugano (PF)", fontsize=13)
 
 for ax, target_depth in zip(axes, DEPTHS):
     col = nearest_depth_col(members[0], target_depth)
@@ -84,11 +82,10 @@ for ax, target_depth in zip(axes, DEPTHS):
     data = np.column_stack([m[col].values for m in members])  # (time, members)
 
     p5, p25, p50, p75, p95 = np.percentile(data, [5, 25, 50, 75, 95], axis=1)
-    
-    # put in background
+
     nearest_obs_depth = obs_depths[np.argmin(np.abs(obs_depths - actual_depth))]
     obs_sub = obs[obs["depth"] == nearest_obs_depth]
-    ax.scatter(obs_sub["time"], obs_sub["value"], s=1, color="tomato", zorder=5, alpha = 0.2, 
+    ax.scatter(obs_sub["time"], obs_sub["value"], s=1, color="tomato", zorder=5, alpha=0.2,
                label=f"obs ({nearest_obs_depth:.1f} m)")
 
     nearest_gandria_depth = obs_gandria_depths[np.argmin(np.abs(obs_gandria_depths - actual_depth))]
@@ -105,13 +102,7 @@ for ax, target_depth in zip(axes, DEPTHS):
         ax.plot(ensemble0.index, ensemble0[e0_col], color="black", lw=1.2, label="ensemble0")
     if best_traj is not None:
         bt_col = nearest_depth_col(best_traj, target_depth)
-        ax.plot(best_traj.index, best_traj[bt_col], color="red", lw=1.5, ls="--", zorder=7, label="best (hindsight)")
-    if ens_traj is not None:
-        ec_col = nearest_depth_col(ens_traj, target_depth)
-        ax.plot(ens_traj.index, ens_traj[ec_col], color="darkorange", lw=1.5, zorder=7, label="ensemble mean")
-    if persist_traj is not None:
-        pc_col = nearest_depth_col(persist_traj, target_depth)
-        ax.plot(persist_traj.index, persist_traj[pc_col], color="green", lw=1.5, ls="--", zorder=7, label="persist (lagged best)")
+        ax.plot(best_traj.index, best_traj[bt_col], color="red", lw=1.5, ls="--", label="best trajectory")
 
     ax.set_ylabel("T (°C)")
     ax.set_title(f"T at {actual_depth:.0f} m depth")
@@ -120,7 +111,6 @@ for ax, target_depth in zip(axes, DEPTHS):
 
 axes[-1].set_xlabel("Date")
 fig.autofmt_xdate()
-#plt.tight_layout()
 plt.show()
 
 
@@ -184,7 +174,7 @@ ax2.axhline(best_member_rmse, color="tomato", lw=1.2, ls="--", alpha=0.6,
 ax2.set_xticks(x)
 ax2.set_xticklabels(sorted_labels, fontsize=8, rotation=45, ha="right")
 ax2.set_ylabel("RMSE (°C)")
-ax2.set_title("RMSE by depth, ranked by total")
+ax2.set_title("RMSE by depth, ranked by total (PF run)")
 ax2.legend(fontsize=8, loc="upper left", bbox_to_anchor=(1.01, 1), borderaxespad=0)
 ax2.grid(True, axis="y", alpha=0.3)
 plt.tight_layout(rect=[0, 0, 0.82, 1])
