@@ -189,3 +189,48 @@ ax2.legend(fontsize=8, loc="upper left", bbox_to_anchor=(1.01, 1), borderaxespad
 ax2.grid(True, axis="y", alpha=0.3)
 plt.tight_layout(rect=[0, 0, 0.82, 1])
 plt.show()
+
+
+# --- Comparison bar: stacked RMSE by depth + % gain label ---
+best_traj_rmses = compute_rmse_by_depth(best_traj, obs, obs_depths) if best_traj is not None else None
+ens_traj_rmses  = compute_rmse_by_depth(ens_traj,  obs, obs_depths) if ens_traj  is not None else None
+persist_rmses   = compute_rmse_by_depth(persist_traj, obs, obs_depths) if persist_traj is not None else None
+
+# (label, by_depth_rmses, total, edge_color) — standard leftmost
+comp_entries = []
+if e0_rmses_by_depth is not None:
+    comp_entries.append(("standard\n(ensemble0)", e0_rmses_by_depth,          e0_total,                  "dimgrey"))
+comp_entries.append(    ("best free\nmember",     sorted_by_depth[best_member_xi], best_member_rmse,      "steelblue"))
+if ens_traj_rmses is not None:
+    comp_entries.append(("updated\nensemble\nmean",        ens_traj_rmses,             np.nansum(ens_traj_rmses),  "darkorange"))
+if best_traj_rmses is not None:
+    comp_entries.append(("updated\nbest\n(hindsight)",     best_traj_rmses,            np.nansum(best_traj_rmses), "crimson"))
+if persist_rmses is not None:
+    comp_entries.append(("updated\npersistence",           persist_rmses,              np.nansum(persist_rmses),   "seagreen"))
+
+ref_total = e0_total if e0_total is not None else best_member_rmse
+
+fig3, ax3 = plt.subplots(figsize=(7, 5))
+comp_x = np.arange(len(comp_entries))
+comp_bottoms = np.zeros(len(comp_entries))
+for d_idx, d in enumerate(obs_depths):
+    vals = [e[1][d_idx] if not np.isnan(e[1][d_idx]) else 0 for e in comp_entries]
+    ax3.bar(comp_x, vals, bottom=comp_bottoms, color=depth_cmap[d_idx], width=0.5, label=f"{d:.0f} m")
+    comp_bottoms += np.array(vals)
+
+for xi, (lbl, _, total, edgecolor) in enumerate(comp_entries):
+    ax3.bar(xi, total, bottom=0, color="none", edgecolor=edgecolor, lw=2, width=0.5)
+    gain = (total - ref_total) / ref_total * 100
+    is_ref = xi == 0 and e0_rmses_by_depth is not None
+    label_str = f"{total:.3f}°C" if is_ref else f"{total:.3f}°C\n{gain:.1f}%"
+    ax3.text(xi, total + 0.01 * ref_total, label_str,
+             ha="center", va="bottom", fontsize=8)
+
+ax3.set_xticks(comp_x)
+ax3.set_xticklabels([e[0] for e in comp_entries], fontsize=9)
+ax3.set_ylabel("RMSE (°C)")
+ax3.set_title("RMSE comparison: best free member vs. trajectory outputs")
+ax3.legend(fontsize=8, loc="upper left", bbox_to_anchor=(1.01, 1), borderaxespad=0)
+ax3.grid(True, axis="y", alpha=0.3)
+#plt.tight_layout(rect=[0, 0, 0.82, 1])
+plt.show()
