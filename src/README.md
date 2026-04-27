@@ -29,12 +29,8 @@ The workflow runs in four stages. Steps 1–2 are done once to prepare inputs; s
   Download data: 
   
   Source it from Alplakes, Datalakes, then process and ultimately store in /data directory. 
-  
   In our example we use the temperature observations from the Castagnola buoy (and Gandria sampling only for comparison) as observations.
-
-  For meteorological station values we take the ones from the closest station, namely the LUG station.
-
-  Upperlugano inputs for Simstrat are prepackaged and downloaded from Alplakes.
+  For meteorological station values we take the ones from the closest station, namely the LUG station.upperlugano inputs for Simstrat are prepackaged and downloaded from Alplakes.
 
 **Stage 2** — Ensemble generation and input copying
   
