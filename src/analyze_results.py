@@ -51,9 +51,10 @@ def load_traj(path):
     df.columns = df.columns.astype(float)
     return df
 
-best_traj    = load_traj(os.path.join(ENSEMBLE_BASE, "T_out_best.dat"))
-ens_traj     = load_traj(os.path.join(ENSEMBLE_BASE, "T_out_ens.dat"))
-persist_traj = load_traj(os.path.join(ENSEMBLE_BASE, "T_out_persist.dat"))
+DAILY_DIR    = os.path.join(ENSEMBLE_BASE, "results_daily_update")
+best_traj    = load_traj(os.path.join(DAILY_DIR, "T_out_best.dat"))
+ens_traj     = load_traj(os.path.join(DAILY_DIR, "T_out_ens.dat"))
+persist_traj = load_traj(os.path.join(DAILY_DIR, "T_out_persist.dat"))
 
 members = []
 for i in range(1, N_MEMBERS + 1):
@@ -196,21 +197,35 @@ best_traj_rmses = compute_rmse_by_depth(best_traj, obs, obs_depths) if best_traj
 ens_traj_rmses  = compute_rmse_by_depth(ens_traj,  obs, obs_depths) if ens_traj  is not None else None
 persist_rmses   = compute_rmse_by_depth(persist_traj, obs, obs_depths) if persist_traj is not None else None
 
-# (label, by_depth_rmses, total, edge_color) — standard leftmost
+WEEKLY_DIR       = os.path.join(ENSEMBLE_BASE, "results_weekly_update")
+best_traj_w      = load_traj(os.path.join(WEEKLY_DIR, "T_out_best.dat"))
+ens_traj_w       = load_traj(os.path.join(WEEKLY_DIR, "T_out_ens.dat"))
+persist_traj_w   = load_traj(os.path.join(WEEKLY_DIR, "T_out_persist.dat"))
+best_traj_w_rmses    = compute_rmse_by_depth(best_traj_w,    obs, obs_depths) if best_traj_w    is not None else None
+ens_traj_w_rmses     = compute_rmse_by_depth(ens_traj_w,     obs, obs_depths) if ens_traj_w     is not None else None
+persist_traj_w_rmses = compute_rmse_by_depth(persist_traj_w, obs, obs_depths) if persist_traj_w is not None else None
+
+# (label, by_depth_rmses, total, edge_color) — standard leftmost, weekly before daily
 comp_entries = []
 if e0_rmses_by_depth is not None:
-    comp_entries.append(("standard\n(ensemble0)", e0_rmses_by_depth,          e0_total,                  "dimgrey"))
-comp_entries.append(    ("best free\nmember",     sorted_by_depth[best_member_xi], best_member_rmse,      "steelblue"))
+    comp_entries.append(("standard\n(ensemble0)",  e0_rmses_by_depth,               e0_total,                       "dimgrey"))
+comp_entries.append(    ("best free\nmember",      sorted_by_depth[best_member_xi], best_member_rmse,               "steelblue"))
+if ens_traj_w_rmses is not None:
+    comp_entries.append(("weekly\nens. mean",      ens_traj_w_rmses,                np.nansum(ens_traj_w_rmses),    "darkorange"))
+if best_traj_w_rmses is not None:
+    comp_entries.append(("weekly\nbest",           best_traj_w_rmses,               np.nansum(best_traj_w_rmses),   "crimson"))
+if persist_traj_w_rmses is not None:
+    comp_entries.append(("weekly\npersistence",    persist_traj_w_rmses,            np.nansum(persist_traj_w_rmses),"seagreen"))
 if ens_traj_rmses is not None:
-    comp_entries.append(("updated\nensemble\nmean",        ens_traj_rmses,             np.nansum(ens_traj_rmses),  "darkorange"))
+    comp_entries.append(("daily\nens. mean",       ens_traj_rmses,                  np.nansum(ens_traj_rmses),      "darkorange"))
 if best_traj_rmses is not None:
-    comp_entries.append(("updated\nbest\n(hindsight)",     best_traj_rmses,            np.nansum(best_traj_rmses), "crimson"))
+    comp_entries.append(("daily\nbest",            best_traj_rmses,                 np.nansum(best_traj_rmses),     "crimson"))
 if persist_rmses is not None:
-    comp_entries.append(("updated\npersistence",           persist_rmses,              np.nansum(persist_rmses),   "seagreen"))
+    comp_entries.append(("daily\npersistence",     persist_rmses,                   np.nansum(persist_rmses),       "seagreen"))
 
 ref_total = e0_total if e0_total is not None else best_member_rmse
 
-fig3, ax3 = plt.subplots(figsize=(7, 5))
+fig3, ax3 = plt.subplots(figsize=(11, 5))
 comp_x = np.arange(len(comp_entries))
 comp_bottoms = np.zeros(len(comp_entries))
 for d_idx, d in enumerate(obs_depths):
