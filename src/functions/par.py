@@ -1,7 +1,7 @@
 import json
 from datetime import timedelta
 import numpy as np
-from .general import datetime_to_simstrat_time, air_pressure_from_elevation, seiche_from_surface_area
+from .unused_currently.general import datetime_to_simstrat_time, air_pressure_from_elevation, seiche_from_surface_area
 
 
 def update_par_file(simstrat_version, file_path, start_date, end_date, snapshot, parameters, args, log):

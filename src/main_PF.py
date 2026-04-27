@@ -4,11 +4,16 @@ Particle-filter (best-member copy) data assimilation for Simstrat ensembles.
 Sequential daily loop
 ---------------------
 For each day in [start_date, end_date):
+
   1. Patch Settings.par dates for every ensemble to cover that 24-h window.
+  
   2. Run all N_MEMBERS + 1 Docker containers in parallel.
+  
   3. Compute pooled RMSE vs Castagnola obs for members 1–N within that window.
+  
   4. If obs overlap the window: copy the best member's
      Results/simulation-snapshot.dat to every other member's Results/ dir.
+     
   5. Advance to the next day.
 
 ensemble0 (unperturbed control) is run each day but excluded from
@@ -45,6 +50,8 @@ PF_RESULTS       = "Results_PF"
 
 # ── Window runner ──────────────────────────────────────────────────────────────
 
+# prepares a modified copy of a configuration file
+# It sets the output directory to PF_RESULTS
 def _init_pf_par(ensemble_dir):
     """Create Settings_PF.par — copy of Settings.par with Output.Path = Results_PF."""
     src = os.path.join(ensemble_dir, "Settings.par")
@@ -60,7 +67,7 @@ def _init_pf_par(ensemble_dir):
 
 def _run_one_window(i, window_start, window_end):
     """
-    Run ensemble{i} for [window_start, window_end).
+    Run ensemble{i} for [window_start, window_end].
 
     Results/ is NOT wiped between windows — only *_out.dat files are removed
     so that simulation-snapshot.dat (written at the end of the previous window,
@@ -75,14 +82,14 @@ def _run_one_window(i, window_start, window_end):
         if fname.endswith("_out.dat"):
             os.remove(os.path.join(results_dir, fname))
 
-    # Bootstrap: if no live snapshot exists yet, pull the latest dated one
+    # Bootstrap: if no live snapshot exists yet, pull the latest dated one --> first window only
     live_snap = os.path.join(results_dir, "simulation-snapshot.dat")
     if not os.path.exists(live_snap):
         dated = sorted(f for f in os.listdir(ensemble_dir) if f.startswith("simulation-snapshot_"))
         if dated:
             shutil.copy2(os.path.join(ensemble_dir, dated[-1]), live_snap)
 
-    # Create Settings_PF.par (once) then patch dates for this window
+    # Essential: create Settings_PF.par (once) then patch dates for this window
     _init_pf_par(ensemble_dir)
     overwrite_par_file_dates(
         os.path.join(ensemble_dir, "Settings_PF.par"),
@@ -115,6 +122,7 @@ def _run_window_parallel(window_start, window_end, max_workers=None):
 
 # ── Data loading ───────────────────────────────────────────────────────────────
 
+# loading observations and hourly aggregation
 def _load_obs():
     obs = pd.read_csv(OBS_PATH, parse_dates=["time"])
     obs["time"] = pd.to_datetime(obs["time"], utc=True)
@@ -124,7 +132,7 @@ def _load_obs():
     )
     return obs
 
-
+# loading ensemble results
 def _load_T(ensemble_dir):
     path = os.path.join(ensemble_dir, PF_RESULTS, "T_out.dat")
     df = pd.read_csv(path, header=0)
@@ -134,13 +142,14 @@ def _load_T(ensemble_dir):
     df.columns = df.columns.astype(float)
     return df
 
-
+# simulation depths may not exactly match observation depths. finds the closest
 def _nearest_col(df, target):
     return df.columns[np.argmin(np.abs(df.columns - target))]
 
 
 # ── RMSE ───────────────────────────────────────────────────────────────────────
 
+# Compute one RMSE value: across all depths & across a given time window
 def _rmse_in_window(sim_df, obs_df, window_start, window_end):
     """Pooled RMSE across all obs depths, restricted to the current window."""
     obs_win = obs_df[(obs_df["time"] >= window_start) & (obs_df["time"] < window_end)]
@@ -159,7 +168,7 @@ def _rmse_in_window(sim_df, obs_df, window_start, window_end):
 
 
 # ── Output accumulation ───────────────────────────────────────────────────────
-
+# accumulates output to track results
 def _accumulate_output(ensemble_dir):
     """Append today's T_out.dat rows (no header) to a persistent T_out_full.dat.
     Skips the first data row if its timestamp already exists at the end of the
@@ -226,7 +235,7 @@ def _append_rows_to(src_path, dst_path):
 
 def _accumulate_persist(prev_best_id):
     """Append yesterday's winner's current-window output to T_out_persist.dat.
-    This is the operationally honest forecast: selected without today's obs."""
+    This is the operationally honest forecasting scenario: selected without today's obs."""
     src = os.path.join(ENSEMBLE_BASE, f"ensemble{prev_best_id}", PF_RESULTS, "T_out.dat")
     _append_rows_to(src, PERSIST_TRAJ_PATH)
 
@@ -259,7 +268,7 @@ def _accumulate_mean(member_ids):
 
 
 # ── Assimilation step ──────────────────────────────────────────────────────────
-
+# Essential: copying the snapshot!
 def _copy_best_to_all(best_id, member_ids):
     """Overwrite every member's live snapshot with the best member's snapshot."""
     src = os.path.join(ENSEMBLE_BASE, f"ensemble{best_id}", PF_RESULTS, "simulation-snapshot.dat")
@@ -271,7 +280,7 @@ def _copy_best_to_all(best_id, member_ids):
 
 
 # ── Daily loop ─────────────────────────────────────────────────────────────────
-
+# Loop to run over a year:
 def run_pf_daily(start_date, end_date, max_workers=None, reset=False):
     """
     Sequential daily best-member-copy filter over [start_date, end_date).
@@ -284,6 +293,7 @@ def run_pf_daily(start_date, end_date, max_workers=None, reset=False):
     reset       : if True, delete any existing Results/simulation-snapshot.dat
                   so the bootstrap picks up the latest dated snapshot instead
     """
+    # at the start resets to avoid starting from wrong snapshot
     if reset:
         for i in range(0, N_MEMBERS + 1):
             live = os.path.join(ENSEMBLE_BASE, f"ensemble{i}", PF_RESULTS, "simulation-snapshot.dat")
