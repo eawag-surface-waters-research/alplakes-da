@@ -1,4 +1,4 @@
-# src — Data Assimilation Pipeline
+# src — Data Assimilation Pipeline 27.04.2026
 
 Ensemble-based lake temperature data assimilation driven by the [Simstrat](https://www.eawag.ch) 1-D hydrodynamic model.
 
@@ -24,7 +24,7 @@ src/
 The workflow runs in four stages. Steps 1–2 are done once to prepare inputs; steps 3–4 are the operational DA loop.
 
 
-**Stage 1** — Input preparation
+**Stage 1 — Input preparation**
   
   Download data: 
   
@@ -32,13 +32,15 @@ The workflow runs in four stages. Steps 1–2 are done once to prepare inputs; s
   In our example we use the temperature observations from the Castagnola buoy (and Gandria sampling only for comparison) as observations.
   For meteorological station values we take the ones from the closest station, namely the LUG station.upperlugano inputs for Simstrat are prepackaged and downloaded from Alplakes.
 
-**Stage 2** — Ensemble generation and input copying
+**Stage 2 — Ensemble generation and input copying**
   
   ensembles.py             Fit AR(1) to obs–reanalysis residuals → 20 perturbed Forcing.dat files
   
   copy_standard_inputs.py  Copy all non-forcing inputs into ensemble0–20/
 
-**Stage 3** — Simulation + assimilation  ((main.py) / main_PF.py / main_PF_weekly.py)
+**Stage 3 — Simulation + assimilation**  
+
+  main.py / main_PF.py / main_PF_weekly.py
   
   Free ensemble runs 
   
@@ -50,7 +52,7 @@ The workflow runs in four stages. Steps 1–2 are done once to prepare inputs; s
     3. Copy best member's snapshot to all others  ← particle filter step
     4. Accumulate trajectories (best, mean, persist)
 
-**Stage 4** — Analysis
+**Stage 4 — Analysis**
   
   analyze_results.py    
   
@@ -76,9 +78,9 @@ The workflow runs in four stages. Steps 1–2 are done once to prepare inputs; s
 ### Step 1 — Prepare standard inputs
 Use alplakes and datalakes and manually provide.
 
-Will be automized in the future.
+Will be automated in the future.
 
-### Step 2 — Generate ensemble forcing
+### Step 2 — Generate ensemble forcing and copying inputs
 
 ```bash
 python src/ensembles.py
@@ -88,7 +90,7 @@ python src/copy_standard_inputs.py
 - `data/obs_2025.csv` — observed hourly meteorology (time, wind speed/dir, T, radiation, RH, precip)
 - `data/lake_mean_ICON_2025.csv` — ICON reanalysis (average over the lake) for the same period
 
-Outputs: `assimilation/upperlugano/ensemble{0..20}/Forcing.dat`
+Outputs: `assimilation/upperlugano/ensemble{0..20}/Forcing.dat` + other unchanged files.
 
 ### Step 3 — Run the particle filter
 
