@@ -1,0 +1,641 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://eawag-surface-waters-research.github.io/alplakes-da/Documentation/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Documentation: Data Assimilation Module for Simstrat - Alplakes Data Assimilation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#documentation-data-assimilation-module-for-simstrat" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Alplakes Data Assimilation" class="md-header__button md-logo" aria-label="Alplakes Data Assimilation" data-md-component="logo">
+      
+  <img src="../assets/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Alplakes Data Assimilation
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Documentation: Data Assimilation Module for Simstrat
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../project-proposal/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Project Proposal
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../literature-review/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Literature Review
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../onboarding/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Onboarding
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../getting-started/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Getting Started
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Alplakes Data Assimilation" class="md-nav__button md-logo" aria-label="Alplakes Data Assimilation" data-md-component="logo">
+      
+  <img src="../assets/logo.png" alt="logo">
+
+    </a>
+    Alplakes Data Assimilation
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project-proposal/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project Proposal
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../literature-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Literature Review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../onboarding/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Onboarding
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-d-hydrodynamic-modelling-with-data-assimilation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1-D Hydrodynamic Modelling with Data Assimilation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3d-examples-and-forcing-perturbation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3D Examples and Forcing Perturbation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assimilation-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assimilation Strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#extension-to-3d-models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extension to 3D Models
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ensemble-kalman-filter-concept" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ensemble Kalman Filter: Concept
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="documentation-data-assimilation-module-for-simstrat">Documentation: Data Assimilation Module for Simstrat<a class="headerlink" href="#documentation-data-assimilation-module-for-simstrat" title="Permanent link">&para;</a></h1>
+<h2 id="1-d-hydrodynamic-modelling-with-data-assimilation">1-D Hydrodynamic Modelling with Data Assimilation<a class="headerlink" href="#1-d-hydrodynamic-modelling-with-data-assimilation" title="Permanent link">&para;</a></h2>
+<p>Various examples of 1-D hydrodynamic modelling integrate DA as an essential step, showing the feasibility and multiple advantages of implementing such a module for Simstrat. Kourzeneva (2014) provides an influential example using an extended Kalman filter (EKF)-based method to assimilate lake water surface temperature (LWST) observations into the lake model/parameterisation scheme FLake; the analysed variables are the mean water temperature (T), the bottom temperature (Tb), the mixed layer depth (h) and the shape factor (CT). Thomas et al. (2020) developed and tested a near-term iterative forecasting system that predicts the physical behaviour (hydrodynamics) of reservoirs while quantifying different sources of uncertainty and including DA as an integral process. It explicitly partitions uncertainty into components such as model structure, parameters, and drivers, giving clearer insight into which factors most influence forecast reliability; the meteorology is identified as a major source of uncertainty. Building on this framework, Wander et al. (2024) follows up by responding to the question: if IC uncertainty isn't the dominant source of uncertainty, how often do you actually need to assimilate? For a 1-day-ahead forecast horizon, daily assimilation was the most skilled, while weekly data assimilation was most skilled at longer horizons (8–35 days).</p>
+<h2 id="3d-examples-and-forcing-perturbation">3D Examples and Forcing Perturbation<a class="headerlink" href="#3d-examples-and-forcing-perturbation" title="Permanent link">&para;</a></h2>
+<p>3D examples are also available in the literature. These are still relevant, on one hand because we have the ambition to eventually extend our module to further models, and on the other hand because they allow us to understand how transferable processes are handled in these examples, such as the essential process of generating perturbations in forecast inputs. Safin et al. (2022) avoid the perturbation problem altogether, driving each particle with a different member of the 21-member COSMO-E NWP ensemble; the ensemble itself represents forcing uncertainty, preserving physical cross-variable correlations without a statistical noise model. Simstrat requires a single station-based forcing time series, so we adopt the Baracchini-style parametric perturbation approach. The forcing uncertainty has three components: station measurement error (small, negligible for MeteoSwiss stations), representativeness error (station vs. lake-mean conditions — the dominant term), and structural error in the flux computation. The spatial reanalysis provides a direct estimate of the representativeness component: averaging reanalysis grid cells over the lake gives a lake-mean time series, and the station-minus-lake-mean residuals sample the representativeness error distribution.</p>
+<p>Perturbation statistics are derived from these residuals. Air temperature is perturbed with additive Gaussian noise using the residual standard deviation directly. Wind speed and shortwave radiation are perturbed with multiplicative lognormal noise using σ(ln). Real-world forcing errors are not random in time: temporal correlation is imposed via an autoregressive AR(1) model to get more physically realistic ensemble members and smoother time series compared to pure white noise. We need to define decorrelation times (hours to a day) which represent the number of timesteps over which memory persists; if it is larger, the memory decays slower and the system becomes more persistent. Noise can be inserted in our ensembles using OpenDA, and to estimate the decorrelation time from station autocorrelation we can use Baracchini et al. (2020) as an example. Cross-variable correlations are assumed negligible for this subset of variables, and spatial correlations are not considered because we use a single mean value from the lake reanalysis.</p>
+<h2 id="assimilation-strategy">Assimilation Strategy<a class="headerlink" href="#assimilation-strategy" title="Permanent link">&para;</a></h2>
+<p>For the MVP we aim to first use a particle-filter-type assimilation process. N ensemble members are propagated forward, each driven by an independently perturbed forcing time series. Perturbations combine multiplicative and additive factors f(t) whose statistics (standard deviation, decorrelation time) are derived from the lake-mean reanalysis minus station residuals. At each observation time, the best-performing particle is identified and its state copied to all other particles, which then continue to forecast with their own independent perturbed forcing sequences. The applied perturbations are logged to diagnose any systematic forcing correction. This simplified update is valid under zero-mean perturbations and short decorrelation times, conditions partly met by our setup. If this setup creates problems we need to resort to a resampling strategy similar to Safin et al. (2022).</p>
+<p>A second implementation replaces the best-particle selection with an ensemble Kalman filter (see below for more details) update: the ensemble cross-covariance is used to compute a corrected state from all members, which is then propagated to the next observation cycle. Assimilation can essentially be applied to model parameters, inputs, forcing, or state — which can also be modified jointly. For our case the Simstrat model is already calibrated for Lake Lugano, so we see little reason to start updating parameters. Updating the forcing instead of the state can provide multiple advantages: physical consistency is ensured, and error attribution is more fitting. On the other hand, state correction is more agnostic about the error source, can better compensate for any kind of model deficiency, and has been shown to produce much more significant improvements compared to updating only parameters and forcing. A negative of the latter could be the generation of shocks in the temperature time series, which however can be limited by frequent assimilation of observations and by keeping the corrections small. Given the scarcity of published EnKF-based forcing correction examples for lakes and oceans, we might need to consider the state as the more standard strategy forward.</p>
+<h2 id="extension-to-3d-models">Extension to 3D Models<a class="headerlink" href="#extension-to-3d-models" title="Permanent link">&para;</a></h2>
+<p>When expanding our module to include 3D models, a couple of considerations are needed. First, there is a need for spatio-temporal forcing perturbation accounting both for spatial and temporal autocorrelation. Second, observation location matters much more: in 3D, an observation at one location primarily constrains the state near that location, and localization becomes essential to avoid spurious correlations and keep computational costs low. Finally, ensemble size becomes a serious constraint — examples in 3D use around 20 ensemble members, while for 1D they use 400 because the computational load is small.</p>
+<h2 id="ensemble-kalman-filter-concept">Ensemble Kalman Filter: Concept<a class="headerlink" href="#ensemble-kalman-filter-concept" title="Permanent link">&para;</a></h2>
+<p>Sequential data assimilation methods (such as the Ensemble Kalman Filter) update the model state each time new observations become available. Instead of explicitly solving equations for the evolution of uncertainty, they approximate it by running an ensemble of model simulations, letting the system dynamics naturally generate error correlations. The forecast error covariance matrix P is estimated from the spread of the ensemble: its diagonal elements represent the variance (uncertainty) of temperature at each depth, while the off-diagonal elements capture how errors at different depths are correlated, reflecting physical processes like vertical mixing or stratification. When assimilating a temperature profile, the ensemble mean provides the best prior (forecast) estimate, and the covariance determines how observational information is propagated through the system. For instance, if only surface temperature is observed, the Kalman gain uses the covariance</p>
+<p>$$K(z) = \frac{P^f(z, z_{\text{surf}})}{P^f(z_{\text{surf}}, z_{\text{surf}}) + R_{\text{surf}}}$$</p>
+<p>to adjust subsurface layers through the analysis update</p>
+<p>$$T^a_j(z) = T^f_j(z) + K(z)\,\bigl(y_{\text{surf}} - T^f_j(z_{\text{surf}})\bigr):$$ depths strongly correlated with the surface are updated more, while weakly correlated layers remain largely unchanged. After updating all ensemble members, the analysis mean represents the posterior temperature profile, optimally combining model and observations, and the updated ensemble spread reflects the remaining uncertainty. However, this approach is computationally expensive because the forecast model must be run for each ensemble member, and small ensemble sizes can lead to sampling errors and an underrepresentation of the true error covariance, degrading assimilation performance. It's not the type of perturbation that matters, but whether the ensemble represents realistic uncertainty in the system. Perturbing forcing (e.g., wind, radiation, precipitation) is popular because it injects variability in a physically meaningful, realistic-error way (errors propagate naturally through dynamics) and it creates flow-dependent errors (correctly correlated errors). So if the ensemble correctly samples the true uncertainty distribution, the method works regardless of how you generated it.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
