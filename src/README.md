@@ -12,32 +12,34 @@ src/
 ├── ensembles.py             # AR(1) ensemble forcing perturbation
 ├── copy_standard_inputs.py  # Populate ensemble dirs with shared inputs
 ├── main_PF.py               # Sequential daily particle filter
-├── main_PF_weekly.py        # Same filter with 7-day windows
-├── analyze_results.py       # Visualise raw ensemble spread, PF trajectories and respective RMSE 
-└── functions/               # Reusable library 
-    └── par.py               # overwrite_par_file_dates() — updates only the start/end timestamps
+├── main_PF_weekly.py        # Same filter with 7-day windows to speed up simulation time and compare
+├── analyze_results.py       # Visualise: raw ensemble spread, PF trajectories and respective RMSE 
+└── functions/               # Reusable 
+    └── par.py               # overwrite_par_file_dates(): updates only the start/end timestamps
 ```
 ---
 
 ## Pipeline overview
 
-The workflow runs in four stages. Steps 1–2 are run once to prepare inputs; steps 3–4 are the operational DA loop.
+The workflow runs in four stages. Steps 1–2 are done once to prepare inputs; steps 3–4 are the operational DA loop.
 
 ```
-Stage 1 — Input preparation
+**Stage 1** — Input preparation
   
-  Download from Alplakes, Datalakes process and store in /data: for 2025 download T observations from Castagnola buoy, Gandria measurments. Meteorological station values from LUG station. upperlugano inputs for Simstrat.
+  Download data: 
+  
+  Source it from Alplakes, Datalakes, then process and ultimately store in /data directory. In our example we use the temperature observations from the Castagnola buoy (and Gandria sampling only for comparison) as observations. For meteorological station values we take the ones from the closest station, namely the LUG station. Upperlugano inputs for Simstrat are prepackaged and downloaded from Alplakes.
 
-Stage 2 — Ensemble generation and input copying
+**Stage 2** — Ensemble generation and input copying
   
   ensembles.py             Fit AR(1) to obs–reanalysis residuals → 20 perturbed Forcing.dat files
   copy_standard_inputs.py  Copy all non-forcing inputs into ensemble0–20/
 
-Stage 3 — Simulation + assimilation  ((main.py) / main_PF.py / main_PF_weekly.py)
+**Stage 3** — Simulation + assimilation  ((main.py) / main_PF.py / main_PF_weekly.py)
   
   Free ensemble runs 
   
-  or
+  and/or
 
   Daily (or weekly) loop:
     1. Run 21 Docker containers (ensemble0–20) in parallel for the window
@@ -45,10 +47,12 @@ Stage 3 — Simulation + assimilation  ((main.py) / main_PF.py / main_PF_weekly.
     3. Copy best member's snapshot to all others  ← particle filter step
     4. Accumulate trajectories (best, mean, persist)
 
-Stage 4 — Analysis
+**Stage 4** — Analysis
+  
   analyze_results.py    
   
   Three figures:
+
     Fig 1 — Temperature fan (ensemble spread) at 6 depths vs Castagnola and Gandria obs,
             overlaid with ensemble0 control, daily best (hindsight), ensemble mean, persistence
     Fig 2 — Stacked RMSE bar chart per member ranked by total RMSE, highlighting
@@ -63,12 +67,13 @@ Stage 4 — Analysis
 
 ### Prerequisites
 
-- Docker Desktop running (`eawag/simstrat:3.0.4` image available)
+- Docker daemon running (`eawag/simstrat:3.0.4` image available)
 - Python dependencies: `numpy pandas matplotlib scipy netCDF4 pylake statsmodels tqdm`
 
 ### Step 1 — Prepare standard inputs
-Use alplakes and datalakes and manually provide
-Will be automized in the future
+Use alplakes and datalakes and manually provide.
+
+Will be automized in the future.
 
 ### Step 2 — Generate ensemble forcing
 
@@ -98,7 +103,7 @@ Key constants at the top of each file:
 | `N_MEMBERS` | Number of perturbed ensemble members (default 20) |
 | `PF_RESULTS` | Output subdirectory inside each ensemble dir (default `Results_PF`) |
 
-Set `reset=True` on the first run to clear any stale snapshots and trajectory files.
+Set `reset=True` on the first run to clear any stale snapshots and trajectory files prior to running a new assimilation.
 
 ### Step 4 — Analyse results
 
