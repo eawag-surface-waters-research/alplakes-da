@@ -23,7 +23,7 @@ src/
 
 The workflow runs in four stages. Steps 1–2 are done once to prepare inputs; steps 3–4 are the operational DA loop.
 
-```
+
 **Stage 1** — Input preparation
   
   Download data: 
@@ -61,7 +61,7 @@ The workflow runs in four stages. Steps 1–2 are done once to prepare inputs; s
             ensemble0 and best perturbed member
     Fig 3 — RMSE comparison across trajectory types (standard, weekly/daily best,
             ensemble mean, persistence) with % gain relative to ensemble0
-```
+
 
 ---
 
