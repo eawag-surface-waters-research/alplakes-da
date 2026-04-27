@@ -35,6 +35,7 @@ The workflow runs in four stages. Steps 1–2 are done once to prepare inputs; s
 **Stage 2** — Ensemble generation and input copying
   
   ensembles.py             Fit AR(1) to obs–reanalysis residuals → 20 perturbed Forcing.dat files
+  
   copy_standard_inputs.py  Copy all non-forcing inputs into ensemble0–20/
 
 **Stage 3** — Simulation + assimilation  ((main.py) / main_PF.py / main_PF_weekly.py)
