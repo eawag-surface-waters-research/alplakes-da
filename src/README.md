@@ -92,6 +92,8 @@ python src/copy_standard_inputs.py
 
 Outputs: `assimilation/upperlugano/ensemble{0..20}/Forcing.dat` + other unchanged files.
 
+![Ensemble forcing perturbations](../images/ensemble.png)
+
 ### Step 3 — Run the particle filter
 
 ```bash
@@ -115,6 +117,9 @@ Set `reset=True` on the first run to clear any stale snapshots and trajectory fi
 ```bash
 python src/analyze_results.py  
 ```
+
+![Analysis results](../images/analysis.png)
+
 ---
 
 ## How snapshots pass state between windows

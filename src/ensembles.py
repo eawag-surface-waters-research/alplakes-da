@@ -204,8 +204,8 @@ for row, name in enumerate(VARIABLES):
     # Does theoretical autocorrelation function (ACF) follow empirical ACF?
     # --- ACF: observed residual vs AR(1) theoretical ---
     ax_acf = fig.add_subplot(gs[row, 0])
-    plot_acf(resid, lags=24, ax=ax_acf, alpha=0.05, color="steelblue", label="observed")
-    lags_th = np.arange(25)
+    plot_acf(resid, lags=48, ax=ax_acf, alpha=0.05, color="steelblue", label="observed")
+    lags_th = np.arange(49)
     ax_acf.plot(lags_th, phi**lags_th, "r--", lw=1.5, label=f"AR(1) φ={phi:.2f}") # theoretical ACF curve based on phi
     ax_acf.set_title(f"{name} — residual ACF")
     ax_acf.set_xlabel("lag (steps)")
@@ -214,7 +214,7 @@ for row, name in enumerate(VARIABLES):
     # Question: are my residuals Gaussian?
     # --- Residual histogram with fitted Gaussian ---
     ax_hist = fig.add_subplot(gs[row, 1])
-    rc = resid - resid.mean()
+    rc = resid #- resid.mean()
     ax_hist.hist(rc, bins=40, density=True, color="steelblue", alpha=0.6, label="residuals") # empirical histogramm
     x = np.linspace(rc.min(), rc.max(), 300) # smooth curve x values
     ax_hist.plot(x, 1/(resid.std() * np.sqrt(2*np.pi)) * np.exp(-0.5*(x/resid.std())**2),
@@ -240,6 +240,6 @@ for row, name in enumerate(VARIABLES):
     ax_fan.set_ylabel(unit)
     ax_fan.legend(fontsize=8)
 
-plt.suptitle("Noise model diagnostics (no zero-mean centering)", fontsize=14, y=1.01)
+#plt.suptitle("Noise model diagnostics (no zero-mean centering)", fontsize=14, y=1.01)
 plt.show()
 
