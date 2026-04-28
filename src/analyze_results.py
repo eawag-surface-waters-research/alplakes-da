@@ -64,6 +64,15 @@ for i in range(1, N_MEMBERS + 1):
         continue
     members.append(load_T(d))
 
+PF_RESULTS = "Results_PF"
+members_pf = []
+for i in range(1, N_MEMBERS + 1):
+    path = os.path.join(ENSEMBLE_BASE, f"ensemble{i}", PF_RESULTS, "T_out_full.dat")
+    df = load_traj(path)
+    if df is not None:
+        members_pf.append(df)
+print(f"Loaded {len(members_pf)} PF full trajectories")
+
 print(f"Loaded {len(members)} ensemble members")
 
 common_index = members[0].index
@@ -74,6 +83,8 @@ if ensemble0 is not None:
     ensemble0 = ensemble0.loc[ensemble0.index.intersection(common_index)]
 
 time = common_index
+
+############## Plot 1 ###################################################################
 
 fig, axes = plt.subplots(len(DEPTHS), 1, figsize=(14, 4 * len(DEPTHS)), sharex=True)
 fig.suptitle("Temperature ensemble spread — Upper Lugano", fontsize=13)
@@ -100,6 +111,10 @@ for ax, target_depth in zip(axes, DEPTHS):
     for j, m in enumerate(members):
         ax.plot(time, m[col].values, color="lightblue", lw=0.5, alpha=0.6,
                 label="members" if j == 0 else None)
+    for j, m in enumerate(members_pf):
+        pf_col = nearest_depth_col(m, target_depth)
+        ax.plot(m.index, m[pf_col].values, color="orange", lw=0.5, alpha=0.4,
+                label="PF members" if j == 0 else None)
     ax.plot(time, p50, color="steelblue", lw=1.5, label="median")
     if ensemble0 is not None:
         e0_col = nearest_depth_col(ensemble0, target_depth)
@@ -124,15 +139,17 @@ fig.autofmt_xdate()
 #plt.tight_layout()
 plt.show()
 
+#########################################################################################
 
+############## Plot 2 ###################################################################
 def compute_rmse_by_depth(member_df, obs_df, obs_depths_arr):
     rmses = []
     for d in obs_depths_arr:
-        col = nearest_depth_col(member_df, -d)
+        col = nearest_depth_col(member_df, -d) # Find corresponding model column, model depths are negative
         obs_sub = (obs_df[obs_df["depth"] == d]
                    .set_index("time")["value"]
                    .rename("obs"))
-        merged = member_df[[col]].join(obs_sub, how="inner")
+        merged = member_df[[col]].join(obs_sub, how="inner") # merge model and obs
         if len(merged) == 0:
             rmses.append(np.nan)
         else:
@@ -191,8 +208,11 @@ ax2.grid(True, axis="y", alpha=0.3)
 plt.tight_layout(rect=[0, 0, 0.82, 1])
 plt.show()
 
+#########################################################################################
 
-# --- Comparison bar: stacked RMSE by depth + % gain label ---
+############## Plot 3 ###################################################################
+# Step 1 — Compute RMSE per trajectory
+# --- Comparison bar: stacked RMSE by depth for trajectories + % gain label ---
 best_traj_rmses = compute_rmse_by_depth(best_traj, obs, obs_depths) if best_traj is not None else None
 ens_traj_rmses  = compute_rmse_by_depth(ens_traj,  obs, obs_depths) if ens_traj  is not None else None
 persist_rmses   = compute_rmse_by_depth(persist_traj, obs, obs_depths) if persist_traj is not None else None
@@ -205,6 +225,7 @@ best_traj_w_rmses    = compute_rmse_by_depth(best_traj_w,    obs, obs_depths) if
 ens_traj_w_rmses     = compute_rmse_by_depth(ens_traj_w,     obs, obs_depths) if ens_traj_w     is not None else None
 persist_traj_w_rmses = compute_rmse_by_depth(persist_traj_w, obs, obs_depths) if persist_traj_w is not None else None
 
+# Step 2 — Build comparison entries (label, rmse_by_depth, total_rmse, edge_color)
 # (label, by_depth_rmses, total, edge_color) — standard leftmost, weekly before daily
 comp_entries = []
 if e0_rmses_by_depth is not None:
@@ -223,19 +244,23 @@ if best_traj_rmses is not None:
 if persist_rmses is not None:
     comp_entries.append(("daily\npersistence",     persist_rmses,                   np.nansum(persist_rmses),       "seagreen"))
 
+# All improvements are measured relative to
 ref_total = e0_total if e0_total is not None else best_member_rmse
 
+# Step 3 — Plot
 fig3, ax3 = plt.subplots(figsize=(11, 5))
-comp_x = np.arange(len(comp_entries))
+comp_x = np.arange(len(comp_entries)) # one bar per method
 comp_bottoms = np.zeros(len(comp_entries))
-for d_idx, d in enumerate(obs_depths):
+# stacked bars (depth-wise)
+for d_idx, d in enumerate(obs_depths): 
     vals = [e[1][d_idx] if not np.isnan(e[1][d_idx]) else 0 for e in comp_entries]
     ax3.bar(comp_x, vals, bottom=comp_bottoms, color=depth_cmap[d_idx], width=0.5, label=f"{d:.0f} m")
     comp_bottoms += np.array(vals)
 
+# Draw outlines + labels
 for xi, (lbl, _, total, edgecolor) in enumerate(comp_entries):
     ax3.bar(xi, total, bottom=0, color="none", edgecolor=edgecolor, lw=2, width=0.5)
-    gain = (total - ref_total) / ref_total * 100
+    gain = (total - ref_total) / ref_total * 100 # % improvement
     is_ref = xi == 0 and e0_rmses_by_depth is not None
     label_str = f"{total:.3f}°C" if is_ref else f"{total:.3f}°C\n{gain:.1f}%"
     ax3.text(xi, total + 0.01 * ref_total, label_str,
@@ -249,3 +274,4 @@ ax3.legend(fontsize=8, loc="upper left", bbox_to_anchor=(1.01, 1), borderaxespad
 ax3.grid(True, axis="y", alpha=0.3)
 #plt.tight_layout(rect=[0, 0, 0.82, 1])
 plt.show()
+#########################################################################################

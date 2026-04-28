@@ -65,7 +65,7 @@ print(df.head())
 
 N_MEMBERS = 20
 RNG_SEED = 42
-SIGMA_SCALE = 1.0 # increase if needed
+SIGMA_SCALE = 2.0 # increase if needed
 
 VARIABLES = {
     # "T":    ("dT",    "T_obs",    False),
@@ -74,24 +74,28 @@ VARIABLES = {
     "GLOB": ("dGLOB", "GLOB_obs", True), # clipping!! true for radiation
 }
 
+# Fit AR(1) model: 
+# Assumes no trends and seasonality
+# estimating ϕ ≈ corr(xt​,xt−1​)
+# computing the innovation variance so that the simulated series has the same variance as the residuals
 def fit_ar1(residuals: pd.Series) -> dict:
     r = residuals.dropna().values
-    # fit AR(1) on raw residuals
+    # fit AR(1) on raw residuals: correlation component
     phi = float(np.corrcoef(r[:-1], r[1:])[0, 1])
-    # innovation noise scale
+    # innovation noise scale: noise component
     sigma = float(r.std() * np.sqrt(max(1 - phi**2, 0)))
     return {"phi": phi, "sigma": sigma}
 
 
 # ensemble members and time steps
 def simulate_ar1(phi: float, sigma: float, n: int, n_members: int, rng: np.random.Generator) -> np.ndarray:
-    innovations = rng.standard_normal((n, n_members)) * sigma
+    innovations = rng.standard_normal((n, n_members)) * sigma # noise component
     out = np.zeros((n, n_members))
     for t in range(1, n):
         out[t] = phi * out[t - 1] + innovations[t]
     return out
 
-
+# One model for each variable
 models = {}
 for name, (delta_col, _, _) in VARIABLES.items():
     models[name] = fit_ar1(df[delta_col])
@@ -108,7 +112,7 @@ for name, (_, obs_col, clip_zero) in VARIABLES.items():
     m = models[name]
     pert = simulate_ar1(m["phi"], m["sigma"] * SIGMA_SCALE, n, N_MEMBERS, rng)
     obs_vals = df[obs_col].values[:, None]
-    if clip_zero:
+    if clip_zero: # Special case: radiation (GLOB)
         pert[obs_vals[:, 0] == 0] = 0.0
     ensemble = obs_vals + pert
     if clip_zero:
@@ -122,7 +126,7 @@ for name, arr in perturbed.items():
 # ----------------------------
 # Save ensemble Forcing.dat files
 # ----------------------------
-
+# replacing perturbations!
 t0 = pd.Timestamp("1981-01-01", tz="UTC").tz_localize(None)
 df["time_days"] = (df["time"].dt.tz_convert("UTC").dt.tz_localize(None) - t0) / pd.Timedelta("1D") + 1
 
