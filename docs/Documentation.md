@@ -29,3 +29,26 @@ $$K(z) = \frac{P^f(z, z_{\text{surf}})}{P^f(z_{\text{surf}}, z_{\text{surf}}) + 
 to adjust subsurface layers through the analysis update
 
 $$T^a_j(z) = T^f_j(z) + K(z)\,\bigl(y_{\text{surf}} - T^f_j(z_{\text{surf}})\bigr):$$ depths strongly correlated with the surface are updated more, while weakly correlated layers remain largely unchanged. After updating all ensemble members, the analysis mean represents the posterior temperature profile, optimally combining model and observations, and the updated ensemble spread reflects the remaining uncertainty. However, this approach is computationally expensive because the forecast model must be run for each ensemble member, and small ensemble sizes can lead to sampling errors and an underrepresentation of the true error covariance, degrading assimilation performance. It's not the type of perturbation that matters, but whether the ensemble represents realistic uncertainty in the system. Perturbing forcing (e.g., wind, radiation, precipitation) is popular because it injects variability in a physically meaningful, realistic-error way (errors propagate naturally through dynamics) and it creates flow-dependent errors (correctly correlated errors). So if the ensemble correctly samples the true uncertainty distribution, the method works regardless of how you generated it.
+
+**References**
+
+Baracchini, T., Chu, P. Y., ˇSukys, J., Lieberherr, G., Wunderle, S., W¨uest, A., and Bouffard, D.
+(2020). Data assimilation of in situ and satellite remote sensing data to 3d hydrodynamic lake
+models: a case study using delft3d-flow v4. 03 and openda v2. 4. Geoscientific Model Development,
+13(3):1267–1284.
+
+Kourzeneva, E. (2014). Assimilation of lake water surface temperature observations using an extended
+kalman filter. Tellus A: Dynamic Meteorology and Oceanography, 66(1):21510.
+
+Safin, A., Bouffard, D., Ozdemir, F., Ramon, C. L., Runnalls, J., Georgatos, F., Minaudo, C., and
+ˇSukys, J. (2022). A bayesian data assimilation framework for lake 3d hydrodynamic models with a
+physics-preserving particle filtering method using spux-mitgcm v1. Geoscientific Model Development,
+15(20):7715–7730.
+
+Thomas, R. Q., Figueiredo, R. J., Daneshmand, V., Bookout, B. J., Puckett, L. K., and Carey, C. C.
+(2020). A near-term iterative forecasting system successfully predicts reservoir hydrodynamics and
+partitions uncertainty in real time. Water Resources Research, 56(11):e2019WR026138.
+
+Wander, H. L., Thomas, R. Q., Moore, T. N., Lofton, M. E., Breef-Pilz, A., and Carey, C. C. (2024).
+Data assimilation experiments inform monitoring needs for near-term ecological forecasts in a eutrophic
+reservoir. Ecosphere, 15(2):e4752.
