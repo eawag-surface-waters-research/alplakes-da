@@ -244,7 +244,7 @@ for xi, (lbl, _, total, edgecolor) in enumerate(comp_entries):
 ax3.set_xticks(comp_x)
 ax3.set_xticklabels([e[0] for e in comp_entries], fontsize=9)
 ax3.set_ylabel("RMSE (°C)")
-ax3.set_title("RMSE comparison: best free member vs. trajectory outputs")
+#ax3.set_title("RMSE comparison: best free member vs. trajectory outputs")
 ax3.legend(fontsize=8, loc="upper left", bbox_to_anchor=(1.01, 1), borderaxespad=0)
 ax3.grid(True, axis="y", alpha=0.3)
 #plt.tight_layout(rect=[0, 0, 0.82, 1])
