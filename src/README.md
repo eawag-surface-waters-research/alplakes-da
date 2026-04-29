@@ -49,13 +49,13 @@ The workflow described here runs in four stages. Steps 1–2 are needed to prepa
 
   Run daily (or weekly) assimilation loop:
 
-    1. Run 21 Docker containers (ensemble0–20) in parallel for the window
+  1. Run 21 Docker containers (ensemble0–20) in parallel for the window
 
-    2. Compute per-member RMSE vs in-situ observations
+  2. Compute per-member RMSE vs in-situ observations
 
-    3. Copy best member's snapshot to all others/resample from the most likely states  ← particle filter step
-    
-    4. Accumulate trajectories potentially useable for reanalysis/forecast mode (best member, ensemble mean, persistence member)
+  3. Copy best member's snapshot to all others/resample from the most likely states  ← particle filter step
+  
+  4. Accumulate trajectories potentially useable for reanalysis/forecast mode (best member, ensemble mean, persistence member)
 
 **Stage 4 — Analysis**
   
