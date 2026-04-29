@@ -60,8 +60,10 @@ The workflow described here runs in four stages. Steps 1–2 are needed to prepa
 
   Fig 1 — Temperature fan (ensemble spread) at 6 depths vs Castagnola and Gandria obs,
           overlaid with ensemble0 control, daily best (hindsight), ensemble mean, persistence
+          
   Fig 2 — Stacked RMSE bar chart per member ranked by total RMSE, highlighting
           ensemble0 and best perturbed member
+          
   Fig 3 — RMSE comparison across trajectory types (standard, weekly/daily best,
           ensemble mean, persistence) with % gain relative to ensemble0
 
