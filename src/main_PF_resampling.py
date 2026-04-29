@@ -45,20 +45,20 @@ ENSEMBLE_BASE     = os.path.join(ROOT, "assimilation", "upperlugano")
 OBS_PATH          = os.path.join(ROOT, "data", "T_obs_castagnola.csv")
 REF_DATE          = pd.Timestamp("1981-01-01", tz="UTC")
 REF_DATE_DT       = datetime(1981, 1, 1, tzinfo=timezone.utc)
-OUTPUT_DIR        = os.path.join(ENSEMBLE_BASE, "results_resampled")
+OUTPUT_DIR        = os.path.join(ENSEMBLE_BASE, "results_resampled2")
 BEST_TRAJ_PATH    = os.path.join(OUTPUT_DIR, "T_out_best.dat")
 MEAN_TRAJ_PATH    = os.path.join(OUTPUT_DIR, "T_out_ens.dat")
 PERSIST_TRAJ_PATH = os.path.join(OUTPUT_DIR, "T_out_persist.dat")
-PF_RESULTS        = "Results_PF_resampled"
-SIGMA_OBS         = 0.5   # observation error std (°C) — controls how sharp the weights are
+PF_RESULTS        = "Results_PF_resampled2"
+SIGMA_OBS         = 0.05   # observation error std (°C) — controls how sharp the weights are
 
 
 # ── Window runner ──────────────────────────────────────────────────────────────
 
 def _init_pf_par(ensemble_dir):
-    """Create Settings_PF_resampled.par — copy of Settings.par with Output.Path = Results_PF_resampled."""
+    """Create Settings_PF_resampled2.par — copy of Settings.par with Output.Path = Results_PF_resampled."""
     src = os.path.join(ensemble_dir, "Settings.par")
-    dst = os.path.join(ensemble_dir, "Settings_PF_resampled.par")
+    dst = os.path.join(ensemble_dir, "Settings_PF_resampled2.par")
     if os.path.exists(dst):
         return
     with open(src) as f:
@@ -85,7 +85,7 @@ def _run_one_window(i, window_start, window_end):
 
     _init_pf_par(ensemble_dir)
     overwrite_par_file_dates(
-        os.path.join(ensemble_dir, "Settings_PF_resampled.par"),
+        os.path.join(ensemble_dir, "Settings_PF_resampled2.par"),
         window_start, window_end, REF_DATE_DT,
     )
 
@@ -93,7 +93,7 @@ def _run_one_window(i, window_start, window_end):
     cmd = (
         f"docker run --rm "
         f"-v {mount}:/simstrat/run "
-        f"eawag/simstrat:{SIMSTRAT_VERSION} Settings_PF_resampled.par"
+        f"eawag/simstrat:{SIMSTRAT_VERSION} Settings_PF_resampled2.par"
     )
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     if result.returncode != 0:
@@ -327,13 +327,14 @@ def run_pf_resampling(start_date, end_date, max_workers=None, reset=False):
 
     if reset:
         for i in range(0, N_MEMBERS + 1):
-            live = os.path.join(ENSEMBLE_BASE, f"ensemble{i}", PF_RESULTS, "simulation-snapshot.dat")
-            if os.path.exists(live):
-                os.remove(live)
+            results_dir = os.path.join(ENSEMBLE_BASE, f"ensemble{i}", PF_RESULTS)
+            if os.path.isdir(results_dir):
+                shutil.rmtree(results_dir)
+            os.makedirs(results_dir, exist_ok=True)
         for p in [BEST_TRAJ_PATH, MEAN_TRAJ_PATH, PERSIST_TRAJ_PATH]:
             if os.path.exists(p):
                 os.remove(p)
-        print(f"Reset: cleared {PF_RESULTS}/ snapshots and trajectory files.\n")
+        print(f"Reset: cleared all {PF_RESULTS}/ directories and trajectory files.\n")
 
     obs        = _load_obs()
     member_ids = list(range(1, N_MEMBERS + 1))

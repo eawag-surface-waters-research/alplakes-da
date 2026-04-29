@@ -65,7 +65,7 @@ print(df.head())
 
 N_MEMBERS = 20
 RNG_SEED = 42
-SIGMA_SCALE = 2.0 # increase if needed
+SIGMA_SCALE = 1.0 # increase if needed
 
 VARIABLES = {
     # "T":    ("dT",    "T_obs",    False),

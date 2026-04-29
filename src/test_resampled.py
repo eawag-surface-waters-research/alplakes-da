@@ -8,10 +8,13 @@ ENSEMBLE_BASE = os.path.join(ROOT, "assimilation", "upperlugano")
 OBS_PATH      = os.path.join(ROOT, "data", "T_obs_castagnola.csv")
 N_MEMBERS     = 20
 REF_DATE      = pd.Timestamp("1981-01-01", tz="UTC")
-PF_RESULTS    = "Results_PF_resampled"
-OUTPUT_DIR    = os.path.join(ENSEMBLE_BASE, "results_resampled")
+PF_RESULTS    = "Results_PF_resampled2"
+OUTPUT_DIR    = os.path.join(ENSEMBLE_BASE, "results_resampled2")
 DEPTHS        = [-1, -5, -9, -15, -19, -40]
+YLIMS         = {-1: (6.5, 30), -5: (6.5, 28), -9: (6.5, 28),
+                 -15: (6.5, 15), -19: (6.5, 15), -40: (6.5, 8.0)}
 SUMMER_MONTHS = None  # set to [6, 7, 8] to filter to summer only
+END_DATE      = pd.Timestamp("2025-12-31", tz="UTC")  # exclusive upper bound
 
 
 def load_traj(path):
@@ -44,24 +47,28 @@ for i in range(1, N_MEMBERS + 1):
     path = os.path.join(ENSEMBLE_BASE, f"ensemble{i}", PF_RESULTS, "T_out_full.dat")
     df = load_traj(path)
     if df is not None:
+        df = df[df.index < END_DATE]
         members.append(summer(df))
 
 print(f"Loaded {len(members)} resampled members")
 if not members:
-    raise FileNotFoundError(f"No T_out_full.dat found under {ENSEMBLE_BASE}/ensemble*/Results_PF_resampled/")
+    raise FileNotFoundError(f"No T_out_full.dat found under {ENSEMBLE_BASE}/ensemble*/Results_PF_resampled2/")
 
 best_traj    = load_traj(os.path.join(OUTPUT_DIR, "T_out_best.dat"))
 ens_traj     = load_traj(os.path.join(OUTPUT_DIR, "T_out_ens.dat"))
 persist_traj = load_traj(os.path.join(OUTPUT_DIR, "T_out_persist.dat"))
+ctrl_traj    = load_traj(os.path.join(ENSEMBLE_BASE, "ensemble0", PF_RESULTS, "T_out_full.dat"))
 
-if best_traj    is not None: best_traj    = summer(best_traj)
-if ens_traj     is not None: ens_traj     = summer(ens_traj)
-if persist_traj is not None: persist_traj = summer(persist_traj)
+if best_traj    is not None: best_traj    = summer(best_traj[best_traj.index < END_DATE])
+if ens_traj     is not None: ens_traj     = summer(ens_traj[ens_traj.index < END_DATE])
+if persist_traj is not None: persist_traj = summer(persist_traj[persist_traj.index < END_DATE])
+if ctrl_traj    is not None: ctrl_traj    = summer(ctrl_traj[ctrl_traj.index < END_DATE])
 
 obs = pd.read_csv(OBS_PATH, parse_dates=["time"])
 obs["time"] = pd.to_datetime(obs["time"], utc=True)
 if SUMMER_MONTHS is not None:
     obs = obs[obs["time"].dt.month.isin(SUMMER_MONTHS)]
+obs = obs[obs["time"] < END_DATE]
 obs = (obs.groupby(["depth", pd.Grouper(key="time", freq="1h")])["value"]
           .mean().reset_index())
 obs_depths = np.sort(obs["depth"].unique())
@@ -96,6 +103,7 @@ for ax, target_depth in zip(axes, DEPTHS):
         (ens_traj,     "darkorange", "-",  "ens mean"),
         (best_traj,    "crimson",    "--", "best (hindsight)"),
         (persist_traj, "seagreen",   "--", "persistence"),
+        (ctrl_traj,    "steelblue",  "-",  "ensemble0 (control)"),
     ]:
         if traj is not None:
             tc = nearest_col(traj, target_depth)
@@ -108,7 +116,7 @@ for ax, target_depth in zip(axes, DEPTHS):
                zorder=8, label=f"obs ({nearest_obs_depth:.1f} m)")
 
     ax.set_xlim(x_min, x_max)
-    ax.set_ylim(6.8, 8.5)
+    ax.set_ylim(*YLIMS[target_depth])
     ax.set_ylabel("T (°C)")
     ax.set_title(f"{actual_depth:.0f} m depth")
     ax.legend(fontsize=8, loc="upper right")

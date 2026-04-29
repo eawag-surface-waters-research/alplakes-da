@@ -171,7 +171,7 @@ sorted_labels = [labels[i] for i in order]
 sorted_by_depth = [all_by_depth[i] for i in order]
 is_e0 = [labels[i] == "e0" for i in order]
 
-depth_cmap = plt.cm.viridis(np.linspace(0.1, 0.9, len(obs_depths)))
+depth_cmap = plt.cm.viridis(np.linspace(0.9, 0.1, len(obs_depths)))
 x = np.arange(len(sorted_labels))
 
 fig2, ax2 = plt.subplots(figsize=(11, 4))
@@ -225,6 +225,22 @@ best_traj_w_rmses    = compute_rmse_by_depth(best_traj_w,    obs, obs_depths) if
 ens_traj_w_rmses     = compute_rmse_by_depth(ens_traj_w,     obs, obs_depths) if ens_traj_w     is not None else None
 persist_traj_w_rmses = compute_rmse_by_depth(persist_traj_w, obs, obs_depths) if persist_traj_w is not None else None
 
+RESAMPLED_DIR        = os.path.join(ENSEMBLE_BASE, "results_resampled")
+best_traj_r          = load_traj(os.path.join(RESAMPLED_DIR, "T_out_best.dat"))
+ens_traj_r           = load_traj(os.path.join(RESAMPLED_DIR, "T_out_ens.dat"))
+persist_traj_r       = load_traj(os.path.join(RESAMPLED_DIR, "T_out_persist.dat"))
+best_traj_r_rmses    = compute_rmse_by_depth(best_traj_r,    obs, obs_depths) if best_traj_r    is not None else None
+ens_traj_r_rmses     = compute_rmse_by_depth(ens_traj_r,     obs, obs_depths) if ens_traj_r     is not None else None
+persist_traj_r_rmses = compute_rmse_by_depth(persist_traj_r, obs, obs_depths) if persist_traj_r is not None else None
+
+RESAMPLED2_DIR        = os.path.join(ENSEMBLE_BASE, "results_resampled2")
+best_traj_r2          = load_traj(os.path.join(RESAMPLED2_DIR, "T_out_best.dat"))
+ens_traj_r2           = load_traj(os.path.join(RESAMPLED2_DIR, "T_out_ens.dat"))
+persist_traj_r2       = load_traj(os.path.join(RESAMPLED2_DIR, "T_out_persist.dat"))
+best_traj_r2_rmses    = compute_rmse_by_depth(best_traj_r2,    obs, obs_depths) if best_traj_r2    is not None else None
+ens_traj_r2_rmses     = compute_rmse_by_depth(ens_traj_r2,     obs, obs_depths) if ens_traj_r2     is not None else None
+persist_traj_r2_rmses = compute_rmse_by_depth(persist_traj_r2, obs, obs_depths) if persist_traj_r2 is not None else None
+
 # Step 2 — Build comparison entries (label, rmse_by_depth, total_rmse, edge_color)
 # (label, by_depth_rmses, total, edge_color) — standard leftmost, weekly before daily
 comp_entries = []
@@ -236,26 +252,46 @@ if ens_traj_w_rmses is not None:
 if best_traj_w_rmses is not None:
     comp_entries.append(("weekly\nbest",           best_traj_w_rmses,               np.nansum(best_traj_w_rmses),   "crimson"))
 if persist_traj_w_rmses is not None:
-    comp_entries.append(("weekly\npersistence",    persist_traj_w_rmses,            np.nansum(persist_traj_w_rmses),"seagreen"))
+    comp_entries.append(("weekly\npers.",    persist_traj_w_rmses,            np.nansum(persist_traj_w_rmses),"seagreen"))
 if ens_traj_rmses is not None:
     comp_entries.append(("daily\nens. mean",       ens_traj_rmses,                  np.nansum(ens_traj_rmses),      "darkorange"))
 if best_traj_rmses is not None:
     comp_entries.append(("daily\nbest",            best_traj_rmses,                 np.nansum(best_traj_rmses),     "crimson"))
 if persist_rmses is not None:
-    comp_entries.append(("daily\npersistence",     persist_rmses,                   np.nansum(persist_rmses),       "seagreen"))
+    comp_entries.append(("daily\npers.",     persist_rmses,                   np.nansum(persist_rmses),       "seagreen"))
+if ens_traj_r2_rmses is not None:
+    comp_entries.append(("PF res.\nstd. ens. mean",   ens_traj_r2_rmses,                np.nansum(ens_traj_r2_rmses),    "darkorange"))
+if best_traj_r2_rmses is not None:
+    comp_entries.append(("PF res\nstd best",        best_traj_r2_rmses,               np.nansum(best_traj_r2_rmses),   "crimson"))
+if persist_traj_r2_rmses is not None:
+    comp_entries.append(("PF res.\nstd pers.",    persist_traj_r2_rmses,            np.nansum(persist_traj_r2_rmses),"seagreen"))
+if ens_traj_r_rmses is not None:
+    comp_entries.append(("PF res.\n2x noise mean",   ens_traj_r_rmses,                np.nansum(ens_traj_r_rmses),    "darkorange"))
+if best_traj_r_rmses is not None:
+    comp_entries.append(("PF res\n2x noise best",        best_traj_r_rmses,               np.nansum(best_traj_r_rmses),   "crimson"))
+if persist_traj_r_rmses is not None:
+    comp_entries.append(("PF res\n2x noise pers.",    persist_traj_r_rmses,            np.nansum(persist_traj_r_rmses),"seagreen"))
 
 # All improvements are measured relative to
 ref_total = e0_total if e0_total is not None else best_member_rmse
 
+comp_entries.sort(key=lambda e: e[2], reverse=True)
+
 # Step 3 — Plot
-fig3, ax3 = plt.subplots(figsize=(11, 5))
+fig3, ax3 = plt.subplots(figsize=(20, 8))
 comp_x = np.arange(len(comp_entries)) # one bar per method
 comp_bottoms = np.zeros(len(comp_entries))
-# stacked bars (depth-wise)
-for d_idx, d in enumerate(obs_depths): 
-    vals = [e[1][d_idx] if not np.isnan(e[1][d_idx]) else 0 for e in comp_entries]
+# stacked bars (depth-wise) — deepest first so 40m sits at bottom, 1m at top
+segment_tops = {}
+for d_idx, d in reversed(list(enumerate(obs_depths))):
+    vals = np.array([e[1][d_idx] if not np.isnan(e[1][d_idx]) else 0 for e in comp_entries])
     ax3.bar(comp_x, vals, bottom=comp_bottoms, color=depth_cmap[d_idx], width=0.5, label=f"{d:.0f} m")
-    comp_bottoms += np.array(vals)
+    comp_bottoms += vals
+    segment_tops[d_idx] = comp_bottoms.copy()
+
+# Connect tops of each depth segment across bars
+for d_idx in range(len(obs_depths)):
+    ax3.plot(comp_x, segment_tops[d_idx], color=depth_cmap[d_idx], lw=1.2, alpha=0.7, zorder=5)
 
 # Draw outlines + labels
 for xi, (lbl, _, total, edgecolor) in enumerate(comp_entries):
@@ -266,11 +302,32 @@ for xi, (lbl, _, total, edgecolor) in enumerate(comp_entries):
     ax3.text(xi, total + 0.01 * ref_total, label_str,
              ha="center", va="bottom", fontsize=8)
 
+# Per-depth RMSE labels beside e0 and best_traj stacked bars
+e0_xi   = next((xi for xi, e in enumerate(comp_entries) if e[1] is e0_rmses_by_depth), None)
+best_xi = next((xi for xi, e in enumerate(comp_entries) if e[1] is best_traj_rmses),   None)
+
+def _annotate_components(ax, rmses, xi, side):
+    prev = 0.0
+    for d_idx in range(len(obs_depths) - 1, -1, -1):  # deepest first (stacking order)
+        top = segment_tops[d_idx][xi]
+        mid = (prev + top) / 2
+        val = rmses[d_idx] if not np.isnan(rmses[d_idx]) else 0
+        x_text = xi - 0.28 if side == "left" else xi + 0.28
+        ax.text(x_text, mid, f"{val:.3f}", ha="right" if side == "left" else "left",
+                va="center", fontsize=7, color="dimgrey")
+        prev = top
+
+if e0_xi is not None and e0_rmses_by_depth is not None:
+    _annotate_components(ax3, e0_rmses_by_depth, e0_xi, "left")
+if best_xi is not None and best_traj_rmses is not None:
+    _annotate_components(ax3, best_traj_rmses, best_xi, "right")
+
 ax3.set_xticks(comp_x)
 ax3.set_xticklabels([e[0] for e in comp_entries], fontsize=9)
 ax3.set_ylabel("RMSE (°C)")
 #ax3.set_title("RMSE comparison: best free member vs. trajectory outputs")
-ax3.legend(fontsize=8, loc="upper left", bbox_to_anchor=(1.01, 1), borderaxespad=0)
+handles, labels = ax3.get_legend_handles_labels()
+ax3.legend(handles[::-1], labels[::-1], fontsize=8, loc="upper left", bbox_to_anchor=(1.01, 1), borderaxespad=0)
 ax3.grid(True, axis="y", alpha=0.3)
 #plt.tight_layout(rect=[0, 0, 0.82, 1])
 plt.show()
