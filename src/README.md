@@ -1,6 +1,6 @@
 # src — Data Assimilation Pipeline 27.04.2026
 
-Ensemble-based lake temperature data assimilation driven by the [Simstrat](https://www.eawag.ch) 1-D hydrodynamic model.
+Ensemble-based lake temperature data assimilation driven by the [Simstrat](https://github.com/Eawag-AppliedSystemAnalysis/Simstrat) 1-D hydrodynamic model.
 
 ---
 
@@ -40,7 +40,7 @@ The workflow runs in four stages. Steps 1–2 are done once to prepare inputs; s
 
 **Stage 3 — Simulation + assimilation**  
 
-  main.py / main_PF.py / main_PF_weekly.py
+  main.py / main_PF.py / main_PF_weekly.py / main_PF_resampled
   
   Free ensemble runs 
   
@@ -87,8 +87,8 @@ python src/ensembles.py
 python src/copy_standard_inputs.py
 ```
 `ensembles.py` expects:
-- `data/obs_2025.csv` — observed hourly meteorology (time, wind speed/dir, T, radiation, RH, precip)
-- `data/lake_mean_ICON_2025.csv` — ICON reanalysis (average over the lake) for the same period
+- `data/obs_2025.csv` — observed hourly meteorology (time, wind speed/dir, T, radiation, RH, precip, vapour pressure, cloud cover)
+- `data/lake_mean_ICON_2025.csv` — ICON reanalysis (average over the lake) for the same period for the variables to perturb
 
 Outputs: `assimilation/upperlugano/ensemble{0..20}/Forcing.dat` + other unchanged files.
 
@@ -97,8 +97,9 @@ Outputs: `assimilation/upperlugano/ensemble{0..20}/Forcing.dat` + other unchange
 ### Step 3 — Run the particle filter
 
 ```bash
-python src/main_PF.py          # daily windows
-python src/main_PF_weekly.py   # 7-day windows
+python src/main_PF.py             # daily windows
+python src/main_PF_weekly.py      # 7-day windows
+python src/main_PF_resampling.py  # daily updates + resampling of likely particles
 ```
 
 Key constants at the top of each file:
@@ -128,7 +129,7 @@ Simstrat writes `Results_PF/simulation-snapshot.dat` at the end of every run. Be
 
 1. `*_out.dat` files are deleted; the snapshot is left in place.
 2. Simstrat detects the snapshot and restarts from it automatically.
-3. After the RMSE evaluation, `_copy_best_to_all()` overwrites every member's snapshot with the best member's — this is the particle filter resampling step.
+3. After the RMSE evaluation, `_copy_best_to_all()` overwrites every member's snapshot with the best member's or a resampled likely state — this is the particle filter resampling step.
 
 On the very first window, a pre-generated dated snapshot (`simulation-snapshot_YYYYMMDD.dat` in the ensemble root) is used as the bootstrap state. Note that this was generated using a standard Simstrat run from 1981 up until 31.12.2024.
 
