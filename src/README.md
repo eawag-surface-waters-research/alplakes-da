@@ -1,4 +1,4 @@
-# src — Data Assimilation Pipeline 27.04.2026
+# src — Data Assimilation Pipeline
 
 Ensemble-based lake temperature data assimilation driven by the [Simstrat](https://github.com/Eawag-AppliedSystemAnalysis/Simstrat) 1-D hydrodynamic model.
 
