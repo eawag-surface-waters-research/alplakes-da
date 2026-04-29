@@ -31,42 +31,42 @@ The workflow described here runs in four stages. Steps 1–2 are needed to prepa
   
   Source it from Alplakes, Datalakes, then process and ultimately store in /data directory. 
   In our example we use the temperature observations from the Castagnola buoy (and Gandria sampling only for comparison) as observations.
-  For meteorological station values we take the ones from the closest station, namely the LUG station.upperlugano inputs for Simstrat are prepackaged and downloaded from Alplakes.
+  For meteorological station values we take the ones from the closest station, namely the LUG station. "Upperlugano" inputs for Simstrat are prepackaged and downloaded from Alplakes.
 
 **Stage 2 — Ensemble generation and input copying**
   
-  ensembles.py             Fit AR(1) to obs–reanalysis residuals → 20 perturbed Forcing.dat files
+  ensembles.py                        → Fit AR(1) to obs–reanalysis residuals → 20 perturbed Forcing.dat files
   
-  copy_standard_inputs.py  Copy all non-forcing inputs into ensemble0–20/
+  copy_standard_inputs.py             → Copy all non-forcing inputs into ensemble0–20/
 
 **Stage 3 — Simulation + assimilation**  
 
   main.py / main_PF.py / main_PF_weekly.py / main_PF_resampled
   
-  Free ensemble runs 
+  Generate free ensemble runs 
   
   and/or
 
-  Daily (or weekly) loop:
+  Run daily (or weekly) assimilation loop:
     1. Run 21 Docker containers (ensemble0–20) in parallel for the window
     2. Compute per-member RMSE vs in-situ observations
-    3. Copy best member's snapshot to all others  ← particle filter step
-    4. Accumulate trajectories (best, mean, persist)
+    3. Copy best member's snapshot to all others/resample from the most likely states  ← particle filter step
+    4. Accumulate trajectories potentially useable for reanalysis/forecast mode (best member, ensemble mean, persistence member)
 
 **Stage 4 — Analysis**
   
   analyze_results.py    
   
-  Three figures:
+  Three figures currently generated:
 
   Fig 1 — Temperature fan (ensemble spread) at 6 depths vs Castagnola and Gandria obs,
-          overlaid with ensemble0 control, daily best (hindsight), ensemble mean, persistence
+          overlaid with ensemble0 control, daily best (hindsight), ensemble mean, and persistence
           
   Fig 2 — Stacked RMSE bar chart per member ranked by total RMSE, highlighting
-          ensemble0 and best perturbed member
+          ensemble0 and best perturbed member. Used to have a look at the free ensemble predicions.
 
   Fig 3 — RMSE comparison across trajectory types (standard, weekly/daily best,
-          ensemble mean, persistence) with % gain relative to ensemble0
+          ensemble mean, persistence) with % gain relative to ensemble0 → This is the final product to asses the performance
 
 
 ---
@@ -79,9 +79,10 @@ The workflow described here runs in four stages. Steps 1–2 are needed to prepa
 - Python dependencies: `numpy pandas matplotlib scipy netCDF4 pylake statsmodels tqdm`
 
 ### Step 1 — Prepare standard inputs
-Use alplakes and datalakes and manually provide.
 
-Will be automated in the future.
+Use [Alplakes](https://www.alplakes.eawag.ch/downloads) and [Datalakes](https://www.datalakes-eawag.ch/data) and manually provide.
+
+Data retrieval will be automated in future iterations.
 
 ### Step 2 — Generate ensemble forcing and copying inputs
 
@@ -124,7 +125,7 @@ python src/analyze_results.py
 
 ![Analysis results](../images/analysis_new.png)
 
-The image shows the improvements against Castagnola observations during 2025 with different methods of assimilation of the buoy measurments based on the particle filter theory.
+The image shows the improvements against Castagnola observations during 2025 with different methods of assimilation of the buoy measurments based on the particle filter theory. Right now the best performing method is a simple selection of the best performing state at each window iteration with general improvements over the full temperature profile of up to ~30%,
 
 ---
 
