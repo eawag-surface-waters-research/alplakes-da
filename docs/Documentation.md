@@ -12,15 +12,27 @@ Perturbation statistics are derived from these residuals. Air temperature is per
 
 ## Assimilation Strategy
 
-For the MVP we aim to first use a particle-filter-type assimilation process. N ensemble members are propagated forward, each driven by an independently perturbed forcing time series. Perturbations combine multiplicative and additive factors f(t) whose statistics (standard deviation, decorrelation time) are derived from the lake-mean reanalysis minus station residuals. At each observation time, the best-performing particle is identified and its state copied to all other particles, which then continue to forecast with their own independent perturbed forcing sequences. The applied perturbations are logged to diagnose any systematic forcing correction. This simplified update is valid under zero-mean perturbations and short decorrelation times, conditions partly met by our setup. If this setup creates problems we need to resort to a resampling strategy similar to Safin et al. (2022).
+For the MVP we aim to first use a particle-filter-type assimilation process. We start with particle filters because of the straight forward implementation and simplicity and because it allows to assimilate the observed data without touching the model states of Simstrat that are stored in FORTRAN's binary format, which in the MVP results in a cleamner implementation and it removes the chance of producing unphisycal steps and in most cases avoid "jumps" in the temperature timeseries. For the theorethical background refer below. Conceptually N ensemble members are propagated forward, each driven by an independently perturbed forcing time series. Perturbations f(t) are based on statistics (standard deviation, decorrelation time) derived from the lake-mean reanalysis minus station residuals. At each observation time, the best-performing particle is identified and its state copied to all other particles, which then continue to forecast with their own independent perturbed forcing sequences. The winning perturbations could be logged to diagnose any systematic forcing correction. 
 
-A second implementation replaces the best-particle selection with an ensemble Kalman filter (see below for more details) update: the ensemble cross-covariance is used to compute a corrected state from all members, which is then propagated to the next observation cycle. Assimilation can essentially be applied to model parameters, inputs, forcing, or state — which can also be modified jointly. For our case the Simstrat model is already calibrated for Lake Lugano, so we see little reason to start updating parameters. Updating the forcing instead of the state can provide multiple advantages: physical consistency is ensured, and error attribution is more fitting. On the other hand, state correction is more agnostic about the error source, can better compensate for any kind of model deficiency, and has been shown to produce much more significant improvements compared to updating only parameters and forcing. A negative of the latter could be the generation of shocks in the temperature time series, which however can be limited by frequent assimilation of observations and by keeping the corrections small. Given the scarcity of published EnKF-based forcing correction examples for lakes and oceans, we might need to consider the state as the more standard strategy forward.
+A second implementation replaces the best-particle selection with an ensemble Kalman filter (see below for more details) update: the ensemble cross-covariance is used to compute a corrected state from all members, which is then propagated to the next observation cycle. Assimilation can essentially be applied to model parameters, inputs, forcing, or state — which can also be modified jointly. For our case the Simstrat model is already calibrated for Lake Lugano, so we see little reason to start updating calibrated parameters for now. Updating the forcing instead of the state can provide multiple advantages: physical consistency is ensured, and error attribution is more fitting. On the other hand, state correction is more agnostic about the error source, can better compensate for any kind of model deficiency, and has been shown to produce much more significant improvements compared to updating only parameters and forcing. A negative of the latter could be the generation of shocks in the temperature time series, which however can be limited by frequent assimilation of observations and by keeping the corrections small. Given the scarcity of published EnKF-based forcing correction examples for lakes and oceans, however, we need to consider the state update as the more standard strategy forward.
 
 ## Extension to 3D Models
 
 When expanding our module to include 3D models, a couple of considerations are needed. First, there is a need for spatio-temporal forcing perturbation accounting both for spatial and temporal autocorrelation. Second, observation location matters much more: in 3D, an observation at one location primarily constrains the state near that location, and localization becomes essential to avoid spurious correlations and keep computational costs low. Finally, ensemble size becomes a serious constraint — examples in 3D use around 20 ensemble members, while for 1D they use 400 because the computational load is small.
 
-## Ensemble Kalman Filter: Concept
+## The Theory Behind Particle Filters
+
+The particle filter is a Monte Carlo method for solving the Bayesian filtering problem, where the goal is to sequentially estimate the posterior distribution $p(x_k \mid y_{1:k})$ of a hidden state $x_k$ given observations $y_{1:k}$. Instead of computing this distribution analytically, it is approximated by a set of $M$ weighted particles,
+
+$$p_k(x) \approx \sum_{i=1}^M w_k^i \delta(x - x_k^i)$$, where $x_k^i$ are samples and $w_k^i$ are normalized weights. 
+
+The algorithm alternates between a forecast (prediction) step and an analysis (update) step: particles are first propagated through the dynamical model $$x_{k+1}^i = M_{k+1}(x_k^i)$$, which approximates the prior $p(x_{k+1} \mid y_{1:k})$, and then their weights are updated using Bayes’ rule based on the likelihood of the new observation:
+
+$$w_{k+1}^i \propto w_k^i \, p(y_{k+1} \mid x_{k+1}^i)$$, followed by normalization $\sum_{i=1}^M w_{k+1}^i = 1$. 
+
+Over time, however, the weights tend to collapse onto a few particles (a phenomenon known as degeneracy), making the approximation inefficient; to mitigate this, a resampling step can be introduced, where particles are redrawn with probability proportional to their weights and reset to equal weights $w_{k+1}^i = 1/M$, effectively focusing computational effort on high-likelihood regions of the state space (bootstrap technique). In the limit $M \to \infty$, this sequential importance sampling scheme converges to the true Bayesian solution, making particle filters a powerful and flexible tool for nonlinear and non-Gaussian state estimation problems.
+
+## Ensemble Kalman Filter: Details & Important Concepts
 
 Sequential data assimilation methods (such as the Ensemble Kalman Filter) update the model state each time new observations become available. Instead of explicitly solving equations for the evolution of uncertainty, they approximate it by running an ensemble of model simulations, letting the system dynamics naturally generate error correlations. The forecast error covariance matrix P is estimated from the spread of the ensemble: its diagonal elements represent the variance (uncertainty) of temperature at each depth, while the off-diagonal elements capture how errors at different depths are correlated, reflecting physical processes like vertical mixing or stratification. When assimilating a temperature profile, the ensemble mean provides the best prior (forecast) estimate, and the covariance determines how observational information is propagated through the system. For instance, if only surface temperature is observed, the Kalman gain uses the covariance
 
@@ -29,3 +41,26 @@ $$K(z) = \frac{P^f(z, z_{\text{surf}})}{P^f(z_{\text{surf}}, z_{\text{surf}}) + 
 to adjust subsurface layers through the analysis update
 
 $$T^a_j(z) = T^f_j(z) + K(z)\,\bigl(y_{\text{surf}} - T^f_j(z_{\text{surf}})\bigr):$$ depths strongly correlated with the surface are updated more, while weakly correlated layers remain largely unchanged. After updating all ensemble members, the analysis mean represents the posterior temperature profile, optimally combining model and observations, and the updated ensemble spread reflects the remaining uncertainty. However, this approach is computationally expensive because the forecast model must be run for each ensemble member, and small ensemble sizes can lead to sampling errors and an underrepresentation of the true error covariance, degrading assimilation performance. It's not the type of perturbation that matters, but whether the ensemble represents realistic uncertainty in the system. Perturbing forcing (e.g., wind, radiation, precipitation) is popular because it injects variability in a physically meaningful, realistic-error way (errors propagate naturally through dynamics) and it creates flow-dependent errors (correctly correlated errors). So if the ensemble correctly samples the true uncertainty distribution, the method works regardless of how you generated it.
+
+## References
+
+Baracchini, T., Chu, P. Y., ˇSukys, J., Lieberherr, G., Wunderle, S., W¨uest, A., and Bouffard, D.
+(2020). Data assimilation of in situ and satellite remote sensing data to 3d hydrodynamic lake
+models: a case study using delft3d-flow v4. 03 and openda v2. 4. Geoscientific Model Development,
+13(3):1267–1284.
+
+Kourzeneva, E. (2014). Assimilation of lake water surface temperature observations using an extended
+kalman filter. Tellus A: Dynamic Meteorology and Oceanography, 66(1):21510.
+
+Safin, A., Bouffard, D., Ozdemir, F., Ramon, C. L., Runnalls, J., Georgatos, F., Minaudo, C., and
+ˇSukys, J. (2022). A bayesian data assimilation framework for lake 3d hydrodynamic models with a
+physics-preserving particle filtering method using spux-mitgcm v1. Geoscientific Model Development,
+15(20):7715–7730.
+
+Thomas, R. Q., Figueiredo, R. J., Daneshmand, V., Bookout, B. J., Puckett, L. K., and Carey, C. C.
+(2020). A near-term iterative forecasting system successfully predicts reservoir hydrodynamics and
+partitions uncertainty in real time. Water Resources Research, 56(11):e2019WR026138.
+
+Wander, H. L., Thomas, R. Q., Moore, T. N., Lofton, M. E., Breef-Pilz, A., and Carey, C. C. (2024).
+Data assimilation experiments inform monitoring needs for near-term ecological forecasts in a eutrophic
+reservoir. Ecosphere, 15(2):e4752.
