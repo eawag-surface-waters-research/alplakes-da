@@ -26,9 +26,7 @@ The particle filter is a Monte Carlo method for solving the Bayesian filtering p
 
 $$p_k(x) \approx \sum_{i=1}^M w_k^i \delta(x - x_k^i)$$, where $x_k^i$ are samples and $w_k^i$ are normalized weights. 
 
-The algorithm alternates between a forecast (prediction) step and an analysis (update) step: particles are first propagated through the dynamical model
-
-$$x_{k+1}^i = M_{k+1}(x_k^i)$$, which approximates the prior $p(x_{k+1} \mid y_{1:k})$, and then their weights are updated using Bayes’ rule based on the likelihood of the new observation,
+The algorithm alternates between a forecast (prediction) step and an analysis (update) step: particles are first propagated through the dynamical model $$x_{k+1}^i = M_{k+1}(x_k^i)$$, which approximates the prior $p(x_{k+1} \mid y_{1:k})$, and then their weights are updated using Bayes’ rule based on the likelihood of the new observation:
 
 $$w_{k+1}^i \propto w_k^i \, p(y_{k+1} \mid x_{k+1}^i)$$, followed by normalization $\sum_{i=1}^M w_{k+1}^i = 1$. 
 
