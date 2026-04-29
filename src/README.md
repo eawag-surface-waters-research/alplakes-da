@@ -21,7 +21,7 @@ src/
 
 ## Pipeline overview
 
-The workflow runs in four stages. Steps 1–2 are done once to prepare inputs; steps 3–4 are the operational DA loop.
+The workflow described here runs in four stages. Steps 1–2 are needed to prepare inputs; steps 3–4 are the DA loop and anaalysis of results.
 
 
 **Stage 1 — Input preparation**
@@ -58,12 +58,12 @@ The workflow runs in four stages. Steps 1–2 are done once to prepare inputs; s
   
   Three figures:
 
-    Fig 1 — Temperature fan (ensemble spread) at 6 depths vs Castagnola and Gandria obs,
-            overlaid with ensemble0 control, daily best (hindsight), ensemble mean, persistence
-    Fig 2 — Stacked RMSE bar chart per member ranked by total RMSE, highlighting
-            ensemble0 and best perturbed member
-    Fig 3 — RMSE comparison across trajectory types (standard, weekly/daily best,
-            ensemble mean, persistence) with % gain relative to ensemble0
+  Fig 1 — Temperature fan (ensemble spread) at 6 depths vs Castagnola and Gandria obs,
+          overlaid with ensemble0 control, daily best (hindsight), ensemble mean, persistence
+  Fig 2 — Stacked RMSE bar chart per member ranked by total RMSE, highlighting
+          ensemble0 and best perturbed member
+  Fig 3 — RMSE comparison across trajectory types (standard, weekly/daily best,
+          ensemble mean, persistence) with % gain relative to ensemble0
 
 
 ---
@@ -120,6 +120,8 @@ python src/analyze_results.py
 ```
 
 ![Analysis results](../images/analysis_new.png)
+
+The image shows the improvements against Castagnola observations during 2025 with different methods of assimilation of the buoy measurments based on the particle filter theory.
 
 ---
 
