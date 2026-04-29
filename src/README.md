@@ -118,7 +118,7 @@ Set `reset=True` on the first run to clear any stale snapshots and trajectory fi
 python src/analyze_results.py  
 ```
 
-![Analysis results](../images/analysis.png)
+![Analysis results](../images/analysis_new.png)
 
 ---
 
