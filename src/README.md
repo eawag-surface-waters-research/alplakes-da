@@ -13,6 +13,7 @@ src/
 ├── copy_standard_inputs.py  # Populate ensemble dirs with shared inputs
 ├── main_PF.py               # Sequential daily particle filter
 ├── main_PF_weekly.py        # Same filter with 7-day windows to speed up simulation time and compare
+├── main_PF_resampling.py    # Sequential daily particle filter with resampling of likely particles
 ├── analyze_results.py       # Visualise: raw ensemble spread, PF trajectories and respective RMSE 
 └── functions/               # Reusable 
     └── par.py               # overwrite_par_file_dates(): updates only the start/end timestamps
@@ -63,7 +64,7 @@ The workflow described here runs in four stages. Steps 1–2 are needed to prepa
           
   Fig 2 — Stacked RMSE bar chart per member ranked by total RMSE, highlighting
           ensemble0 and best perturbed member
-          
+
   Fig 3 — RMSE comparison across trajectory types (standard, weekly/daily best,
           ensemble mean, persistence) with % gain relative to ensemble0
 
