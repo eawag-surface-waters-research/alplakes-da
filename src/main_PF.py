@@ -170,7 +170,7 @@ def _rmse_in_window(sim_df, obs_df, window_start, window_end):
 # ── Output accumulation ───────────────────────────────────────────────────────
 # accumulates output to track results
 def _accumulate_output(ensemble_dir):
-    """Append today's T_out.dat rows (no header) to a persistent T_out_full.dat.
+    """Append today's T_out.dat rows (no header) to a T_out_full.dat.
     Skips the first data row if its timestamp already exists at the end of the
     full file, avoiding the boundary-overlap duplicate Simstrat writes."""
     src = os.path.join(ensemble_dir, PF_RESULTS, "T_out.dat")

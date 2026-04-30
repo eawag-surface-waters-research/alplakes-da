@@ -31,7 +31,8 @@ def update_par_file(simstrat_version, file_path, start_date, end_date, snapshot,
 
     return par
 
-
+# Need to check: model's simulation interval is exclusive of the boundary timestamps, 
+# so you shift the start slightly forward and the end slightly backward to avoid boundary edge cases
 def overwrite_par_file_dates(file_path, start_date, end_date, reference_date):
     with open(file_path) as f:
         par = json.load(f)

@@ -100,7 +100,15 @@ python src/copy_standard_inputs.py
 
 Outputs: `assimilation/upperlugano/ensemble{0..20}/Forcing.dat` + other unchanged files.
 
-![Ensemble forcing perturbations](../images/ensemble.png)
+![Ensemble forcing perturbations](../images/ensemble_new.png)
+
+**Column 1:** All three residual series show the classic geometric decay of an AR(1) process, and the red AR(1) fits with φ = 0.66 (U), 0.69 (V), 0.49 (GLOB) sitting on top of the empirical ACF for at least the first ~12 lags. AR(1) captures the dominant short-memory structure well. However, the ACFs show a clear bump around lag ~24, with smaller secondary humps at ~48. That's a diurnal cycle periodicity that AR(1) is not capturing.
+
+**Column 2:** Single dominant spike at lag 1, everything else remains inside or close to the noise band. This confirms that adding an AR(2) or higher-order term would help very little and that the leftover structure is seasonal, not higher-order autoregressive. Ideas to fix this could be adding a seasonal/diurnal term (e.g. SARIMA(1,0,0)(1,0,0)₂₄, or a harmonic regression on hour-of-day before fitting AR).
+
+**Column 3:** U and V are roughly Gaussian and the N(0, σ²) overlay is reasonable, though U has a noticeably heavier right tail. GLOB is more problematic because there's a huge spike at zero. This is the night-time effect; when observed radiation is 0 and the model also predicts ~0, the residual must be exactly 0. The fast solution at the moment is to clip the residuals at 0 when GLOB is 0.
+
+**Column 4**: Visually well-behaved spread of the ensembles.
 
 ### Step 3 — Run the particle filter
 

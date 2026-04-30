@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from statsmodels.graphics.tsaplots import plot_acf
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
 # This script generates the ensembles for radiation and wind for 2025 
 # based on 2025 residuals (reanalysis - obs) and autoregression
@@ -195,8 +195,8 @@ OBS_COLS   = {"T": "T_obs", "U": "U_obs", "V": "V_obs", "GLOB": "GLOB_obs"}
 UNITS      = {"T": "°C", "U": "m/s", "V": "m/s", "GLOB": "W/m²"}
 time       = df["time"].values
 
-fig = plt.figure(figsize=(16, 4 * len(VARIABLES)))
-gs  = gridspec.GridSpec(len(VARIABLES), 3, figure=fig, hspace=0.45, wspace=0.35)
+fig = plt.figure(figsize=(22, 4 * len(VARIABLES)))
+gs  = gridspec.GridSpec(len(VARIABLES), 4, figure=fig, hspace=0.45, wspace=0.35)
 
 for row, name in enumerate(VARIABLES):
     phi   = models[name]["phi"]
@@ -215,9 +215,15 @@ for row, name in enumerate(VARIABLES):
     ax_acf.set_xlabel("lag (steps)")
     ax_acf.legend(fontsize=8)
 
+    # --- PACF ---
+    ax_pacf = fig.add_subplot(gs[row, 1])
+    plot_pacf(resid, lags=48, ax=ax_pacf, alpha=0.05, color="steelblue", method="ywm")
+    ax_pacf.set_title(f"{name} — residual PACF")
+    ax_pacf.set_xlabel("lag (steps)")
+
     # Question: are my residuals Gaussian?
     # --- Residual histogram with fitted Gaussian ---
-    ax_hist = fig.add_subplot(gs[row, 1])
+    ax_hist = fig.add_subplot(gs[row, 2])
     rc = resid #- resid.mean()
     ax_hist.hist(rc, bins=40, density=True, color="steelblue", alpha=0.6, label="residuals") # empirical histogramm
     x = np.linspace(rc.min(), rc.max(), 300) # smooth curve x values
@@ -231,7 +237,7 @@ for row, name in enumerate(VARIABLES):
     # Does the ensemble mean match observations?
     # Does variability look realistic over time?
     # --- Ensemble fan over first 200 time steps ---
-    ax_fan = fig.add_subplot(gs[row, 2])
+    ax_fan = fig.add_subplot(gs[row, 3])
     t_slice = slice(0, min(200, n))
     t_plot  = np.arange(t_slice.start, t_slice.stop)
     p5, p25, p75, p95 = np.percentile(ens[t_slice], [5, 25, 75, 95], axis=1)
