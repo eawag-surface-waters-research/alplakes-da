@@ -113,9 +113,9 @@ Outputs: `assimilation/upperlugano/ensemble{0..20}/Forcing.dat` + other unchange
 ### Step 3 — Run the particle filter
 
 ```bash
-python src/main_PF.py             # daily windows
-python src/main_PF_weekly.py      # 7-day windows
-python src/main_PF_resampling.py  # daily updates + resampling of likely particles
+python src/main_PF.py             # daily windows --> best-member selection filter 
+python src/main_PF_weekly.py      # 7-day windows --> best-member selection filter
+python src/main_PF_resampling.py  # daily updates + resampling of likely particles --> weights particles by likelihood and resamples probabilistically
 ```
 
 Key constants at the top of each file:
@@ -153,3 +153,8 @@ On the very first window, a pre-generated dated snapshot (`simulation-snapshot_Y
 
 ---
 
+## Open questions
+
+1. Can the forcing perturbation be improved to account for daily cycle at least for wind?
+2. Can resampling improve the filtering?
+3. Currently using RMSE across depths without weights, is there a better objective?
