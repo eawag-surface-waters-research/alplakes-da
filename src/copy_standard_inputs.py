@@ -1,9 +1,10 @@
 import os
 import shutil
 
+LAKE = "geneva"
 ROOT = os.path.dirname(os.path.dirname(__file__))
-SRC_DIR = os.path.join(ROOT, "standard_inputs")
-ENSEMBLE_BASE = os.path.join(ROOT, "assimilation", "upperlugano")
+SRC_DIR = os.path.join(ROOT, "standard_inputs", LAKE)
+ENSEMBLE_BASE = os.path.join(ROOT, "assimilation", LAKE)
 N_MEMBERS = 20
 
 # Files generated per-ensemble — don't overwrite them

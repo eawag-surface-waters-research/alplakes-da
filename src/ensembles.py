@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
+
+LAKE = "geneva"
 # This script generates the ensembles for radiation and wind for 2025 
 # based on 2025 residuals (reanalysis - obs) and autoregression
 
@@ -14,7 +16,7 @@ from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 # ----------------------------
 
 # load observations
-df_obs = pd.read_csv("../data/obs_2025.csv")
+df_obs = pd.read_csv("../data/meteo_stations/obs_PUY_2025.csv") # Change depending on station!
 df_obs["time"] = pd.to_datetime(df_obs["time"])
 df_obs = df_obs.drop_duplicates(subset="time").reset_index(drop=True)
 
@@ -25,7 +27,7 @@ df_obs["u"] = -df_obs["wind_speed"] * np.sin(theta)
 df_obs["v"] = -df_obs["wind_speed"] * np.cos(theta)
 
 # load reanalysis:
-lake_mean = pd.read_csv("../data/lake_mean_ICON_2025.csv")
+lake_mean = pd.read_csv("../data/lake_mean_geneva_2025.csv") # Change depending on lake!!!
 lake_mean["time"] = pd.to_datetime(lake_mean["time"])
 
 # Make sure time consistent
@@ -131,10 +133,10 @@ t0 = pd.Timestamp("1981-01-01", tz="UTC").tz_localize(None)
 df["time_days"] = (df["time"].dt.tz_convert("UTC").dt.tz_localize(None) - t0) / pd.Timedelta("1D") + 1
 
 HEADER = "Time [d]    u [m/s]    v [m/s]  Tair [°C] sol [W/m2] vap [mbar]  cloud [-] rain [m/hr]"
-BASE_OUT = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assimilation", "upperlugano")
+BASE_OUT = os.path.join(os.path.dirname(os.path.dirname(__file__)), "assimilation", LAKE)
 
 # ensemble0 — unperturbed control run
-SRC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "standard_inputs")
+SRC_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "standard_inputs", LAKE)
 e0_dir = os.path.join(BASE_OUT, "ensemble0")
 os.makedirs(e0_dir, exist_ok=True)
 for fname in os.listdir(SRC_DIR):

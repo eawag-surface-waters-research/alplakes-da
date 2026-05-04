@@ -39,6 +39,10 @@ The workflow described here runs in four stages. Steps 1–2 are needed to prepa
   
   copy_standard_inputs.py             → Copy all non-forcing inputs into ensemble0–20/
 
+Make sure that the modelled times correspond to observation times. For hourly assimilation you need to change the Setting.par file in the standard inputs accordingly before copying all to the ensemble repositories (see below...).
+
+(../images/par_mod.png)
+
 **Stage 3 — Simulation + assimilation**  
 
   main.py / main_PF.py / main_PF_weekly.py / main_PF_resampled

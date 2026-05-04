@@ -34,13 +34,14 @@ from tqdm import tqdm
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from functions.par import overwrite_par_file_dates
 
+LAKE = "geneva"
 # ── Configuration ─────────────────────────────────────────────────────────────
 
 SIMSTRAT_VERSION = "3.0.4"
 N_MEMBERS        = 20
 ROOT             = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ENSEMBLE_BASE    = os.path.join(ROOT, "assimilation", "upperlugano")
-OBS_PATH         = os.path.join(ROOT, "data", "T_obs_castagnola.csv")
+ENSEMBLE_BASE    = os.path.join(ROOT, "assimilation", LAKE)
+OBS_PATH         = os.path.join(ROOT, "data", "T_obs_geneva.csv") # change!
 REF_DATE         = pd.Timestamp("1981-01-01", tz="UTC")       # for T_out loading
 REF_DATE_DT      = datetime(1981, 1, 1, tzinfo=timezone.utc)  # for par file writes
 BEST_TRAJ_PATH   = os.path.join(ENSEMBLE_BASE, "T_out_best.dat")
