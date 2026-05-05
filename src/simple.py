@@ -142,7 +142,7 @@ print(f"aligned_pf shapes: { {d: aligned_pf[d].shape for d in DEPTHS} }")
 ############## Plot 1 ###################################################################
 
 fig, axes = plt.subplots(len(DEPTHS), 1, figsize=(14, 4 * len(DEPTHS)), sharex=True)
-fig.suptitle("Temperature ensemble spread — Upper Lugano", fontsize=13)
+#fig.suptitle("Temperature ensemble spread — Upper Lugano", fontsize=13)
 
 for ax, target_depth in zip(axes, DEPTHS):
     col = nearest_depth_col(members[0], target_depth)
@@ -158,14 +158,14 @@ for ax, target_depth in zip(axes, DEPTHS):
     nearest_obs_depth = obs_depths[np.argmin(np.abs(obs_depths - actual_depth))]
     obs_sub = obs[obs["depth"] == nearest_obs_depth]
     ax.scatter(obs_sub["time"], obs_sub["value"], s=1, color="tomato", zorder=5, alpha = 0.2,
-               label=f"obs ({nearest_obs_depth:.1f} m)")
+               label=f"Castagnola ({nearest_obs_depth:.1f} m)")
 
     nearest_gandria_depth = obs_gandria_depths[np.argmin(np.abs(obs_gandria_depths - actual_depth))]
     obs_g = obs_gandria[obs_gandria["depth"] == nearest_gandria_depth]
     ax.scatter(obs_g["time"], obs_g["value"], s=20, color="black", zorder=10, marker="x",
                label=f"gandria ({nearest_gandria_depth:.1f} m)")
 
-    for j, m in enumerate(members):
+    """for j, m in enumerate(members):
         s = m[col][~m[col].index.duplicated(keep="first")]
         ax.plot(s.index, s.values, color="lightblue", lw=0.5, alpha=0.6,
                 label="members" if j == 0 else None)
@@ -173,26 +173,26 @@ for ax, target_depth in zip(axes, DEPTHS):
     for j in al_pf.columns:
         ax.plot(al_pf.index, al_pf[j].values, color="orange", lw=0.5, alpha=0.4,
                 label="PF members" if j == al_pf.columns[0] else None)
-    ax.plot(time_u, p50, color="steelblue", lw=1.5, label="median")
+    ax.plot(time_u, p50, color="steelblue", lw=1.5, label="median")"""
     if ensemble0 is not None:
         e0_col = nearest_depth_col(ensemble0, target_depth)
         s = ensemble0[e0_col][~ensemble0[e0_col].index.duplicated(keep="first")]
         ax.plot(s.index, s.values, color="black", lw=1.2, label="ensemble0")
-    if best_traj is not None:
+    '''if best_traj is not None:
         bt_col = nearest_depth_col(best_traj, target_depth)
         s = best_traj[bt_col][~best_traj[bt_col].index.duplicated(keep="first")]
-        ax.plot(s.index, s.values, color="red", lw=1.5, ls="--", zorder=7, label="best (hindsight)")
+        ax.plot(s.index, s.values, color="red", lw=1.5, ls="--", zorder=7, label="best (hindsight)")'''
     if ens_traj is not None:
         ec_col = nearest_depth_col(ens_traj, target_depth)
         s = ens_traj[ec_col][~ens_traj[ec_col].index.duplicated(keep="first")]
-        ax.plot(s.index, s.values, color="darkorange", lw=1.5, zorder=7, label="ensemble mean")
-    if persist_traj is not None:
+        ax.plot(s.index, s.values, color="green", lw=1.5, zorder=7, label="assimilation") # change name!
+    '''if persist_traj is not None:
         pc_col = nearest_depth_col(persist_traj, target_depth)
         s = persist_traj[pc_col][~persist_traj[pc_col].index.duplicated(keep="first")]
-        ax.plot(s.index, s.values, color="green", lw=1.5, ls="--", zorder=7, label="persist (lagged best)")
+        ax.plot(s.index, s.values, color="green", lw=1.5, ls="--", zorder=7, label="persist (lagged best)")'''
 
     ax.set_ylabel("T (°C)")
-    ax.set_title(f"T at {actual_depth:.0f} m depth")
+    ax.set_title(f"T at {actual_depth:.0f} m")
     ax.legend(fontsize=8, loc="upper left", bbox_to_anchor=(1.01, 1), borderaxespad=0)
     ax.grid(True, alpha=0.3)
 

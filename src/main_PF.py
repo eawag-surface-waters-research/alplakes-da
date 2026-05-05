@@ -138,7 +138,7 @@ def _load_T(ensemble_dir):
     path = os.path.join(ensemble_dir, PF_RESULTS, "T_out.dat")
     df = pd.read_csv(path, header=0)
     df.columns = [c.strip().strip('"') for c in df.columns]
-    df["time"] = REF_DATE + pd.to_timedelta(df["Datetime"], unit="D")
+    df["time"] = (REF_DATE + pd.to_timedelta(df["Datetime"], unit="D")).dt.round("1h")
     df = df.drop(columns=["Datetime"]).set_index("time")
     df.columns = df.columns.astype(float)
     return df
@@ -152,10 +152,13 @@ def _nearest_col(df, target):
 
 # Compute one RMSE value: across all depths & across a given time window
 def _rmse_in_window(sim_df, obs_df, window_start, window_end):
-    """Pooled RMSE across all obs depths, restricted to the current window."""
+    """Pooled RMSE across all obs depths, restricted to the current window.
+    Returns (rmse, n_obs_raw, n_matched) where n_obs_raw is rows in window and
+    n_matched is the number of (sim, obs) pairs actually joined."""
     obs_win = obs_df[(obs_df["time"] >= window_start) & (obs_df["time"] < window_end)]
+    n_obs_raw = len(obs_win)
     if obs_win.empty:
-        return np.nan
+        return np.nan, 0, 0
     sq, n = 0.0, 0
     for d in np.sort(obs_win["depth"].unique()):
         col    = _nearest_col(sim_df, -d)
@@ -165,7 +168,8 @@ def _rmse_in_window(sim_df, obs_df, window_start, window_end):
             continue
         sq += np.sum((merged[col].values - merged["obs"].values) ** 2)
         n  += len(merged)
-    return np.sqrt(sq / n) if n > 0 else np.nan
+    rmse = np.sqrt(sq / n) if n > 0 else np.nan
+    return rmse, n_obs_raw, n
 
 
 # ── Output accumulation ───────────────────────────────────────────────────────
@@ -336,17 +340,27 @@ def run_pf_daily(start_date, end_date, max_workers=None, reset=False):
             _accumulate_persist(prev_best_id)
 
         # 2. Evaluate perturbed members against obs within the window
-        rmses = []
+        rmses, n_obs_raw_list, n_matched_list = [], [], []
         for i in member_ids:
             t_path = os.path.join(ENSEMBLE_BASE, f"ensemble{i}", PF_RESULTS, "T_out.dat")
             if not os.path.exists(t_path) or i in failed:
                 rmses.append(np.nan)
+                n_obs_raw_list.append(0)
+                n_matched_list.append(0)
                 continue
             try:
                 sim = _load_T(os.path.join(ENSEMBLE_BASE, f"ensemble{i}"))
-                rmses.append(_rmse_in_window(sim, obs, current, window_end))
+                rmse, n_raw, n_matched = _rmse_in_window(sim, obs, current, window_end)
+                rmses.append(rmse)
+                n_obs_raw_list.append(n_raw)
+                n_matched_list.append(n_matched)
             except Exception:
                 rmses.append(np.nan)
+                n_obs_raw_list.append(0)
+                n_matched_list.append(0)
+
+        n_obs_raw  = max(n_obs_raw_list) if n_obs_raw_list else 0
+        n_matched  = max(n_matched_list) if n_matched_list else 0
 
         # 3. Best-copy (skip if no obs overlap this window)
         valid = [(i, r) for i, r in zip(member_ids, rmses) if not np.isnan(r)]
@@ -358,11 +372,13 @@ def run_pf_daily(start_date, end_date, max_workers=None, reset=False):
             prev_best_id = best_id
             days_copied += 1
             status = f"failed={failed}" if failed else "ok"
-            print(f"  {current.date()}  best=ensemble{best_id:02d}  "
-                  f"RMSE={best_rmse:.4f} °C  [{status}]")
+            print(f"  {current.date()}  best=ensemble{best_id:02d}  RMSE={best_rmse:.4f} °C  "
+                  f"obs_raw={n_obs_raw}  matched={n_matched}  [{status}]")
         else:
+            obs_win = obs[(obs["time"] >= current) & (obs["time"] < window_end)]
             status = f"  failed={failed}" if failed else ""
-            print(f"  {current.date()}  no obs — snapshots unchanged{status}")
+            print(f"  {current.date()}  no obs — snapshots unchanged  "
+                  f"obs_raw={len(obs_win)}  matched={n_matched}{status}")
 
         current = window_end
 

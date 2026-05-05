@@ -7,7 +7,7 @@ import matplotlib.gridspec as gridspec
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
 
-LAKE = "geneva"
+LAKE = "murten"
 # This script generates the ensembles for radiation and wind for 2025 
 # based on 2025 residuals (reanalysis - obs) and autoregression
 
@@ -16,7 +16,7 @@ LAKE = "geneva"
 # ----------------------------
 
 # load observations
-df_obs = pd.read_csv("../data/meteo_stations/obs_PUY_2025.csv") # Change depending on station!
+df_obs = pd.read_csv("../data/meteo_stations/obs_NEU_2025.csv") # Change depending on station!
 df_obs["time"] = pd.to_datetime(df_obs["time"])
 df_obs = df_obs.drop_duplicates(subset="time").reset_index(drop=True)
 
@@ -27,7 +27,7 @@ df_obs["u"] = -df_obs["wind_speed"] * np.sin(theta)
 df_obs["v"] = -df_obs["wind_speed"] * np.cos(theta)
 
 # load reanalysis:
-lake_mean = pd.read_csv("../data/lake_mean_geneva_2025.csv") # Change depending on lake!!!
+lake_mean = pd.read_csv("../data/lake_mean_murten_2025.csv") # Change depending on lake!!!
 lake_mean["time"] = pd.to_datetime(lake_mean["time"])
 
 # Make sure time consistent

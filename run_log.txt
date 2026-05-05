@@ -1,0 +1,735 @@
+Murten run:
+(Linux_venv) toschith@SUR-CLINB010-N:/mnt/c/Users/toschith/Documents/Work/alplakes-da$ python src/main_PF.py
+Reset: cleared Results_PF/ snapshots and trajectory files.
+
+Daily PF:  2025-01-01 → 2025-12-31  (364 days,  20 perturbed members)
+
+  2025-01-01  best=ensemble01  RMSE=0.2832 °C  obs_raw=408  matched=374  [ok]
+  2025-01-02  best=ensemble14  RMSE=0.3193 °C  obs_raw=408  matched=374  [ok]
+  2025-01-03  best=ensemble11  RMSE=0.2841 °C  obs_raw=408  matched=374  [ok]
+  2025-01-04  best=ensemble19  RMSE=0.2859 °C  obs_raw=408  matched=374  [ok]
+  2025-01-05  best=ensemble06  RMSE=0.3362 °C  obs_raw=408  matched=374  [ok]
+  2025-01-06  best=ensemble06  RMSE=0.3757 °C  obs_raw=408  matched=374  [ok]
+  2025-01-07  best=ensemble03  RMSE=0.4005 °C  obs_raw=408  matched=374  [ok]
+  2025-01-08  best=ensemble14  RMSE=0.4379 °C  obs_raw=408  matched=374  [ok]
+  2025-01-09  best=ensemble04  RMSE=0.4987 °C  obs_raw=408  matched=374  [ok]
+  2025-01-10  best=ensemble03  RMSE=0.4995 °C  obs_raw=408  matched=374  [ok]
+  2025-01-11  best=ensemble10  RMSE=0.4917 °C  obs_raw=408  matched=374  [ok]
+  2025-01-12  best=ensemble03  RMSE=0.4473 °C  obs_raw=408  matched=374  [ok]
+  2025-01-13  best=ensemble05  RMSE=0.2381 °C  obs_raw=408  matched=374  [ok]
+  2025-01-14  best=ensemble09  RMSE=0.2606 °C  obs_raw=408  matched=374  [ok]
+  2025-01-15  best=ensemble13  RMSE=0.2896 °C  obs_raw=408  matched=374  [ok]
+  2025-01-16  best=ensemble15  RMSE=0.2977 °C  obs_raw=408  matched=374  [ok]
+  2025-01-17  best=ensemble16  RMSE=0.2901 °C  obs_raw=408  matched=374  [ok]
+  2025-01-18  best=ensemble20  RMSE=0.3600 °C  obs_raw=408  matched=374  [ok]
+  2025-01-19  best=ensemble05  RMSE=0.3282 °C  obs_raw=408  matched=374  [ok]
+  2025-01-20  best=ensemble18  RMSE=0.4217 °C  obs_raw=408  matched=374  [ok]
+  2025-01-21  best=ensemble13  RMSE=0.4698 °C  obs_raw=408  matched=374  [ok]
+  2025-01-22  best=ensemble13  RMSE=0.4778 °C  obs_raw=408  matched=374  [ok]
+  2025-01-23  best=ensemble12  RMSE=0.5505 °C  obs_raw=408  matched=374  [ok]
+  2025-01-24  best=ensemble04  RMSE=0.6197 °C  obs_raw=408  matched=374  [ok]
+  2025-01-25  best=ensemble01  RMSE=0.6602 °C  obs_raw=408  matched=374  [ok]
+  2025-01-26  best=ensemble03  RMSE=0.6497 °C  obs_raw=408  matched=374  [ok]
+  2025-01-27  best=ensemble17  RMSE=0.6402 °C  obs_raw=408  matched=374  [ok]
+  2025-01-28  best=ensemble03  RMSE=0.6432 °C  obs_raw=408  matched=374  [ok]
+  2025-01-29  best=ensemble15  RMSE=0.6921 °C  obs_raw=408  matched=374  [ok]
+  2025-01-30  best=ensemble06  RMSE=0.7219 °C  obs_raw=408  matched=374  [ok]
+  2025-01-31  best=ensemble18  RMSE=0.7376 °C  obs_raw=408  matched=374  [ok]
+  2025-02-01  best=ensemble15  RMSE=0.7467 °C  obs_raw=408  matched=374  [ok]
+  2025-02-02  best=ensemble09  RMSE=0.7903 °C  obs_raw=408  matched=374  [ok]
+  2025-02-03  best=ensemble05  RMSE=0.8084 °C  obs_raw=408  matched=374  [ok]
+  2025-02-04  best=ensemble01  RMSE=0.8635 °C  obs_raw=408  matched=374  [ok]
+  2025-02-05  best=ensemble02  RMSE=0.8646 °C  obs_raw=408  matched=374  [ok]
+  2025-02-06  best=ensemble13  RMSE=0.8919 °C  obs_raw=408  matched=374  [ok]
+  2025-02-07  best=ensemble10  RMSE=0.9011 °C  obs_raw=408  matched=374  [ok]
+  2025-02-08  best=ensemble15  RMSE=0.9524 °C  obs_raw=408  matched=374  [ok]
+  2025-02-09  best=ensemble08  RMSE=1.0332 °C  obs_raw=408  matched=374  [ok]
+  2025-02-10  best=ensemble07  RMSE=1.0254 °C  obs_raw=408  matched=374  [ok]
+  2025-02-11  best=ensemble01  RMSE=1.0718 °C  obs_raw=408  matched=374  [ok]
+  2025-02-12  best=ensemble03  RMSE=1.1656 °C  obs_raw=408  matched=374  [ok]
+  2025-02-13  best=ensemble18  RMSE=1.1571 °C  obs_raw=408  matched=374  [ok]
+  2025-02-14  best=ensemble20  RMSE=1.0894 °C  obs_raw=408  matched=374  [ok]
+  2025-02-15  best=ensemble17  RMSE=1.0399 °C  obs_raw=408  matched=374  [ok]
+  2025-02-16  best=ensemble19  RMSE=1.0659 °C  obs_raw=408  matched=374  [ok]
+  2025-02-17  best=ensemble07  RMSE=1.0421 °C  obs_raw=408  matched=374  [ok]
+  2025-02-18  best=ensemble13  RMSE=1.0117 °C  obs_raw=408  matched=374  [ok]
+  2025-02-19  best=ensemble02  RMSE=1.0558 °C  obs_raw=408  matched=374  [ok]
+  2025-02-20  best=ensemble05  RMSE=1.1491 °C  obs_raw=408  matched=374  [ok]
+  2025-02-21  best=ensemble17  RMSE=1.1563 °C  obs_raw=408  matched=374  [ok]
+  2025-02-22  best=ensemble07  RMSE=1.1869 °C  obs_raw=408  matched=374  [ok]
+  2025-02-23  best=ensemble12  RMSE=1.3065 °C  obs_raw=408  matched=374  [ok]
+  2025-02-24  best=ensemble19  RMSE=1.3484 °C  obs_raw=408  matched=374  [ok]
+  2025-02-25  best=ensemble10  RMSE=1.3333 °C  obs_raw=408  matched=374  [ok]
+  2025-02-26  best=ensemble19  RMSE=1.2348 °C  obs_raw=408  matched=374  [ok]
+  2025-02-27  best=ensemble15  RMSE=1.2341 °C  obs_raw=408  matched=374  [ok]
+  2025-02-28  best=ensemble06  RMSE=1.1760 °C  obs_raw=408  matched=374  [ok]
+  2025-03-01  best=ensemble10  RMSE=1.1349 °C  obs_raw=408  matched=374  [ok]
+  2025-03-02  best=ensemble06  RMSE=1.1827 °C  obs_raw=408  matched=374  [ok]
+  2025-03-03  best=ensemble17  RMSE=1.2866 °C  obs_raw=408  matched=374  [ok]
+  2025-03-04  best=ensemble20  RMSE=1.3165 °C  obs_raw=408  matched=374  [ok]
+  2025-03-05  best=ensemble20  RMSE=1.3314 °C  obs_raw=408  matched=374  [ok]
+  2025-03-06  best=ensemble11  RMSE=1.2528 °C  obs_raw=408  matched=374  [ok]
+  2025-03-07  best=ensemble01  RMSE=1.3684 °C  obs_raw=408  matched=374  [ok]
+  2025-03-08  best=ensemble12  RMSE=1.3326 °C  obs_raw=408  matched=374  [ok]
+  2025-03-09  best=ensemble14  RMSE=1.4410 °C  obs_raw=408  matched=374  [ok]
+  2025-03-10  best=ensemble20  RMSE=1.0527 °C  obs_raw=408  matched=374  [ok]
+  2025-03-11  best=ensemble18  RMSE=1.1017 °C  obs_raw=408  matched=374  [ok]
+  2025-03-12  best=ensemble18  RMSE=1.1559 °C  obs_raw=408  matched=374  [ok]
+  2025-03-13  best=ensemble16  RMSE=1.0566 °C  obs_raw=408  matched=374  [ok]
+  2025-03-14  best=ensemble04  RMSE=0.8937 °C  obs_raw=408  matched=374  [ok]
+  2025-03-15  best=ensemble09  RMSE=0.7775 °C  obs_raw=408  matched=374  [ok]
+  2025-03-16  best=ensemble14  RMSE=0.8491 °C  obs_raw=408  matched=374  [ok]
+  2025-03-17  best=ensemble20  RMSE=0.9447 °C  obs_raw=408  matched=374  [ok]
+  2025-03-18  best=ensemble09  RMSE=1.0356 °C  obs_raw=408  matched=374  [ok]
+  2025-03-19  best=ensemble01  RMSE=1.1980 °C  obs_raw=408  matched=374  [ok]
+  2025-03-20  best=ensemble17  RMSE=1.3505 °C  obs_raw=408  matched=374  [ok]
+  2025-03-21  best=ensemble07  RMSE=1.3187 °C  obs_raw=408  matched=374  [ok]
+  2025-03-22  best=ensemble05  RMSE=1.4341 °C  obs_raw=408  matched=374  [ok]
+  2025-03-23  best=ensemble19  RMSE=1.0823 °C  obs_raw=408  matched=374  [ok]
+  2025-03-24  best=ensemble06  RMSE=1.4252 °C  obs_raw=408  matched=374  [ok]
+  2025-03-25  best=ensemble14  RMSE=1.1851 °C  obs_raw=408  matched=374  [ok]
+  2025-03-26  best=ensemble12  RMSE=1.1605 °C  obs_raw=408  matched=374  [ok]
+  2025-03-27  best=ensemble18  RMSE=0.8931 °C  obs_raw=408  matched=374  [ok]
+  2025-03-28  best=ensemble09  RMSE=1.1583 °C  obs_raw=408  matched=374  [ok]
+  2025-03-29  best=ensemble17  RMSE=0.9875 °C  obs_raw=408  matched=374  [ok]
+  2025-03-30  best=ensemble08  RMSE=1.2394 °C  obs_raw=408  matched=374  [ok]
+  2025-03-31  best=ensemble15  RMSE=1.3051 °C  obs_raw=408  matched=374  [ok]
+  2025-04-01  best=ensemble16  RMSE=0.6762 °C  obs_raw=408  matched=374  [ok]
+  2025-04-02  best=ensemble09  RMSE=1.1241 °C  obs_raw=408  matched=374  [ok]
+  2025-04-03  best=ensemble19  RMSE=1.2748 °C  obs_raw=255  matched=221  [ok]
+  2025-04-04  best=ensemble15  RMSE=1.9493 °C  obs_raw=176  matched=176  [ok]
+  2025-04-05  best=ensemble03  RMSE=2.0592 °C  obs_raw=384  matched=352  [ok]
+  2025-04-06  best=ensemble07  RMSE=0.8918 °C  obs_raw=334  matched=302  [ok]
+  2025-04-07  no obs — snapshots unchanged  obs_raw=0  matched=0
+  2025-04-08  no obs — snapshots unchanged  obs_raw=0  matched=0
+  2025-04-09  best=ensemble02  RMSE=1.1255 °C  obs_raw=198  matched=198  [ok]
+  2025-04-10  best=ensemble03  RMSE=0.7353 °C  obs_raw=432  matched=396  [ok]
+  2025-04-11  best=ensemble18  RMSE=1.2792 °C  obs_raw=432  matched=396  [ok]
+  2025-04-12  best=ensemble14  RMSE=1.1616 °C  obs_raw=432  matched=396  [ok]
+  2025-04-13  best=ensemble01  RMSE=0.9634 °C  obs_raw=432  matched=396  [ok]
+  2025-04-14  best=ensemble11  RMSE=1.3708 °C  obs_raw=432  matched=396  [ok]
+  2025-04-15  best=ensemble15  RMSE=1.4445 °C  obs_raw=432  matched=396  [ok]
+  2025-04-16  best=ensemble14  RMSE=0.9173 °C  obs_raw=432  matched=396  [ok]
+  2025-04-17  best=ensemble18  RMSE=0.8037 °C  obs_raw=432  matched=396  [ok]
+  2025-04-18  best=ensemble09  RMSE=0.8937 °C  obs_raw=432  matched=396  [ok]
+  2025-04-19  best=ensemble07  RMSE=1.0070 °C  obs_raw=432  matched=396  [ok]
+  2025-04-20  best=ensemble10  RMSE=0.7464 °C  obs_raw=432  matched=396  [ok]
+  2025-04-21  best=ensemble18  RMSE=0.7680 °C  obs_raw=432  matched=396  [ok]
+  2025-04-22  best=ensemble12  RMSE=0.9482 °C  obs_raw=432  matched=396  [ok]
+  2025-04-23  best=ensemble11  RMSE=0.7629 °C  obs_raw=432  matched=396  [ok]
+  2025-04-24  best=ensemble16  RMSE=0.5859 °C  obs_raw=432  matched=396  [ok]
+  2025-04-25  best=ensemble03  RMSE=0.7159 °C  obs_raw=432  matched=396  [ok]
+  2025-04-26  best=ensemble16  RMSE=0.8279 °C  obs_raw=432  matched=396  [ok]
+  2025-04-27  best=ensemble19  RMSE=1.0051 °C  obs_raw=432  matched=396  [ok]
+  2025-04-28  best=ensemble12  RMSE=0.9587 °C  obs_raw=432  matched=396  [ok]
+  2025-04-29  best=ensemble09  RMSE=1.1538 °C  obs_raw=432  matched=396  [ok]
+  2025-04-30  best=ensemble10  RMSE=1.2165 °C  obs_raw=432  matched=396  [ok]
+  2025-05-01  best=ensemble17  RMSE=1.2498 °C  obs_raw=432  matched=396  [ok]
+  2025-05-02  best=ensemble01  RMSE=1.2024 °C  obs_raw=432  matched=396  [ok]
+  2025-05-03  best=ensemble18  RMSE=0.7280 °C  obs_raw=432  matched=396  [ok]
+  2025-05-04  best=ensemble03  RMSE=1.0067 °C  obs_raw=432  matched=396  [ok]
+  2025-05-05  best=ensemble01  RMSE=1.4266 °C  obs_raw=432  matched=396  [ok]
+  2025-05-06  best=ensemble20  RMSE=1.1327 °C  obs_raw=199  matched=163  [ok]
+  2025-05-07  no obs — snapshots unchanged  obs_raw=0  matched=0
+  2025-05-08  no obs — snapshots unchanged  obs_raw=0  matched=0
+  2025-05-09  best=ensemble18  RMSE=0.6054 °C  obs_raw=270  matched=270  [ok]
+  2025-05-10  best=ensemble11  RMSE=0.8322 °C  obs_raw=432  matched=396  [ok]
+  2025-05-11  best=ensemble08  RMSE=0.7918 °C  obs_raw=432  matched=396  [ok]
+  2025-05-12  best=ensemble14  RMSE=0.6836 °C  obs_raw=432  matched=396  [ok]
+  2025-05-13  best=ensemble19  RMSE=0.7459 °C  obs_raw=432  matched=396  [ok]
+  2025-05-14  best=ensemble07  RMSE=0.9166 °C  obs_raw=432  matched=396  [ok]
+  2025-05-15  best=ensemble09  RMSE=0.8366 °C  obs_raw=432  matched=396  [ok]
+  2025-05-16  best=ensemble04  RMSE=0.8335 °C  obs_raw=432  matched=396  [ok]
+  2025-05-17  best=ensemble02  RMSE=0.7313 °C  obs_raw=432  matched=396  [ok]
+  2025-05-18  best=ensemble18  RMSE=0.6493 °C  obs_raw=432  matched=396  [ok]
+  2025-05-19  best=ensemble12  RMSE=0.7336 °C  obs_raw=432  matched=396  [ok]
+  2025-05-20  best=ensemble06  RMSE=0.4241 °C  obs_raw=432  matched=396  [ok]
+  2025-05-21  best=ensemble11  RMSE=0.4200 °C  obs_raw=432  matched=396  [ok]
+  2025-05-22  best=ensemble13  RMSE=0.4305 °C  obs_raw=432  matched=396  [ok]
+  2025-05-23  best=ensemble15  RMSE=0.4072 °C  obs_raw=432  matched=396  [ok]
+  2025-05-24  best=ensemble04  RMSE=0.5266 °C  obs_raw=432  matched=396  [ok]
+  2025-05-25  best=ensemble14  RMSE=0.4752 °C  obs_raw=432  matched=396  [ok]
+  2025-05-26  best=ensemble14  RMSE=0.4037 °C  obs_raw=432  matched=396  [ok]
+  2025-05-27  best=ensemble15  RMSE=0.5250 °C  obs_raw=432  matched=396  [ok]
+  2025-05-28  best=ensemble16  RMSE=0.5927 °C  obs_raw=432  matched=396  [ok]
+  2025-05-29  best=ensemble11  RMSE=0.9559 °C  obs_raw=432  matched=396  [ok]
+  2025-05-30  best=ensemble07  RMSE=0.9251 °C  obs_raw=432  matched=396  [ok]
+  2025-05-31  best=ensemble03  RMSE=0.8665 °C  obs_raw=432  matched=396  [ok]
+  2025-06-01  best=ensemble07  RMSE=0.6973 °C  obs_raw=432  matched=396  [ok]
+  2025-06-02  best=ensemble05  RMSE=0.6039 °C  obs_raw=432  matched=396  [ok]
+  2025-06-03  best=ensemble09  RMSE=0.6411 °C  obs_raw=432  matched=396  [ok]
+  2025-06-04  best=ensemble07  RMSE=0.7123 °C  obs_raw=432  matched=396  [ok]
+  2025-06-05  best=ensemble05  RMSE=0.6646 °C  obs_raw=432  matched=396  [ok]
+  2025-06-06  best=ensemble20  RMSE=0.9607 °C  obs_raw=432  matched=396  [ok]
+  2025-06-07  best=ensemble11  RMSE=0.6674 °C  obs_raw=432  matched=396  [ok]
+  2025-06-08  best=ensemble19  RMSE=0.8856 °C  obs_raw=432  matched=396  [ok]
+  2025-06-09  best=ensemble03  RMSE=0.9573 °C  obs_raw=432  matched=396  [ok]
+  2025-06-10  best=ensemble03  RMSE=0.9370 °C  obs_raw=432  matched=396  [ok]
+  2025-06-11  best=ensemble16  RMSE=0.8749 °C  obs_raw=432  matched=396  [ok]
+  2025-06-12  best=ensemble14  RMSE=1.0051 °C  obs_raw=378  matched=342  [ok]
+  2025-06-13  best=ensemble20  RMSE=1.0630 °C  obs_raw=432  matched=396  [ok]
+  2025-06-14  best=ensemble13  RMSE=0.7496 °C  obs_raw=432  matched=396  [ok]
+  2025-06-15  best=ensemble04  RMSE=0.7604 °C  obs_raw=432  matched=396  [ok]
+  2025-06-16  best=ensemble01  RMSE=1.0568 °C  obs_raw=432  matched=396  [ok]
+  2025-06-17  best=ensemble16  RMSE=1.1798 °C  obs_raw=432  matched=396  [ok]
+  2025-06-18  best=ensemble08  RMSE=0.8584 °C  obs_raw=432  matched=396  [ok]
+  2025-06-19  best=ensemble12  RMSE=0.7267 °C  obs_raw=432  matched=396  [ok]
+  2025-06-20  best=ensemble01  RMSE=0.6818 °C  obs_raw=432  matched=396  [ok]
+  2025-06-21  best=ensemble14  RMSE=0.8355 °C  obs_raw=432  matched=396  [ok]
+  2025-06-22  best=ensemble17  RMSE=0.6875 °C  obs_raw=432  matched=396  [ok]
+  2025-06-23  best=ensemble05  RMSE=0.7161 °C  obs_raw=432  matched=396  [ok]
+  2025-06-24  best=ensemble12  RMSE=0.6950 °C  obs_raw=432  matched=396  [ok]
+  2025-06-25  best=ensemble09  RMSE=0.6164 °C  obs_raw=432  matched=396  [ok]
+  2025-06-26  best=ensemble01  RMSE=0.6831 °C  obs_raw=432  matched=396  [ok]
+  2025-06-27  best=ensemble08  RMSE=0.7244 °C  obs_raw=432  matched=396  [ok]
+  2025-06-28  best=ensemble02  RMSE=0.5902 °C  obs_raw=432  matched=396  [ok]
+  2025-06-29  best=ensemble03  RMSE=0.6309 °C  obs_raw=432  matched=396  [ok]
+  2025-06-30  best=ensemble14  RMSE=0.5757 °C  obs_raw=432  matched=396  [ok]
+  2025-07-01  best=ensemble02  RMSE=0.5243 °C  obs_raw=432  matched=396  [ok]
+  2025-07-02  best=ensemble16  RMSE=0.5926 °C  obs_raw=432  matched=396  [ok]
+  2025-07-03  best=ensemble08  RMSE=0.6269 °C  obs_raw=432  matched=396  [ok]
+  2025-07-04  best=ensemble19  RMSE=0.6098 °C  obs_raw=432  matched=396  [ok]
+  2025-07-05  best=ensemble01  RMSE=0.7109 °C  obs_raw=432  matched=396  [ok]
+  2025-07-06  best=ensemble07  RMSE=0.7862 °C  obs_raw=432  matched=396  [ok]
+  2025-07-07  best=ensemble08  RMSE=0.9433 °C  obs_raw=432  matched=396  [ok]
+  2025-07-08  best=ensemble07  RMSE=0.9495 °C  obs_raw=432  matched=396  [ok]
+  2025-07-09  best=ensemble13  RMSE=1.0217 °C  obs_raw=432  matched=396  [ok]
+  2025-07-10  best=ensemble09  RMSE=1.1317 °C  obs_raw=432  matched=396  [ok]
+  2025-07-11  best=ensemble20  RMSE=1.1404 °C  obs_raw=432  matched=396  [ok]
+  2025-07-12  best=ensemble13  RMSE=1.1693 °C  obs_raw=432  matched=396  [ok]
+  2025-07-13  best=ensemble06  RMSE=1.1743 °C  obs_raw=432  matched=396  [ok]
+  2025-07-14  best=ensemble14  RMSE=1.1687 °C  obs_raw=432  matched=396  [ok]
+  2025-07-15  best=ensemble17  RMSE=1.1442 °C  obs_raw=432  matched=396  [ok]
+  2025-07-16  best=ensemble12  RMSE=1.1749 °C  obs_raw=432  matched=396  [ok]
+  2025-07-17  best=ensemble06  RMSE=1.2982 °C  obs_raw=432  matched=396  [ok]
+  2025-07-18  best=ensemble07  RMSE=1.2612 °C  obs_raw=432  matched=396  [ok]
+  2025-07-19  best=ensemble04  RMSE=1.3170 °C  obs_raw=432  matched=396  [ok]
+  2025-07-20  best=ensemble20  RMSE=1.3531 °C  obs_raw=432  matched=396  [ok]
+  2025-07-21  best=ensemble20  RMSE=1.3564 °C  obs_raw=432  matched=396  [ok]
+  2025-07-22  best=ensemble07  RMSE=1.3217 °C  obs_raw=432  matched=396  [ok]
+  2025-07-23  best=ensemble08  RMSE=1.4460 °C  obs_raw=432  matched=396  [ok]
+  2025-07-24  best=ensemble01  RMSE=1.5015 °C  obs_raw=432  matched=396  [ok]
+  2025-07-25  best=ensemble13  RMSE=1.5201 °C  obs_raw=432  matched=396  [ok]
+  2025-07-26  best=ensemble12  RMSE=1.5285 °C  obs_raw=432  matched=396  [ok]
+  2025-07-27  best=ensemble05  RMSE=1.5854 °C  obs_raw=432  matched=396  [ok]
+  2025-07-28  best=ensemble02  RMSE=1.5551 °C  obs_raw=432  matched=396  [ok]
+  2025-07-29  best=ensemble10  RMSE=1.5772 °C  obs_raw=432  matched=396  [ok]
+  2025-07-30  best=ensemble06  RMSE=1.6081 °C  obs_raw=432  matched=396  [ok]
+  2025-07-31  best=ensemble15  RMSE=1.6411 °C  obs_raw=432  matched=396  [ok]
+  2025-08-01  best=ensemble05  RMSE=1.6543 °C  obs_raw=432  matched=396  [ok]
+  2025-08-02  best=ensemble10  RMSE=1.6824 °C  obs_raw=432  matched=396  [ok]
+  2025-08-03  best=ensemble06  RMSE=1.6964 °C  obs_raw=432  matched=396  [ok]
+  2025-08-04  best=ensemble03  RMSE=1.8232 °C  obs_raw=432  matched=396  [ok]
+  2025-08-05  best=ensemble07  RMSE=1.7878 °C  obs_raw=432  matched=396  [ok]
+  2025-08-06  best=ensemble09  RMSE=1.8659 °C  obs_raw=432  matched=396  [ok]
+  2025-08-07  best=ensemble18  RMSE=1.7347 °C  obs_raw=432  matched=396  [ok]
+  2025-08-08  best=ensemble11  RMSE=1.7332 °C  obs_raw=432  matched=396  [ok]
+  2025-08-09  best=ensemble17  RMSE=1.6828 °C  obs_raw=432  matched=396  [ok]
+  2025-08-10  best=ensemble14  RMSE=1.7247 °C  obs_raw=432  matched=396  [ok]
+  2025-08-11  best=ensemble03  RMSE=1.6104 °C  obs_raw=431  matched=395  [ok]
+  2025-08-12  best=ensemble02  RMSE=1.5801 °C  obs_raw=432  matched=396  [ok]
+  2025-08-13  best=ensemble07  RMSE=1.5833 °C  obs_raw=432  matched=396  [ok]
+  2025-08-14  best=ensemble16  RMSE=1.6001 °C  obs_raw=432  matched=396  [ok]
+  2025-08-15  best=ensemble14  RMSE=1.5570 °C  obs_raw=432  matched=396  [ok]
+  2025-08-16  best=ensemble10  RMSE=1.5297 °C  obs_raw=432  matched=396  [ok]
+  2025-08-17  best=ensemble12  RMSE=1.5289 °C  obs_raw=432  matched=396  [ok]
+  2025-08-18  best=ensemble02  RMSE=1.5831 °C  obs_raw=432  matched=396  [ok]
+  2025-08-19  best=ensemble11  RMSE=1.4188 °C  obs_raw=432  matched=396  [ok]
+  2025-08-20  best=ensemble17  RMSE=1.4382 °C  obs_raw=432  matched=396  [ok]
+  2025-08-21  best=ensemble11  RMSE=1.4524 °C  obs_raw=432  matched=396  [ok]
+  2025-08-22  best=ensemble14  RMSE=1.4860 °C  obs_raw=432  matched=396  [ok]
+  2025-08-23  best=ensemble18  RMSE=1.4757 °C  obs_raw=432  matched=396  [ok]
+  2025-08-24  best=ensemble13  RMSE=1.4564 °C  obs_raw=431  matched=395  [ok]
+  2025-08-25  best=ensemble14  RMSE=1.4800 °C  obs_raw=431  matched=396  [ok]
+  2025-08-26  best=ensemble01  RMSE=1.5192 °C  obs_raw=432  matched=396  [ok]
+  2025-08-27  best=ensemble12  RMSE=1.5328 °C  obs_raw=432  matched=396  [ok]
+  2025-08-28  best=ensemble08  RMSE=1.5175 °C  obs_raw=432  matched=396  [ok]
+  2025-08-29  best=ensemble10  RMSE=1.4747 °C  obs_raw=432  matched=396  [ok]
+  2025-08-30  best=ensemble07  RMSE=1.6061 °C  obs_raw=432  matched=396  [ok]
+  2025-08-31  best=ensemble15  RMSE=1.6462 °C  obs_raw=432  matched=396  [ok]
+  2025-09-01  best=ensemble20  RMSE=1.5881 °C  obs_raw=431  matched=395  [ok]
+  2025-09-02  best=ensemble14  RMSE=1.5847 °C  obs_raw=432  matched=396  [ok]
+  2025-09-03  best=ensemble07  RMSE=1.5371 °C  obs_raw=432  matched=396  [ok]
+  2025-09-04  best=ensemble05  RMSE=1.6308 °C  obs_raw=432  matched=396  [ok]
+  2025-09-05  best=ensemble06  RMSE=1.5737 °C  obs_raw=432  matched=396  [ok]
+  2025-09-06  best=ensemble08  RMSE=1.5219 °C  obs_raw=432  matched=396  [ok]
+  2025-09-07  best=ensemble06  RMSE=1.5079 °C  obs_raw=432  matched=396  [ok]
+  2025-09-08  best=ensemble02  RMSE=1.5028 °C  obs_raw=432  matched=396  [ok]
+  2025-09-09  best=ensemble14  RMSE=1.5510 °C  obs_raw=432  matched=396  [ok]
+  2025-09-10  best=ensemble01  RMSE=1.5791 °C  obs_raw=432  matched=396  [ok]
+  2025-09-11  best=ensemble14  RMSE=1.5336 °C  obs_raw=432  matched=396  [ok]
+  2025-09-12  best=ensemble13  RMSE=1.5923 °C  obs_raw=432  matched=396  [ok]
+  2025-09-13  best=ensemble08  RMSE=1.5821 °C  obs_raw=432  matched=396  [ok]
+  2025-09-14  best=ensemble05  RMSE=1.4981 °C  obs_raw=432  matched=396  [ok]
+  2025-09-15  best=ensemble17  RMSE=1.5776 °C  obs_raw=432  matched=396  [ok]
+  2025-09-16  best=ensemble12  RMSE=1.5410 °C  obs_raw=432  matched=396  [ok]
+  2025-09-17  best=ensemble16  RMSE=1.5719 °C  obs_raw=432  matched=396  [ok]
+  2025-09-18  best=ensemble16  RMSE=1.5248 °C  obs_raw=432  matched=396  [ok]
+  2025-09-19  best=ensemble19  RMSE=1.4379 °C  obs_raw=432  matched=396  [ok]
+  2025-09-20  best=ensemble17  RMSE=1.4406 °C  obs_raw=432  matched=396  [ok]
+  2025-09-21  best=ensemble10  RMSE=1.4208 °C  obs_raw=432  matched=396  [ok]
+  2025-09-22  best=ensemble16  RMSE=1.5041 °C  obs_raw=432  matched=396  [ok]
+  2025-09-23  best=ensemble06  RMSE=1.3859 °C  obs_raw=432  matched=396  [ok]
+  2025-09-24  best=ensemble03  RMSE=1.3679 °C  obs_raw=432  matched=396  [ok]
+  2025-09-25  best=ensemble03  RMSE=1.3695 °C  obs_raw=432  matched=396  [ok]
+  2025-09-26  best=ensemble02  RMSE=1.3322 °C  obs_raw=432  matched=396  [ok]
+  2025-09-27  best=ensemble19  RMSE=1.3840 °C  obs_raw=432  matched=396  [ok]
+  2025-09-28  best=ensemble13  RMSE=1.3195 °C  obs_raw=432  matched=396  [ok]
+  2025-09-29  best=ensemble03  RMSE=1.4131 °C  obs_raw=432  matched=396  [ok]
+  2025-09-30  best=ensemble10  RMSE=1.3922 °C  obs_raw=432  matched=396  [ok]
+  2025-10-01  best=ensemble02  RMSE=1.4045 °C  obs_raw=432  matched=396  [ok]
+  2025-10-02  best=ensemble19  RMSE=1.3092 °C  obs_raw=432  matched=396  [ok]
+  2025-10-03  best=ensemble19  RMSE=1.2734 °C  obs_raw=432  matched=396  [ok]
+  2025-10-04  best=ensemble12  RMSE=1.2662 °C  obs_raw=432  matched=396  [ok]
+  2025-10-05  best=ensemble11  RMSE=1.3527 °C  obs_raw=432  matched=396  [ok]
+  2025-10-06  best=ensemble06  RMSE=1.1890 °C  obs_raw=432  matched=396  [ok]
+  2025-10-07  best=ensemble02  RMSE=1.2386 °C  obs_raw=432  matched=396  [ok]
+  2025-10-08  best=ensemble19  RMSE=1.2213 °C  obs_raw=432  matched=396  [ok]
+  2025-10-09  best=ensemble06  RMSE=1.2804 °C  obs_raw=432  matched=396  [ok]
+  2025-10-10  best=ensemble07  RMSE=1.2831 °C  obs_raw=432  matched=396  [ok]
+  2025-10-11  best=ensemble18  RMSE=1.2292 °C  obs_raw=432  matched=396  [ok]
+  2025-10-12  best=ensemble16  RMSE=1.2201 °C  obs_raw=432  matched=396  [ok]
+  2025-10-13  best=ensemble02  RMSE=1.2226 °C  obs_raw=432  matched=396  [ok]
+  2025-10-14  best=ensemble14  RMSE=1.1879 °C  obs_raw=432  matched=396  [ok]
+  2025-10-15  best=ensemble19  RMSE=1.2324 °C  obs_raw=432  matched=396  [ok]
+  2025-10-16  best=ensemble05  RMSE=1.2005 °C  obs_raw=432  matched=396  [ok]
+  2025-10-17  best=ensemble04  RMSE=1.2530 °C  obs_raw=432  matched=396  [ok]
+  2025-10-18  best=ensemble06  RMSE=1.2528 °C  obs_raw=432  matched=396  [ok]
+  2025-10-19  best=ensemble01  RMSE=1.2165 °C  obs_raw=432  matched=396  [ok]
+  2025-10-20  best=ensemble12  RMSE=1.2372 °C  obs_raw=432  matched=396  [ok]
+  2025-10-21  best=ensemble20  RMSE=1.2499 °C  obs_raw=432  matched=396  [ok]
+  2025-10-22  best=ensemble01  RMSE=1.2591 °C  obs_raw=432  matched=396  [ok]
+  2025-10-23  best=ensemble07  RMSE=1.0783 °C  obs_raw=432  matched=396  [ok]
+  2025-10-24  best=ensemble04  RMSE=0.9746 °C  obs_raw=432  matched=396  [ok]
+  2025-10-25  best=ensemble15  RMSE=0.9484 °C  obs_raw=432  matched=396  [ok]
+  2025-10-26  best=ensemble06  RMSE=0.9345 °C  obs_raw=432  matched=396  [ok]
+  2025-10-27  best=ensemble07  RMSE=0.8765 °C  obs_raw=432  matched=396  [ok]
+  2025-10-28  best=ensemble02  RMSE=0.8877 °C  obs_raw=432  matched=396  [ok]
+  2025-10-29  best=ensemble01  RMSE=0.9561 °C  obs_raw=432  matched=396  [ok]
+  2025-10-30  best=ensemble06  RMSE=0.9856 °C  obs_raw=432  matched=396  [ok]
+  2025-10-31  best=ensemble14  RMSE=1.0459 °C  obs_raw=432  matched=396  [ok]
+  2025-11-01  best=ensemble01  RMSE=1.0757 °C  obs_raw=432  matched=396  [ok]
+  2025-11-02  best=ensemble13  RMSE=1.0820 °C  obs_raw=432  matched=396  [ok]
+  2025-11-03  best=ensemble06  RMSE=1.0877 °C  obs_raw=432  matched=396  [ok]
+  2025-11-04  best=ensemble20  RMSE=1.1348 °C  obs_raw=432  matched=396  [ok]
+  2025-11-05  best=ensemble10  RMSE=1.1476 °C  obs_raw=432  matched=396  [ok]
+  2025-11-06  best=ensemble13  RMSE=1.1790 °C  obs_raw=432  matched=396  [ok]
+  2025-11-07  best=ensemble03  RMSE=1.1956 °C  obs_raw=432  matched=396  [ok]
+  2025-11-08  best=ensemble16  RMSE=1.2000 °C  obs_raw=432  matched=396  [ok]
+  2025-11-09  best=ensemble14  RMSE=1.2471 °C  obs_raw=432  matched=396  [ok]
+  2025-11-10  best=ensemble13  RMSE=1.2923 °C  obs_raw=432  matched=396  [ok]
+  2025-11-11  best=ensemble20  RMSE=1.2929 °C  obs_raw=432  matched=396  [ok]
+  2025-11-12  best=ensemble05  RMSE=1.2852 °C  obs_raw=432  matched=396  [ok]
+  2025-11-13  best=ensemble19  RMSE=1.3081 °C  obs_raw=432  matched=396  [ok]
+  2025-11-14  best=ensemble08  RMSE=1.3128 °C  obs_raw=432  matched=396  [ok]
+  2025-11-15  best=ensemble07  RMSE=1.3420 °C  obs_raw=432  matched=396  [ok]
+  2025-11-16  best=ensemble07  RMSE=1.3620 °C  obs_raw=432  matched=396  [ok]
+  2025-11-17  best=ensemble05  RMSE=1.3725 °C  obs_raw=432  matched=396  [ok]
+  2025-11-18  best=ensemble18  RMSE=1.3462 °C  obs_raw=432  matched=396  [ok]
+  2025-11-19  best=ensemble08  RMSE=1.3316 °C  obs_raw=432  matched=396  [ok]
+  2025-11-20  best=ensemble11  RMSE=1.2609 °C  obs_raw=432  matched=396  [ok]
+  2025-11-21  best=ensemble08  RMSE=1.2956 °C  obs_raw=432  matched=396  [ok]
+  2025-11-22  best=ensemble13  RMSE=1.2722 °C  obs_raw=432  matched=396  [ok]
+  2025-11-23  best=ensemble09  RMSE=1.1331 °C  obs_raw=432  matched=396  [ok]
+  2025-11-24  best=ensemble03  RMSE=1.0106 °C  obs_raw=432  matched=396  [ok]
+  2025-11-25  best=ensemble15  RMSE=0.8394 °C  obs_raw=432  matched=396  [ok]
+  2025-11-26  best=ensemble19  RMSE=0.8159 °C  obs_raw=432  matched=396  [ok]
+  2025-11-27  best=ensemble08  RMSE=0.7778 °C  obs_raw=432  matched=396  [ok]
+  2025-11-28  best=ensemble10  RMSE=0.7008 °C  obs_raw=432  matched=396  [ok]
+  2025-11-29  best=ensemble11  RMSE=0.6391 °C  obs_raw=432  matched=396  [ok]
+  2025-11-30  best=ensemble05  RMSE=0.6110 °C  obs_raw=432  matched=396  [ok]
+  2025-12-01  best=ensemble12  RMSE=0.5839 °C  obs_raw=432  matched=396  [ok]
+  2025-12-02  best=ensemble11  RMSE=0.5352 °C  obs_raw=432  matched=396  [ok]
+  2025-12-03  best=ensemble13  RMSE=0.4710 °C  obs_raw=432  matched=396  [ok]
+  2025-12-04  best=ensemble04  RMSE=0.4484 °C  obs_raw=432  matched=396  [ok]
+  2025-12-05  best=ensemble18  RMSE=0.4302 °C  obs_raw=432  matched=396  [ok]
+  2025-12-06  best=ensemble03  RMSE=0.3897 °C  obs_raw=432  matched=396  [ok]
+  2025-12-07  best=ensemble14  RMSE=0.3696 °C  obs_raw=432  matched=396  [ok]
+  2025-12-08  best=ensemble14  RMSE=0.3885 °C  obs_raw=432  matched=396  [ok]
+  2025-12-09  best=ensemble05  RMSE=0.3906 °C  obs_raw=432  matched=396  [ok]
+  2025-12-10  best=ensemble07  RMSE=0.4303 °C  obs_raw=432  matched=396  [ok]
+  2025-12-11  best=ensemble19  RMSE=0.4631 °C  obs_raw=432  matched=396  [ok]
+  2025-12-12  best=ensemble01  RMSE=0.4698 °C  obs_raw=432  matched=396  [ok]
+  2025-12-13  best=ensemble18  RMSE=0.4580 °C  obs_raw=432  matched=396  [ok]
+  2025-12-14  best=ensemble17  RMSE=0.4644 °C  obs_raw=432  matched=396  [ok]
+  2025-12-15  best=ensemble19  RMSE=0.4775 °C  obs_raw=432  matched=396  [ok]
+  2025-12-16  best=ensemble11  RMSE=0.4964 °C  obs_raw=432  matched=396  [ok]
+  2025-12-17  best=ensemble15  RMSE=0.5509 °C  obs_raw=432  matched=396  [ok]
+  2025-12-18  best=ensemble16  RMSE=0.5635 °C  obs_raw=432  matched=396  [ok]
+MSE=0.7078 °C  obs_raw=432  matched=396  [ok]
+  2025-12-24  best=ensemble12  RMSE=0.6680 °C  obs_raw=432  matched=396  [ok]
+  2025-12-25  best=ensemble20  RMSE=0.5939 °C  obs_raw=432  matched=396  [ok]
+  2025-12-26  best=ensemble06  RMSE=0.6859 °C  obs_raw=432  matched=396  [ok]
+  2025-12-27  best=ensemble14  RMSE=0.7282 °C  obs_raw=432  matched=396  [ok]
+  2025-12-28  best=ensemble09  RMSE=0.7729 °C  obs_raw=432  matched=396  [ok]
+  2025-12-29  best=ensemble02  RMSE=0.8124 °C  obs_raw=432  matched=396  [ok]
+  2025-12-30  best=ensemble17  RMSE=0.7694 °C  obs_raw=432  matched=396  [ok]
+
+Geneva:
+
+Daily PF:  2025-01-01 → 2025-12-31  (364 days,  20 perturbed members)
+
+  2025-01-01  best=ensemble01  RMSE=0.5874 °C  obs_raw=648  matched=594  [ok]
+  2025-01-02  best=ensemble14  RMSE=0.6238 °C  obs_raw=648  matched=594  [ok]
+  2025-01-03  best=ensemble03  RMSE=0.5491 °C  obs_raw=648  matched=594  [ok]
+  2025-01-04  best=ensemble19  RMSE=0.5235 °C  obs_raw=648  matched=594  [ok]
+  2025-01-05  best=ensemble04  RMSE=0.5718 °C  obs_raw=648  matched=594  [ok]
+  2025-01-06  best=ensemble06  RMSE=0.5387 °C  obs_raw=648  matched=594  [ok]
+  2025-01-07  best=ensemble03  RMSE=0.4855 °C  obs_raw=648  matched=594  [ok]
+  2025-01-08  best=ensemble16  RMSE=0.4490 °C  obs_raw=648  matched=594  [ok]
+  2025-01-09  best=ensemble04  RMSE=0.5321 °C  obs_raw=648  matched=594  [ok]
+  2025-01-10  best=ensemble03  RMSE=0.4821 °C  obs_raw=648  matched=594  [ok]
+  2025-01-11  best=ensemble15  RMSE=0.4590 °C  obs_raw=648  matched=594  [ok]
+  2025-01-12  best=ensemble03  RMSE=0.4428 °C  obs_raw=648  matched=594  [ok]
+  2025-01-13  best=ensemble05  RMSE=0.3888 °C  obs_raw=648  matched=594  [ok]
+  2025-01-14  best=ensemble09  RMSE=0.3615 °C  obs_raw=648  matched=594  [ok]
+  2025-01-15  best=ensemble12  RMSE=0.3487 °C  obs_raw=660  matched=606  [ok]
+  2025-01-16  best=ensemble15  RMSE=0.3457 °C  obs_raw=672  matched=616  [ok]
+  2025-01-17  best=ensemble09  RMSE=0.3423 °C  obs_raw=672  matched=616  [ok]
+  2025-01-18  best=ensemble09  RMSE=0.3171 °C  obs_raw=672  matched=616  [ok]
+  2025-01-19  best=ensemble15  RMSE=0.3431 °C  obs_raw=672  matched=616  [ok]
+  2025-01-20  best=ensemble18  RMSE=0.3708 °C  obs_raw=672  matched=616  [ok]
+  2025-01-21  best=ensemble06  RMSE=0.3774 °C  obs_raw=672  matched=616  [ok]
+  2025-01-22  best=ensemble08  RMSE=0.3931 °C  obs_raw=672  matched=616  [ok]
+  2025-01-23  best=ensemble12  RMSE=0.4082 °C  obs_raw=672  matched=616  [ok]
+  2025-01-24  best=ensemble11  RMSE=0.4117 °C  obs_raw=672  matched=616  [ok]
+  2025-01-25  best=ensemble03  RMSE=0.4452 °C  obs_raw=672  matched=616  [ok]
+  2025-01-26  best=ensemble01  RMSE=0.4391 °C  obs_raw=672  matched=616  [ok]
+  2025-01-27  best=ensemble16  RMSE=0.4184 °C  obs_raw=672  matched=616  [ok]
+  2025-01-28  best=ensemble14  RMSE=0.4415 °C  obs_raw=642  matched=586  [ok]
+  2025-01-29  best=ensemble15  RMSE=0.3936 °C  obs_raw=624  matched=572  [ok]
+  2025-01-30  best=ensemble06  RMSE=0.3560 °C  obs_raw=624  matched=572  [ok]
+  2025-01-31  best=ensemble18  RMSE=0.3603 °C  obs_raw=598  matched=546  [ok]
+  2025-02-01  best=ensemble03  RMSE=0.3858 °C  obs_raw=624  matched=572  [ok]
+  2025-02-02  best=ensemble09  RMSE=0.3706 °C  obs_raw=624  matched=572  [ok]
+  2025-02-03  best=ensemble05  RMSE=0.3401 °C  obs_raw=624  matched=572  [ok]
+  2025-02-04  best=ensemble10  RMSE=0.3417 °C  obs_raw=624  matched=572  [ok]
+  2025-02-05  best=ensemble02  RMSE=0.3621 °C  obs_raw=624  matched=572  [ok]
+  2025-02-06  best=ensemble13  RMSE=0.3113 °C  obs_raw=624  matched=572  [ok]
+  2025-02-07  best=ensemble10  RMSE=0.3002 °C  obs_raw=378  matched=326  [ok]
+  2025-02-08  no obs — snapshots unchanged  obs_raw=0  matched=0
+  2025-02-09  best=ensemble08  RMSE=0.3098 °C  obs_raw=120  matched=120  [ok]
+  2025-02-10  best=ensemble07  RMSE=0.3195 °C  obs_raw=480  matched=440  [ok]
+  2025-02-11  best=ensemble01  RMSE=0.3288 °C  obs_raw=480  matched=440  [ok]
+  2025-02-12  best=ensemble14  RMSE=0.3491 °C  obs_raw=480  matched=440  [ok]
+  2025-02-13  best=ensemble11  RMSE=0.3562 °C  obs_raw=200  matched=160  [ok]
+  2025-02-14  best=ensemble20  RMSE=0.3201 °C  obs_raw=231  matched=231  [ok]
+  2025-02-15  best=ensemble18  RMSE=0.3115 °C  obs_raw=504  matched=462  [ok]
+  2025-02-16  best=ensemble19  RMSE=0.2869 °C  obs_raw=486  matched=444  [ok]
+  2025-02-17  best=ensemble19  RMSE=0.2459 °C  obs_raw=480  matched=440  [ok]
+  2025-02-18  best=ensemble04  RMSE=0.2389 °C  obs_raw=480  matched=440  [ok]
+  2025-02-19  best=ensemble02  RMSE=0.2387 °C  obs_raw=490  matched=450  [ok]
+  2025-02-20  best=ensemble05  RMSE=0.2621 °C  obs_raw=504  matched=462  [ok]
+  2025-02-21  best=ensemble17  RMSE=0.2791 °C  obs_raw=504  matched=462  [ok]
+  2025-02-22  best=ensemble07  RMSE=0.2983 °C  obs_raw=504  matched=462  [ok]
+  2025-02-23  best=ensemble15  RMSE=0.3550 °C  obs_raw=504  matched=462  [ok]
+  2025-02-24  best=ensemble13  RMSE=0.3485 °C  obs_raw=504  matched=462  [ok]
+  2025-02-25  best=ensemble16  RMSE=0.3849 °C  obs_raw=504  matched=462  [ok]
+  2025-02-26  best=ensemble12  RMSE=0.3037 °C  obs_raw=504  matched=462  [ok]
+  2025-02-27  best=ensemble08  RMSE=0.3782 °C  obs_raw=504  matched=462  [ok]
+  2025-02-28  best=ensemble06  RMSE=0.3875 °C  obs_raw=483  matched=441  [ok]
+  2025-03-01  best=ensemble19  RMSE=0.2653 °C  obs_raw=504  matched=462  [ok]
+  2025-03-02  best=ensemble06  RMSE=0.2573 °C  obs_raw=504  matched=462  [ok]
+  2025-03-03  best=ensemble17  RMSE=0.3256 °C  obs_raw=504  matched=462  [ok]
+  2025-03-04  best=ensemble20  RMSE=0.3430 °C  obs_raw=504  matched=462  [ok]
+  2025-03-05  best=ensemble20  RMSE=0.4081 °C  obs_raw=504  matched=462  [ok]
+  2025-03-06  best=ensemble13  RMSE=0.4320 °C  obs_raw=504  matched=462  [ok]
+  2025-03-07  best=ensemble01  RMSE=0.5502 °C  obs_raw=504  matched=462  [ok]
+  2025-03-08  best=ensemble12  RMSE=0.6154 °C  obs_raw=504  matched=462  [ok]
+  2025-03-09  best=ensemble20  RMSE=0.5115 °C  obs_raw=504  matched=462  [ok]
+  2025-03-10  best=ensemble20  RMSE=0.6197 °C  obs_raw=504  matched=462  [ok]
+  2025-03-11  best=ensemble18  RMSE=0.6938 °C  obs_raw=504  matched=462  [ok]
+  2025-03-12  best=ensemble16  RMSE=0.5261 °C  obs_raw=504  matched=462  [ok]
+  2025-03-13  best=ensemble02  RMSE=0.2184 °C  obs_raw=504  matched=462  [ok]
+  2025-03-14  best=ensemble16  RMSE=0.1190 °C  obs_raw=504  matched=462  [ok]
+  2025-03-15  best=ensemble18  RMSE=0.1591 °C  obs_raw=504  matched=462  [ok]
+  2025-03-16  best=ensemble13  RMSE=0.0873 °C  obs_raw=504  matched=462  [ok]
+  2025-03-17  best=ensemble20  RMSE=0.0675 °C  obs_raw=504  matched=462  [ok]
+  2025-03-18  best=ensemble09  RMSE=0.2844 °C  obs_raw=504  matched=462  [ok]
+  2025-03-19  best=ensemble12  RMSE=0.3879 °C  obs_raw=504  matched=462  [ok]
+  2025-03-20  best=ensemble17  RMSE=0.6372 °C  obs_raw=504  matched=462  [ok]
+  2025-03-21  best=ensemble06  RMSE=0.7526 °C  obs_raw=504  matched=462  [ok]
+  2025-03-22  best=ensemble10  RMSE=0.8783 °C  obs_raw=504  matched=462  [ok]
+  2025-03-23  best=ensemble19  RMSE=0.7423 °C  obs_raw=504  matched=462  [ok]
+  2025-03-24  best=ensemble06  RMSE=0.7654 °C  obs_raw=504  matched=462  [ok]
+  2025-03-25  best=ensemble14  RMSE=0.8837 °C  obs_raw=504  matched=462  [ok]
+  2025-03-26  best=ensemble12  RMSE=0.6555 °C  obs_raw=504  matched=462  [ok]
+  2025-03-27  best=ensemble20  RMSE=0.4857 °C  obs_raw=504  matched=462  [ok]
+  2025-03-28  best=ensemble03  RMSE=0.5095 °C  obs_raw=504  matched=462  [ok]
+  2025-03-29  best=ensemble13  RMSE=0.4341 °C  obs_raw=504  matched=462  [ok]
+  2025-03-30  best=ensemble08  RMSE=0.5496 °C  obs_raw=504  matched=462  [ok]
+  2025-03-31  best=ensemble08  RMSE=0.3338 °C  obs_raw=462  matched=420  [ok]
+  2025-04-01  best=ensemble16  RMSE=0.1901 °C  obs_raw=504  matched=462  [ok]
+  2025-04-02  best=ensemble09  RMSE=0.3335 °C  obs_raw=504  matched=462  [ok]
+  2025-04-03  best=ensemble19  RMSE=0.3954 °C  obs_raw=504  matched=462  [ok]
+  2025-04-04  best=ensemble20  RMSE=0.6531 °C  obs_raw=504  matched=462  [ok]
+  2025-04-05  best=ensemble17  RMSE=1.0552 °C  obs_raw=504  matched=462  [ok]
+  2025-04-06  best=ensemble18  RMSE=0.8743 °C  obs_raw=504  matched=462  [ok]
+  2025-04-07  best=ensemble15  RMSE=0.3594 °C  obs_raw=504  matched=462  [ok]
+  2025-04-08  best=ensemble17  RMSE=0.3410 °C  obs_raw=504  matched=462  [ok]
+  2025-04-09  best=ensemble16  RMSE=0.3997 °C  obs_raw=504  matched=462  [ok]
+  2025-04-10  best=ensemble14  RMSE=0.3514 °C  obs_raw=504  matched=462  [ok]
+  2025-04-11  best=ensemble03  RMSE=0.5633 °C  obs_raw=504  matched=462  [ok]
+  2025-04-12  best=ensemble14  RMSE=0.7917 °C  obs_raw=504  matched=462  [ok]
+  2025-04-13  best=ensemble16  RMSE=0.8803 °C  obs_raw=504  matched=462  [ok]
+  2025-04-14  best=ensemble14  RMSE=1.3233 °C  obs_raw=504  matched=462  [ok]
+  2025-04-15  best=ensemble10  RMSE=1.1626 °C  obs_raw=504  matched=462  [ok]
+  2025-04-16  best=ensemble16  RMSE=0.9220 °C  obs_raw=504  matched=462  [ok]
+  2025-04-17  best=ensemble18  RMSE=0.4138 °C  obs_raw=504  matched=462  [ok]
+  2025-04-18  best=ensemble09  RMSE=1.0041 °C  obs_raw=504  matched=462  [ok]
+  2025-04-19  best=ensemble07  RMSE=1.5045 °C  obs_raw=504  matched=462  [ok]
+  2025-04-20  best=ensemble03  RMSE=1.4685 °C  obs_raw=504  matched=462  [ok]
+  2025-04-21  best=ensemble01  RMSE=1.0178 °C  obs_raw=504  matched=462  [ok]
+  2025-04-22  best=ensemble12  RMSE=1.1581 °C  obs_raw=504  matched=462  [ok]
+  2025-04-23  best=ensemble08  RMSE=1.0560 °C  obs_raw=504  matched=462  [ok]
+  2025-04-24  best=ensemble13  RMSE=0.7126 °C  obs_raw=504  matched=462  [ok]
+  2025-04-25  best=ensemble18  RMSE=1.3207 °C  obs_raw=504  matched=462  [ok]
+  2025-04-26  best=ensemble16  RMSE=1.2994 °C  obs_raw=504  matched=462  [ok]
+  2025-04-27  best=ensemble19  RMSE=1.3239 °C  obs_raw=504  matched=462  [ok]
+  2025-04-28  best=ensemble12  RMSE=1.3739 °C  obs_raw=504  matched=462  [ok]
+  2025-04-29  best=ensemble11  RMSE=1.3663 °C  obs_raw=504  matched=462  [ok]
+  2025-04-30  best=ensemble10  RMSE=1.4396 °C  obs_raw=462  matched=420  [ok]
+  2025-05-01  best=ensemble02  RMSE=1.4259 °C  obs_raw=504  matched=462  [ok]
+  2025-05-02  best=ensemble12  RMSE=1.9350 °C  obs_raw=504  matched=462  [ok]
+  2025-05-03  best=ensemble19  RMSE=1.0972 °C  obs_raw=504  matched=462  [ok]
+  2025-05-04  best=ensemble12  RMSE=1.8308 °C  obs_raw=504  matched=462  [ok]
+  2025-05-05  best=ensemble06  RMSE=1.2869 °C  obs_raw=504  matched=462  [ok]
+  2025-05-06  best=ensemble11  RMSE=0.5189 °C  obs_raw=504  matched=462  [ok]
+  2025-05-07  best=ensemble17  RMSE=0.7619 °C  obs_raw=504  matched=462  [ok]
+  2025-05-08  best=ensemble04  RMSE=1.0385 °C  obs_raw=504  matched=462  [ok]
+  2025-05-09  best=ensemble02  RMSE=0.5867 °C  obs_raw=504  matched=462  [ok]
+  2025-05-10  best=ensemble10  RMSE=0.9391 °C  obs_raw=504  matched=462  [ok]
+  2025-05-11  best=ensemble08  RMSE=0.8249 °C  obs_raw=504  matched=462  [ok]
+  2025-05-12  best=ensemble04  RMSE=0.8294 °C  obs_raw=504  matched=462  [ok]
+  2025-05-13  best=ensemble20  RMSE=1.1760 °C  obs_raw=504  matched=462  [ok]
+  2025-05-14  best=ensemble07  RMSE=1.1068 °C  obs_raw=504  matched=462  [ok]
+  2025-05-15  best=ensemble04  RMSE=0.9468 °C  obs_raw=504  matched=462  [ok]
+  2025-05-16  best=ensemble04  RMSE=0.7245 °C  obs_raw=504  matched=462  [ok]
+  2025-05-17  best=ensemble02  RMSE=0.5168 °C  obs_raw=504  matched=462  [ok]
+  2025-05-18  best=ensemble05  RMSE=0.5583 °C  obs_raw=504  matched=462  [ok]
+  2025-05-19  best=ensemble12  RMSE=1.1910 °C  obs_raw=504  matched=462  [ok]
+  2025-05-20  best=ensemble13  RMSE=0.7386 °C  obs_raw=504  matched=462  [ok]
+  2025-05-21  best=ensemble11  RMSE=0.9473 °C  obs_raw=504  matched=462  [ok]
+  2025-05-22  best=ensemble13  RMSE=0.7335 °C  obs_raw=504  matched=462  [ok]
+  2025-05-23  best=ensemble05  RMSE=0.8580 °C  obs_raw=504  matched=462  [ok]
+  2025-05-24  best=ensemble09  RMSE=0.7686 °C  obs_raw=504  matched=462  [ok]
+  2025-05-25  best=ensemble04  RMSE=1.0412 °C  obs_raw=504  matched=462  [ok]
+  2025-05-26  best=ensemble14  RMSE=1.3325 °C  obs_raw=504  matched=462  [ok]
+  2025-05-27  best=ensemble05  RMSE=1.1438 °C  obs_raw=504  matched=462  [ok]
+  2025-05-28  best=ensemble05  RMSE=0.9379 °C  obs_raw=504  matched=462  [ok]
+  2025-05-29  best=ensemble11  RMSE=1.2045 °C  obs_raw=504  matched=462  [ok]
+  2025-05-30  best=ensemble07  RMSE=1.3107 °C  obs_raw=504  matched=462  [ok]
+  2025-05-31  best=ensemble10  RMSE=1.1169 °C  obs_raw=462  matched=420  [ok]
+  2025-06-01  best=ensemble14  RMSE=1.6719 °C  obs_raw=504  matched=462  [ok]
+  2025-06-02  best=ensemble11  RMSE=1.4545 °C  obs_raw=504  matched=462  [ok]
+  2025-06-03  best=ensemble09  RMSE=1.3876 °C  obs_raw=504  matched=462  [ok]
+  2025-06-04  best=ensemble06  RMSE=1.1050 °C  obs_raw=504  matched=462  [ok]
+  2025-06-05  best=ensemble18  RMSE=0.9089 °C  obs_raw=504  matched=462  [ok]
+  2025-06-06  best=ensemble20  RMSE=1.0589 °C  obs_raw=504  matched=462  [ok]
+  2025-06-07  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-08  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-09  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-10  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-11  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-12  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-13  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-14  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-15  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-16  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-17  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-18  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-19  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-20  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-21  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-22  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-23  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-24  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-25  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-26  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-27  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-28  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-29  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-06-30  no obs — snapshots unchanged  obs_raw=462  matched=420
+  2025-07-01  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-02  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-03  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-04  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-05  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-06  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-07  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-08  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-09  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-10  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-11  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-12  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-13  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-14  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-15  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-16  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-17  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-18  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-19  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-20  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-21  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-22  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-23  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-24  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-25  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-26  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-27  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-28  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-29  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-30  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-07-31  no obs — snapshots unchanged  obs_raw=462  matched=420
+  2025-08-01  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-08-02  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-08-03  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-08-04  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-08-05  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-08-06  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-08-07  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-08-08  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-08-09  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-08-10  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-08-11  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-08-12  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-08-13  no obs — snapshots unchanged  obs_raw=504  matched=462
+  2025-08-14  no obs — snapshots unchanged  obs_raw=168  matched=126
+  2025-08-15  no obs — snapshots unchanged  obs_raw=323  matched=323
+  2025-08-16  no obs — snapshots unchanged  obs_raw=456  matched=418
+  2025-08-17  no obs — snapshots unchanged  obs_raw=456  matched=418
+  2025-08-18  no obs — snapshots unchanged  obs_raw=456  matched=418
+  2025-08-19  no obs — snapshots unchanged  obs_raw=456  matched=418
+  2025-08-20  no obs — snapshots unchanged  obs_raw=456  matched=418
+  2025-08-21  no obs — snapshots unchanged  obs_raw=456  matched=418
+  2025-08-22  no obs — snapshots unchanged  obs_raw=391  matched=353
+  2025-08-23  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-08-24  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-08-25  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-08-26  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-08-27  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-08-28  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-08-29  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-08-30  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-08-31  no obs — snapshots unchanged  obs_raw=484  matched=440
+  2025-09-01  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-09-02  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-09-03  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-09-04  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-09-05  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-09-06  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-09-07  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-09-08  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-09-09  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-09-10  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-09-11  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-09-12  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-09-13  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-09-14  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-09-15  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-09-16  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-09-17  no obs — snapshots unchanged  obs_raw=528  matched=484
+  2025-09-18  no obs — snapshots unchanged  obs_raw=522  matched=478
+  2025-09-19  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-09-20  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-09-21  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-09-22  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-09-23  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-09-24  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-09-25  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-09-26  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-09-27  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-09-28  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-09-29  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-09-30  no obs — snapshots unchanged  obs_raw=594  matched=540
+  2025-10-01  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-02  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-03  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-04  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-05  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-06  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-07  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-08  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-09  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-10  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-11  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-12  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-13  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-14  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-15  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-16  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-17  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-18  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-19  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-20  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-21  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-22  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-23  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-24  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-25  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-26  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-27  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-28  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-29  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-30  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-10-31  no obs — snapshots unchanged  obs_raw=621  matched=567
+  2025-11-01  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-02  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-03  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-04  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-05  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-06  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-07  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-08  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-09  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-10  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-11  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-12  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-13  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-14  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-15  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-16  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-17  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-18  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-19  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-20  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-21  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-22  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-23  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-24  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-25  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-26  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-27  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-28  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-29  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-11-30  no obs — snapshots unchanged  obs_raw=621  matched=567
+  2025-12-01  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-02  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-03  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-04  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-05  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-06  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-07  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-08  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-09  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-10  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-11  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-12  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-13  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-14  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-15  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-16  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-17  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-18  no obs — snapshots unchanged  obs_raw=432  matched=378
+  2025-12-19  no obs — snapshots unchanged  obs_raw=405  matched=405
+  2025-12-20  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-21  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-22  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-23  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-24  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-25  no obs — snapshots unchanged  obs_raw=647  matched=593
+  2025-12-26  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-27  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-28  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-29  no obs — snapshots unchanged  obs_raw=648  matched=594
+  2025-12-30  no obs — snapshots unchanged  obs_raw=648  matched=594

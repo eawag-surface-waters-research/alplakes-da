@@ -1,7 +1,7 @@
 import os
 import shutil
 
-LAKE = "geneva"
+LAKE = "murten"
 ROOT = os.path.dirname(os.path.dirname(__file__))
 SRC_DIR = os.path.join(ROOT, "standard_inputs", LAKE)
 ENSEMBLE_BASE = os.path.join(ROOT, "assimilation", LAKE)
