@@ -151,7 +151,7 @@ Simstrat writes `Results_PF/simulation-snapshot.dat` at the end of every run. Be
 
 1. `*_out.dat` files are deleted; the snapshot is left in place.
 2. Simstrat detects the snapshot and restarts from it automatically.
-3. After the RMSE evaluation, `_copy_best_to_all()` overwrites every member's snapshot with the best member's or a resampled likely state — this is the particle filter resampling step.
+3. After the RMSE evaluation based on pooled Root Mean Squared Error (RMSE) (over both time (within a window) and depths), `_copy_best_to_all()` overwrites every member's snapshot with the best member's or a resampled likely state — this is the particle filter resampling step.
 
 On the very first window, a pre-generated dated snapshot (`simulation-snapshot_YYYYMMDD.dat` in the ensemble root) is used as the bootstrap state. Note that this was generated using a standard Simstrat run from 1981 up until 31.12.2024.
 
