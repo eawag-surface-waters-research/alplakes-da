@@ -123,7 +123,7 @@ python src/main_PF_resampling.py  # daily updates + resampling of likely particl
 ```
 ![Framework Schematic](../images/Framework_Schematic.png)
 
-Deterministic Filtering no (Bayesian) weighting, resampling, or covariance updates  just the daily winner state copied
+Deterministic Filtering no (Bayesian) weighting, resampling, or covariance updates --> just the daily winner state copied
 
 Key constants at the top of each file:
 
