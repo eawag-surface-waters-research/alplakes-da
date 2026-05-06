@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # ── CONFIGURE HERE ────────────────────────────────────────────────────────────
-LAKE = "upperlugano"   # change to: "murten", "geneva", "upperlugano", …
+LAKE = "murten"   # change to: "murten", "geneva", "upperlugano", …
 YEAR = 2025       # plots and RMSE are restricted to this year (None = all years)
 
 LAKE_CONFIGS = {
@@ -29,7 +29,7 @@ LAKE_CONFIGS = {
         "obs2_label": None,
         "n_members":  20,
         "ref_date":   pd.Timestamp("1981-01-01", tz="UTC"),
-        "depths":     [-1, -5, -10, -20],
+        "depths":     [-1, -5, -10, -20, -40],
     },
     "geneva": {
         "label":      "Geneva",
@@ -57,7 +57,7 @@ DEPTHS        = cfg["depths"]
 
 # ── Loaders ───────────────────────────────────────────────────────────────────
 
-'''def load_T(ensemble_dir):
+def load_T(ensemble_dir):
     path = os.path.join(ensemble_dir, "Results", "T_out.dat")
     df = pd.read_csv(path, header=0)
     df.columns = [c.strip().strip('"') for c in df.columns]
@@ -65,7 +65,7 @@ DEPTHS        = cfg["depths"]
     df = df.drop(columns=["Datetime"]).set_index("time")
     df = df[~df.index.duplicated(keep="first")]
     df.columns = df.columns.astype(float)
-    return df'''
+    return df
 
 
 def load_T_pf(ensemble_dir, nrows=None):
@@ -151,7 +151,7 @@ if OBS2_PATH and os.path.exists(OBS2_PATH):
 
 ensemble0 = load_T_pf(os.path.join(ENSEMBLE_BASE, "ensemble0"))
 
-'''members = []
+members = []
 for i in range(1, N_MEMBERS + 1):
     d = os.path.join(ENSEMBLE_BASE, f"ensemble{i}")
     if not os.path.exists(os.path.join(d, "Results", "T_out.dat")):
@@ -166,7 +166,7 @@ for m in members[1:]:
 members = [m.loc[common_index] for m in members]
 if ensemble0 is not None:
     ensemble0 = ensemble0.loc[ensemble0.index.intersection(common_index)]
-time = common_index'''
+time = common_index
 
 # ── Load PF members ───────────────────────────────────────────────────────────
 
@@ -200,7 +200,7 @@ for _td in DEPTHS:
 # ── Plot 1 — ensemble spread per depth ───────────────────────────────────────
 
 fig, axes = plt.subplots(len(DEPTHS), 1, figsize=(14, 4 * len(DEPTHS)), sharex=True)
-fig.suptitle(f"Temperature ensemble spread — {LABEL}", fontsize=13)
+#fig.suptitle(f"Temperature ensemble spread — {LABEL}", fontsize=13)
 
 for ax, target_depth in zip(axes, DEPTHS):
     col = nearest_depth_col(members[0], target_depth)
@@ -244,7 +244,7 @@ for ax, target_depth in zip(axes, DEPTHS):
         s = best_traj[bt_col][~best_traj[bt_col].index.duplicated(keep="first")]
         ax.plot(s.index, s.values, color="red", lw=1.5, ls="--", zorder=7, label="best (hindsight)")
 
-    '''if ens_traj is not None:
+    if ens_traj is not None:
         ec_col = nearest_depth_col(ens_traj, target_depth)
         s = ens_traj[ec_col][~ens_traj[ec_col].index.duplicated(keep="first")]
         ax.plot(s.index, s.values, color="darkorange", lw=1.5, zorder=7, label="ensemble mean")
@@ -252,7 +252,7 @@ for ax, target_depth in zip(axes, DEPTHS):
     if persist_traj is not None:
         pc_col = nearest_depth_col(persist_traj, target_depth)
         s = persist_traj[pc_col][~persist_traj[pc_col].index.duplicated(keep="first")]
-        ax.plot(s.index, s.values, color="green", lw=1.5, ls="--", zorder=7, label="persist (lagged best)")'''
+        ax.plot(s.index, s.values, color="green", lw=1.5, ls="--", zorder=7, label="persist (lagged best)")
 
     ax.set_ylabel("T (°C)")
     ax.set_title(f"T at {actual_depth:.0f} m depth")
@@ -362,7 +362,7 @@ def _rmses(traj):
 best_traj_rmses    = _rmses(best_traj)
 ens_traj_rmses     = _rmses(ens_traj)
 persist_rmses      = _rmses(persist_traj)
-best_traj_w_rmses  = _rmses(best_traj_w)
+'''best_traj_w_rmses  = _rmses(best_traj_w)
 ens_traj_w_rmses   = _rmses(ens_traj_w)
 persist_traj_w_rmses = _rmses(persist_traj_w)
 best_traj_r_rmses  = _rmses(best_traj_r)
@@ -370,7 +370,7 @@ ens_traj_r_rmses   = _rmses(ens_traj_r)
 persist_traj_r_rmses = _rmses(persist_traj_r)
 best_traj_r2_rmses = _rmses(best_traj_r2)
 ens_traj_r2_rmses  = _rmses(ens_traj_r2)
-persist_traj_r2_rmses = _rmses(persist_traj_r2)
+persist_traj_r2_rmses = _rmses(persist_traj_r2)'''
 
 comp_entries = []
 if e0_rmses_by_depth is not None:

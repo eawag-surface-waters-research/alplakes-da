@@ -2,6 +2,7 @@
 data/
 datasets/
 output/
+snapshot/
 
 # Ignore large files
 *.csv
