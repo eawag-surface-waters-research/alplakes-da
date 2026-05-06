@@ -121,7 +121,7 @@ python src/main_PF.py             # daily windows --> best-member selection filt
 python src/main_PF_weekly.py      # 7-day windows --> best-member selection filter
 python src/main_PF_resampling.py  # daily updates + resampling of likely particles --> weights particles by likelihood and resamples probabilistically
 ```
-(../images/Framework_Schematic.png)
+![Framework Schematic](../images/Framework_Schematic.png)
 
 Deterministic Filtering no (Bayesian) weighting, resampling, or covariance updates  just the daily winner state copied
 
