@@ -78,6 +78,7 @@ pivot = (
     .resample(f"{DT_FILT}min").mean()   # resample to hourly
     .interpolate(method="time", limit=2)  # fill gaps up to 2 h
 )
+
 # drop depths with > 30 % NaN after resampling
 nan_frac_col = pivot.isna().mean()
 keep = nan_frac_col[nan_frac_col <= 0.30].index
@@ -90,6 +91,7 @@ PLOT_DEPTHS = [d for d in PLOT_DEPTHS if d in pivot.columns]
 print(f"  {len(pivot)} timesteps × {len(depths_arr)} depths kept")
 
 # ── LOCAL GRADIENT (centred finite difference, thermocline depths only) ────────
+# if only below exist backward forward difference...
 # Neighbors shallower than THERMO_DEPTH_MIN are excluded to avoid surface
 # heating contaminating the gradient at the top of the thermocline.
 T = pivot.values                         # (N, D)

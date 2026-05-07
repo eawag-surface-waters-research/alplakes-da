@@ -26,6 +26,7 @@ import json
 import shutil
 import subprocess
 import concurrent.futures
+import time
 import numpy as np
 import pandas as pd
 from datetime import datetime, timezone, timedelta
@@ -323,23 +324,31 @@ def run_pf_daily(start_date, end_date, max_workers=None, reset=False):
 
     while current < end_date:
         window_end = min(current + timedelta(days=1), end_date)
+        t_day = time.perf_counter()
 
         # 1. Run all ensembles for this 24-h window
+        t0 = time.perf_counter()
         failed = _run_window_parallel(current, window_end, max_workers=max_workers)
         days_run += 1
+        t_docker = time.perf_counter() - t0
 
         # 1b. Accumulate individual outputs before they get overwritten next window
+        t0 = time.perf_counter()
         for i in range(0, N_MEMBERS + 1):
             _accumulate_output(os.path.join(ENSEMBLE_BASE, f"ensemble{i}"))
+        t_accum = time.perf_counter() - t0
 
         # 1c. Ensemble mean — always available, no obs needed
+        t0 = time.perf_counter()
         _accumulate_mean(member_ids)
+        t_mean = time.perf_counter() - t0
 
         # 1d. Persistence forecast — yesterday's winner running today (operational)
         if prev_best_id is not None:
             _accumulate_persist(prev_best_id)
 
         # 2. Evaluate perturbed members against obs within the window
+        t0 = time.perf_counter()
         rmses, n_obs_raw_list, n_matched_list = [], [], []
         for i in member_ids:
             t_path = os.path.join(ENSEMBLE_BASE, f"ensemble{i}", PF_RESULTS, "T_out.dat")
@@ -358,12 +367,15 @@ def run_pf_daily(start_date, end_date, max_workers=None, reset=False):
                 rmses.append(np.nan)
                 n_obs_raw_list.append(0)
                 n_matched_list.append(0)
+        t_score = time.perf_counter() - t0
 
         n_obs_raw  = max(n_obs_raw_list) if n_obs_raw_list else 0
         n_matched  = max(n_matched_list) if n_matched_list else 0
 
         # 3. Best-copy (skip if no obs overlap this window)
         valid = [(i, r) for i, r in zip(member_ids, rmses) if not np.isnan(r)]
+        t_total = time.perf_counter() - t_day
+        timing  = f"docker={t_docker:.1f}s  accum={t_accum:.1f}s  mean={t_mean:.1f}s  score={t_score:.1f}s  total={t_total:.1f}s"
         if valid:
             best_id      = min(valid, key=lambda x: x[1])[0]
             best_rmse    = min(r for _, r in valid)
@@ -373,12 +385,12 @@ def run_pf_daily(start_date, end_date, max_workers=None, reset=False):
             days_copied += 1
             status = f"failed={failed}" if failed else "ok"
             print(f"  {current.date()}  best=ensemble{best_id:02d}  RMSE={best_rmse:.4f} °C  "
-                  f"obs_raw={n_obs_raw}  matched={n_matched}  [{status}]")
+                  f"obs_raw={n_obs_raw}  matched={n_matched}  [{status}]  [{timing}]")
         else:
             obs_win = obs[(obs["time"] >= current) & (obs["time"] < window_end)]
             status = f"  failed={failed}" if failed else ""
             print(f"  {current.date()}  no obs — snapshots unchanged  "
-                  f"obs_raw={len(obs_win)}  matched={n_matched}{status}")
+                  f"obs_raw={len(obs_win)}  matched={n_matched}{status}  [{timing}]")
 
         current = window_end
 

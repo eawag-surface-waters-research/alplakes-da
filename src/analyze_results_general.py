@@ -9,7 +9,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # ── CONFIGURE HERE ────────────────────────────────────────────────────────────
 LAKE      = "geneva"   # change to: "murten", "geneva", "upperlugano", …
 YEAR      = 2025       # plots and RMSE are restricted to this year (None = all years)
-MAX_DEPTH = 32        # restrict all plots and RMSE to depths <= this (m); None = all depths
+MAX_DEPTH = None        # restrict all plots and RMSE to depths <= this (m); None = all depths
 
 LAKE_CONFIGS = {
     "upperlugano": {
@@ -200,10 +200,12 @@ for _td in DEPTHS:
 
 # ── Plot 1 — ensemble spread per depth ───────────────────────────────────────
 
-fig, axes = plt.subplots(len(DEPTHS), 1, figsize=(14, 4 * len(DEPTHS)), sharex=True)
+_plot_depths = -obs_depths  # all observation depths, negated to match model convention
+fig, axes = plt.subplots(len(_plot_depths), 1, figsize=(14, 4 * len(_plot_depths)), sharex=True, squeeze=False)
+axes = axes[:, 0]
 #fig.suptitle(f"Temperature ensemble spread — {LABEL}", fontsize=13)
 
-for ax, target_depth in zip(axes, DEPTHS):
+for ax, target_depth in zip(axes, _plot_depths):
     col = nearest_depth_col(members[0], target_depth)
     actual_depth = abs(col)
 
@@ -270,7 +272,7 @@ plt.show()
 
 # ── Plot 1b — PF spread (max–min) per depth ───────────────────────────────────
 
-fig1b, axes1b = plt.subplots(len(DEPTHS), 1, figsize=(14, 3 * len(DEPTHS)), sharex=True)
+'''fig1b, axes1b = plt.subplots(len(DEPTHS), 1, figsize=(14, 3 * len(DEPTHS)), sharex=True)
 fig1b.suptitle("")
 
 for ax, target_depth in zip(axes1b, DEPTHS):
@@ -293,7 +295,7 @@ if YEAR is not None:
                        pd.Timestamp(f"{YEAR}-12-31", tz="UTC"))
 fig1b.autofmt_xdate()
 plt.tight_layout()
-plt.show()
+plt.show()'''
 
 
 # ── RMSE pre-computation (shared by Plot 2 and Plot 3) ───────────────────────
@@ -406,6 +408,7 @@ for xi, (lbl, _, total, edgecolor) in enumerate(comp_entries):
 
 e0_xi   = next((xi for xi, e in enumerate(comp_entries) if e[1] is e0_rmses_by_depth), None)
 best_xi = next((xi for xi, e in enumerate(comp_entries) if e[1] is best_traj_rmses),   None)
+ens_xi  = next((xi for xi, e in enumerate(comp_entries) if e[1] is ens_traj_rmses),    None)
 
 def _annotate_components(ax, rmses, xi, side):
     prev = 0.0
@@ -420,6 +423,7 @@ def _annotate_components(ax, rmses, xi, side):
 
 if e0_xi   is not None and e0_rmses_by_depth is not None: _annotate_components(ax3, e0_rmses_by_depth, e0_xi,   "left")
 if best_xi is not None and best_traj_rmses   is not None: _annotate_components(ax3, best_traj_rmses,   best_xi, "right")
+if ens_xi  is not None and ens_traj_rmses    is not None: _annotate_components(ax3, ens_traj_rmses,    ens_xi,  "right")
 
 ax3.set_xticks(comp_x)
 ax3.set_xticklabels([e[0] for e in comp_entries], fontsize=9)

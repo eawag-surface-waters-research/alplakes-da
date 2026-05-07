@@ -160,8 +160,33 @@ On the very first window, a pre-generated dated snapshot (`simulation-snapshot_Y
 
 ---
 
-## Open questions
+## Open questions and challenges 
+1. How can we assimilate highly variable temperature timeseries around the thermocline and below?
 
-1. Can the forcing perturbation be improved to account for daily cycle at least for wind?
-2. Can resampling improve the filtering?
-3. Currently using RMSE across depths without weights, is there a better objective?
+We develope an adaptive filter to apply a low pass filter based on stratification and depth.
+The filter window-size (x hours) at each depth and timestep is the sum of two components:
+
+  1. Temperature gradient-driven (thermocline signal):
+       W_grad(z,t) = clip(W_MAX * |dT/dz(z,t)| / G_MAX,  W_MIN, W_MAX)
+     - |dT/dz| is computed from a 72-h trailing mean of the local gradient
+     - Depths shallower than THERMO_DEPTH_MIN are excluded (surface heating dominant, we assume that these depths are not influenced significantly thermocline internal waves)
+
+  2. Depth floor (stability below thermocline):
+       W_floor(z,t) = clip((z - z_tc(t)) / (DEEP_REF - z_tc(t)), 0, 1) * (W_DEEP - W_MIN)
+     where z_tc(t) = depth of maximum |dT/dz| at time t (time-varying thermocline depth)
+     - Zero everywhere when peak gradient < THERMO_GRAD_MIN (no thermocline, e.g. winter)
+     - Zero at and above z_tc; ramps linearly to W_DEEP at DEEP_REF when active
+
+  Final window:
+       W(z,t) = clip(W_grad(z,t) + W_floor(z),  W_MIN, W_MAX)
+
+  Zone summary:
+    surface  (z < THERMO_DEPTH_MIN)  → W_MIN only  (solar heating, not internal waves)
+    thermocline                       → dominated by W_grad, up to W_MAX
+    below thermocline                 → W_floor increases with depth, W_grad small
+
+  Applied as a causal trailing box filter (no lookahead, online-compatible option).
+
+2. Can the forcing perturbation be improved to account for daily cycle at least for wind?
+3. Can resampling improve the filtering?
+4. Currently using RMSE across depths without weights, is there a better objective?
