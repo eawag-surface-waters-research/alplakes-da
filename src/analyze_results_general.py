@@ -7,8 +7,9 @@ import matplotlib.pyplot as plt
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # ── CONFIGURE HERE ────────────────────────────────────────────────────────────
-LAKE = "murten"   # change to: "murten", "geneva", "upperlugano", …
-YEAR = 2025       # plots and RMSE are restricted to this year (None = all years)
+LAKE      = "geneva"   # change to: "murten", "geneva", "upperlugano", …
+YEAR      = 2025       # plots and RMSE are restricted to this year (None = all years)
+MAX_DEPTH = 32        # restrict all plots and RMSE to depths <= this (m); None = all depths
 
 LAKE_CONFIGS = {
     "upperlugano": {
@@ -39,7 +40,7 @@ LAKE_CONFIGS = {
         "obs2_label": None,
         "n_members":  20,
         "ref_date":   pd.Timestamp("1981-01-01", tz="UTC"),
-        "depths":     [-1, -5, -10, -20, -50, -100],
+        "depths":     [-1, -5, -10, -21, -24, 25, 30],
     },
 }
 # ─────────────────────────────────────────────────────────────────────────────
@@ -52,7 +53,7 @@ OBS2_PATH     = cfg["obs2_path"]
 OBS2_LABEL    = cfg["obs2_label"]
 N_MEMBERS     = cfg["n_members"]
 REF_DATE      = cfg["ref_date"]
-DEPTHS        = cfg["depths"]
+DEPTHS        = [d for d in cfg["depths"] if MAX_DEPTH is None or abs(d) <= MAX_DEPTH]
 
 
 # ── Loaders ───────────────────────────────────────────────────────────────────
@@ -138,6 +139,8 @@ obs = (obs.groupby(["depth", pd.Grouper(key="time", freq="1h")])["value"]
 if YEAR is not None:
     obs = obs[obs["time"].dt.year == YEAR]
 obs_depths = np.sort(obs["depth"].unique())
+if MAX_DEPTH is not None:
+    obs_depths = obs_depths[obs_depths <= MAX_DEPTH]
 
 obs2 = None
 obs2_depths = None
@@ -164,8 +167,6 @@ common_index = members[0].index
 for m in members[1:]:
     common_index = common_index.intersection(m.index)
 members = [m.loc[common_index] for m in members]
-if ensemble0 is not None:
-    ensemble0 = ensemble0.loc[ensemble0.index.intersection(common_index)]
 time = common_index
 
 # ── Load PF members ───────────────────────────────────────────────────────────
