@@ -92,6 +92,6 @@ def run_e0(start_date, end_date, reset=False):
 if __name__ == "__main__":
     run_e0(
         start_date = datetime(2025, 1, 1, tzinfo=timezone.utc),
-        end_date   = datetime(2025, 8, 13, tzinfo=timezone.utc),
+        end_date   = datetime(2025, 12, 31, tzinfo=timezone.utc),
         reset      = True,
     )

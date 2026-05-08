@@ -120,6 +120,8 @@ Outputs: `assimilation/upperlugano/ensemble{0..20}/Forcing.dat` + other unchange
 python src/main_PF.py             # daily windows --> best-member selection filter 
 python src/main_PF_weekly.py      # 7-day windows --> best-member selection filter
 python src/main_PF_resampling.py  # daily updates + resampling of likely particles --> weights particles by likelihood and resamples probabilistically
+python src/main_EnKF.py           # daily windows --> EnKF update (see below)
+
 ```
 ![Framework Schematic](../images/Framework_Schematic.png)
 
@@ -135,6 +137,10 @@ Key constants at the top of each file:
 | `PF_RESULTS` | Output subdirectory inside each ensemble dir (default `Results_PF`) |
 
 Set `reset=True` on the first run to clear any stale snapshots and trajectory files prior to running a new assimilation.
+
+## ENKF Implementation in main EnKF
+
+This script implements a stochastic Ensemble Kalman Filter (EnKF) for assimilating lake temperature observations into a multi-member Simstrat ensemble simulation. Each day, all ensemble members are propagated forward in parallel using persistent Docker containers, after which the temperature state vectors are extracted directly from the live Simstrat snapshot files. The ensemble forecast matrix \(X_f \in \mathbb{R}^{n_x \times N}\) is constructed from the vertical temperature profiles of all ensemble members, where \(n_x\) is the number of model cells and \(N\) is the ensemble size. Observations are aggregated over the assimilation window and mapped to the model grid through a linear observation operator \(H\), which selects the nearest model layer corresponding to each observation depth. The EnKF estimates the forecast covariance from the ensemble anomalies \(A = X_f - \bar{x}_f\), optionally inflated by a multiplicative factor to avoid ensemble collapse. The Kalman gain is computed as \(K = P^f H^T (H P^f H^T + R)^{-1}\), where \(R\) is the observation error covariance matrix. A stochastic EnKF update is then applied independently to each ensemble member according to \(x_a^{(i)} = x_f^{(i)} + K(y_o + \varepsilon_i - Hx_f^{(i)})\), with \(\varepsilon_i \sim \mathcal{N}(0,R)\) representing perturbed observations. The updated temperature profiles are written back into the Simstrat snapshot files, allowing the simulation to continue from the assimilated state while preserving ensemble spread and dynamically estimated uncertainty structures.
 
 ### Step 4 — Analyse results
 

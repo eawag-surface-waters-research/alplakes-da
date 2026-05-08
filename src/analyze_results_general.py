@@ -70,7 +70,7 @@ def load_T(ensemble_dir):
 
 
 def load_T_pf(ensemble_dir, nrows=None):
-    path = os.path.join(ensemble_dir, "Results_PF", "T_out_full.dat")
+    path = os.path.join(ensemble_dir, "Results_EnKF", "T_out_full.dat") #Results_PF
     if not os.path.exists(path):
         return None
     df = pd.read_csv(path, header=0, nrows=nrows)
@@ -182,7 +182,7 @@ print(f"Loaded {len(members_pf)} PF full trajectories")
 
 DAILY_DIR    = os.path.join(ENSEMBLE_BASE)
 best_traj    = load_traj(os.path.join(DAILY_DIR, "T_out_best.dat"))
-ens_traj     = load_traj(os.path.join(DAILY_DIR, "T_out_ens.dat"))
+ens_traj     = load_traj(os.path.join(DAILY_DIR, "T_out_enkf_mean.dat")) # T_out_ens.dat
 persist_traj = load_traj(os.path.join(DAILY_DIR, "T_out_persist.dat"))
 
 # ── Pre-compute aligned PF members ───────────────────────────────────────────
@@ -429,7 +429,7 @@ ax3.set_xticks(comp_x)
 ax3.set_xticklabels([e[0] for e in comp_entries], fontsize=9)
 ax3.set_ylabel("RMSE (°C)")
 ax3.set_title(f"RMSE comparison — {LABEL}")
-handles, labels_legend = ax3.get_legend_handles_labels()
-ax3.legend(handles[::-1], labels_legend[::-1], fontsize=8, loc="upper left", bbox_to_anchor=(1.01, 1), borderaxespad=0)
+#handles, labels_legend = ax3.get_legend_handles_labels()
+#ax3.legend(handles[::-1], labels_legend[::-1], fontsize=8, loc="upper left", bbox_to_anchor=(1.01, 1), borderaxespad=0)
 ax3.grid(True, axis="y", alpha=0.3)
 plt.show()

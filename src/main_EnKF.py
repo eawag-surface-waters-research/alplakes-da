@@ -39,14 +39,14 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "snapshot"))
 from snapshot_io import read_snapshot, write_snapshot
 
-LAKE = "geneva"
+LAKE = "upperlugano"
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 
 SIMSTRAT_VERSION = "3.0.4"
 N_MEMBERS        = 20
 ENSEMBLE_BASE    = os.path.join(ROOT, "assimilation", LAKE)
-OBS_PATH         = os.path.join(ROOT, "data", "T_obs_geneva.csv")
+OBS_PATH         = os.path.join(ROOT, "data", "T_obs_castagnola.csv") # change!!!
 REF_DATE         = pd.Timestamp("1981-01-01", tz="UTC")
 REF_DATE_DT      = datetime(1981, 1, 1, tzinfo=timezone.utc)
 ENKF_RESULTS     = "Results_EnKF"
@@ -57,7 +57,7 @@ SIMSTRAT_BINARY  = "/entrypoint.sh"
 SIMSTRAT_WORKDIR = "/simstrat/run"
 
 # 0.25 m obs → sim column 0 (surface layer); all other depths map to -depth.
-OBS_TO_SIM_DEPTH = {0.25: 0}
+OBS_TO_SIM_DEPTH = {0.5: 0}
 
 SIGMA_OBS = 0.5    # observation error std (°C)
 INFLATION = 1.05   # multiplicative ensemble covariance inflation
@@ -374,6 +374,10 @@ def run_enkf_daily(start_date, end_date, max_workers=None, reset=False):
                                 "simulation-snapshot.dat")
             if os.path.exists(live):
                 os.remove(live)
+        for i in range(1, N_MEMBERS + 1):
+            full = os.path.join(ENSEMBLE_BASE, f"ensemble{i}", ENKF_RESULTS, "T_out_full.dat")
+            if os.path.exists(full):
+                os.remove(full)
         for p in [MEAN_TRAJ_PATH, CTRL_TRAJ_PATH]:
             if os.path.exists(p):
                 os.remove(p)
@@ -414,6 +418,15 @@ def run_enkf_daily(start_date, end_date, max_workers=None, reset=False):
                 os.path.join(ENSEMBLE_BASE, "ensemble0", ENKF_RESULTS, "T_out.dat"),
                 CTRL_TRAJ_PATH,
             )
+
+            # 3b. Per-member full trajectories (for spread analysis)
+            def _accum_member(i):
+                _append_rows(
+                    os.path.join(ENSEMBLE_BASE, f"ensemble{i}", ENKF_RESULTS, "T_out.dat"),
+                    os.path.join(ENSEMBLE_BASE, f"ensemble{i}", ENKF_RESULTS, "T_out_full.dat"),
+                )
+            with concurrent.futures.ThreadPoolExecutor() as pool:
+                list(pool.map(_accum_member, member_ids))
 
             # 4. Window-mean observation vector
             y_obs, sim_depths = _window_obs_vector(obs, current, window_end)
