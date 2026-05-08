@@ -138,9 +138,7 @@ Key constants at the top of each file:
 
 Set `reset=True` on the first run to clear any stale snapshots and trajectory files prior to running a new assimilation.
 
-## ENKF Implementation in main EnKF
-
-## ENKF Implementation
+## ENKF Implementation in main_EnKF.py
 
 This script implements a stochastic Ensemble Kalman Filter (EnKF) for assimilating lake temperature observations into a multi-member Simstrat ensemble simulation. Each day, all ensemble members are propagated forward in parallel using persistent Docker containers, after which the temperature state vectors are extracted directly from the live Simstrat snapshot files. The ensemble forecast matrix is constructed from the vertical temperature profiles of all ensemble members, where `n_x` is the number of model cells and `N` is the ensemble size. Observations are aggregated over the assimilation window and mapped to the model grid through a linear observation operator `H`, which selects the nearest model layer corresponding to each observation depth. 
 
