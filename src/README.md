@@ -248,11 +248,10 @@ We develop an adaptive low-pass filter whose window size varies with both depth 
 
 **Step 0 — Gradient smoothing**
 
-Raw local gradients are first smoothed with a causal `GRAD_SMOOTH_H`-hour trailing mean to reduce noise before driving the window:
+Raw local gradients are first smoothed with a causal `GRAD_SMOOTH_H`-hour trailing mean (parameter $W_s$) to reduce noise before driving the window:
 
 ```math
 \bar{g}(z,t) = \frac{1}{W_s}\int_{t-W_s}^{t} \left|\frac{\partial T}{\partial z}(z,\tau)\right| d\tau
-\qquad W_s = \texttt{GRAD\_SMOOTH\_H}
 ```
 
 Depths shallower than `THERMO_DEPTH_MIN` are set to zero (surface layer dominated by solar heating, not internal waves).
@@ -263,15 +262,15 @@ Depths shallower than `THERMO_DEPTH_MIN` are set to zero (surface layer dominate
 W_\text{grad}(z,t) = \text{clip}\!\left(\frac{W_\text{MAX} \cdot \bar{g}(z,t)}{G_\text{MAX}},\ W_\text{MIN},\ W_\text{MAX}\right)
 ```
 
-where `G_MAX` is the gradient value that maps to `W_MAX` (default: 95th percentile of `ḡ` across thermocline depths, auto-computed).
+`G_MAX` is the gradient value that maps to `W_MAX` (default: 95th percentile of $\bar{g}$ across thermocline depths, auto-computed).
 
 **Component 2 — Depth floor (below thermocline)**
 
 ```math
-W_\text{floor}(z,t) = \text{clip}\!\left(\frac{z - z_{tc}(t)}{\max\!\left(D_\text{ref} - z_{tc}(t),\, 1\right)},\ 0,\ 1\right) \cdot (W_\text{DEEP} - W_\text{MIN})
+W_\text{floor}(z,t) = \text{clip}\!\left(\frac{z - z_{tc}(t)}{\max\!\left(D_\text{ref} - z_{tc}(t),\; 1\right)},\ 0,\ 1\right) \cdot (W_\text{DEEP} - W_\text{MIN})
 ```
 
-where $z_{tc}(t) = \arg\max_z \bar{g}(z,t)$ is the time-varying thermocline depth. This component is set to zero when $\max_z \bar{g}(z,t) < \texttt{THERMO\_GRAD\_MIN}$ (no active stratification, e.g. winter). The $\max(\cdot, 1)$ guards against division by zero when $z_{tc} \geq D_\text{ref}$.
+where $z_{tc}(t) = \arg\max_z \bar{g}(z,t)$ is the time-varying thermocline depth (depth of peak smoothed gradient). This component is zero when the peak gradient falls below `THERMO_GRAD_MIN` (no active stratification, e.g. winter). The $\max(\cdot, 1)$ in the denominator guards against division by zero when $z_{tc} \geq D_\text{ref}$.
 
 **Final window**
 
@@ -281,7 +280,7 @@ W(z,t) = \text{clip}\!\left(W_\text{grad}(z,t) + W_\text{floor}(z,t),\ W_\text{M
 
 | Zone | Dominant component | Typical window |
 |---|---|---|
-| $z < \texttt{THERMO\_DEPTH\_MIN}$ | none ($\bar{g} = 0$ forced) | $W_\text{MIN}$ |
+| $z <$ `THERMO_DEPTH_MIN` | none ($\bar{g} = 0$ forced) | $W_\text{MIN}$ |
 | thermocline | $W_\text{grad}$ | up to $W_\text{MAX}$ |
 | below thermocline | $W_\text{floor}$ ramps with depth | $W_\text{MIN}$ → $W_\text{DEEP}$ |
 
