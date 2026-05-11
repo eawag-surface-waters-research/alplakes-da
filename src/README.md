@@ -168,6 +168,55 @@ with:
 
 representing perturbed observations. The updated temperature profiles are written back into the Simstrat snapshot files, allowing the simulation to continue from the assimilated state while preserving ensemble spread and dynamically estimated uncertainty structures.
 
+---
+
+## Free parameters and sensitivity
+
+### Observation pre-processing (`adaptive_filter_general.py`)
+
+Controls how much high-frequency variability is removed from the raw buoy signal before it enters either filter. The adaptive window is the sum of a gradient-driven component (thermocline) and a depth-floor component (below thermocline).
+
+| Parameter | Default | Unit | Effect |
+|---|---|---|---|
+| `W_MIN` | 1.0 | h | Floor of the filter window — sets the minimum smoothing applied at all depths and times |
+| `W_MAX` | 72 | h | Ceiling of the filter window — caps smoothing at the peak thermocline gradient |
+| `W_DEEP` | 72.0 | h | Window applied at `DEEP_REF` by the depth-floor component; controls smoothing in the hypolimnion |
+| `DEEP_REF` | 40.0 | m | Depth at which the depth-floor component reaches `W_DEEP`; adjusting this scales how aggressively deep layers are smoothed |
+| `G_MAX` | `None` (auto → 95th pct) | °C/m | Gradient value that maps to `W_MAX`; when `None` the 95th percentile of observed thermocline gradients is used — a higher manual value reduces smoothing near the thermocline |
+| `GRAD_SMOOTH_H` | 72 | h | Rolling window used to smooth the gradient signal before computing window widths — larger values add inertia to the window response |
+| `THERMO_DEPTH_MIN` | 4.0 | m | Depths shallower than this are excluded from the gradient calculation to avoid surface-heating artefacts driving the window |
+| `THERMO_GRAD_MIN` | 0.1 | °C/m | Minimum peak gradient required to activate the depth-floor component — raise this to suppress deep smoothing during weakly stratified (e.g. winter) periods |
+| `DT_FILT` | 60 | min | Temporal resolution of the filter — coarser resolution reduces cost but limits retention of sub-hourly variability |
+
+### Common DA settings (`main_PF_fast.py` and `main_EnKF.py`)
+
+| Parameter | Default | Unit | Effect |
+|---|---|---|---|
+| `N_MEMBERS` | 20 | — | Ensemble size — larger ensembles give a better covariance estimate but increase runtime proportionally |
+| `OBS_TO_SIM_DEPTH` | `{0.5: 0}` | m | Remaps near-surface obs to the surface model layer; extend this dict if sensor depths do not align with model grid cells |
+| Assimilation window | 1 day | — | Frequency of DA updates — shorter windows correct more frequently but are sensitive to sparse or noisy obs |
+| `reset` | `True` | — | If `True`, clears live snapshots and trajectory files and bootstraps from the latest dated snapshot; set `False` to resume a run |
+
+### Particle filter–specific (`main_PF_fast.py`)
+
+| Parameter | Default | Unit | Effect |
+|---|---|---|---|
+| Depth-weighted RMSE (Voronoi) | enabled | — | Weights obs depths by their vertical representativeness (Voronoi cell width in metres); a sensor spanning a 5 m gap contributes 5× more than one in a 1 m gap |
+| Selection strategy | best-member copy | — | Deterministic winner-takes-all: the single member with the lowest weighted RMSE has its snapshot copied to all others — the entire ensemble collapses to one state each day obs are available |
+
+### EnKF-specific (`main_EnKF.py`)
+
+| Parameter | Default | Unit | Effect |
+|---|---|---|---|
+| `SIGMA_OBS` | 0.5 | °C | Observation error std — larger values reduce the weight given to observations; the ensemble is trusted more relative to the obs |
+| `INFLATION` | 1.05 | — | Multiplicative anomaly inflation applied before the Kalman update — counteracts ensemble collapse; too small leads to filter divergence, too large introduces spurious spread |
+| Obs aggregation | temporal mean over window | — | Observations are averaged over the daily window before the update — reduces noise but discards sub-daily variability; could be replaced by time-matched instantaneous obs |
+| Stochastic perturbations `εᵢ ~ N(0, R)` | enabled | — | Perturbed-observations EnKF — adds random noise to each member's obs draw to preserve post-analysis spread; an alternative is the deterministic ETKF (no perturbations, lower sampling noise) |
+
+**Key levers for sensitivity experiments:** `SIGMA_OBS` and `INFLATION` have the largest impact on EnKF skill; `W_MAX` and `G_MAX` determine how much high-frequency signal survives into the DA observation vector; `N_MEMBERS` jointly affects both PF and EnKF skill vs. computational cost.
+
+---
+
 ### Step 4 — Analyse results
 
 ```bash

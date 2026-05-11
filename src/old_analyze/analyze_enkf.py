@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # ── CONFIGURE HERE ────────────────────────────────────────────────────────────
-LAKE      = "geneva"
+LAKE      = "upperlugano"
 YEAR      = 2025       # None = all years
 MAX_DEPTH = None       # restrict to depths <= this (m); None = all depths
 
@@ -71,6 +71,7 @@ obs = pd.read_csv(OBS_PATH, parse_dates=["time"])
 obs["time"] = pd.to_datetime(obs["time"], utc=True)
 obs["depth"] = pd.to_numeric(obs["depth"])
 obs = obs.groupby(["depth", pd.Grouper(key="time", freq="1h")])["value"].mean().reset_index()
+obs["depth"] = obs["depth"].replace(0.5, 0.0)
 if YEAR is not None:
     obs = obs[obs["time"].dt.year == YEAR]
 obs_depths = np.sort(obs["depth"].unique())
@@ -129,20 +130,30 @@ depth_cmap = plt.cm.viridis(np.linspace(0.9, 0.1, len(common_depths)))
 ctrl_rmses = rmse_by_depth(enkf_ctrl, obs, common_depths) if enkf_ctrl is not None else None
 mean_rmses = rmse_by_depth(enkf_mean, obs, common_depths) if enkf_mean is not None else None
 
+member_rmses_arr  = None
+member_rmses_mean = None
+if members:
+    _all_mr           = np.array([rmse_by_depth(m, obs, common_depths) for m in members])
+    member_rmses_arr  = _all_mr
+    member_rmses_mean = np.nanmean(_all_mr, axis=0).tolist()
+
 # ── Print RMSE table ──────────────────────────────────────────────────────────
 
 print(f"\nRMSE (°C) — {LABEL} {YEAR}")
 header = f"{'depth':>8}" + (f"{'ctrl':>10}" if ctrl_rmses else "") \
-                         + (f"{'EnKF mean':>12}" if mean_rmses else "")
+                         + (f"{'EnKF mean':>12}" if mean_rmses else "") \
+                         + (f"{'EnKF mbrs':>12}" if member_rmses_mean else "")
 print(header)
 for i, d in enumerate(common_depths):
     row = f"{d:>8.1f} m"
-    if ctrl_rmses:  row += f"  {ctrl_rmses[i]:>8.4f}"
-    if mean_rmses:  row += f"  {mean_rmses[i]:>10.4f}"
+    if ctrl_rmses:        row += f"  {ctrl_rmses[i]:>8.4f}"
+    if mean_rmses:        row += f"  {mean_rmses[i]:>10.4f}"
+    if member_rmses_mean: row += f"  {member_rmses_mean[i]:>10.4f}"
     print(row)
 totals_row = f"{'total':>10}"
-if ctrl_rmses:  totals_row += f"  {np.nansum(ctrl_rmses):>8.4f}"
-if mean_rmses:  totals_row += f"  {np.nansum(mean_rmses):>10.4f}"
+if ctrl_rmses:        totals_row += f"  {np.nansum(ctrl_rmses):>8.4f}"
+if mean_rmses:        totals_row += f"  {np.nansum(mean_rmses):>10.4f}"
+if member_rmses_mean: totals_row += f"  {np.nansum(member_rmses_mean):>10.4f}"
 print(totals_row)
 
 # ── Plot 1 — time series per depth with ensemble spread ──────────────────────
@@ -195,8 +206,9 @@ plt.show()
 # ── Plot 2 — RMSE comparison (stacked bar) ───────────────────────────────────
 
 entries = []
-if ctrl_rmses is not None: entries.append(("ctrl\n(no DA)", ctrl_rmses, np.nansum(ctrl_rmses), "dimgrey"))
-if mean_rmses is not None: entries.append(("EnKF\nmean",   mean_rmses, np.nansum(mean_rmses),  "darkorange"))
+if ctrl_rmses is not None:        entries.append(("ctrl\n(no DA)",    ctrl_rmses,        np.nansum(ctrl_rmses),        "dimgrey"))
+if mean_rmses is not None:        entries.append(("EnKF\nmean",       mean_rmses,        np.nansum(mean_rmses),        "darkorange"))
+if member_rmses_mean is not None: entries.append(("EnKF\nmembers",    member_rmses_mean, np.nansum(member_rmses_mean), "steelblue"))
 entries.sort(key=lambda e: e[2], reverse=True)
 
 ref_total = entries[0][2]
@@ -217,6 +229,10 @@ for d_idx in range(len(common_depths)):
 
 for xi, (lbl, rmses, total, edgecolor) in enumerate(entries):
     ax2.bar(xi, total, bottom=0, color="none", edgecolor=edgecolor, lw=2, width=0.5)
+    if lbl == "EnKF\nmembers" and member_rmses_arr is not None:
+        member_totals = np.nansum(member_rmses_arr, axis=1)
+        ax2.errorbar(xi, total, yerr=member_totals.std(), fmt="none",
+                     color=edgecolor, capsize=6, lw=2, zorder=10)
     gain  = (total - ref_total) / ref_total * 100
     ann   = f"{total:.3f}°C" if xi == 0 else f"{total:.3f}°C\n{gain:+.1f}%"
     ax2.text(xi, total + 0.01 * ref_total, ann, ha="center", va="bottom", fontsize=9)

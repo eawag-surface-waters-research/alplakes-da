@@ -39,8 +39,8 @@ For each day in [start_date, end_date):
 
   5. Advance to the next day.
 
-ensemble0 (unperturbed control) is run each day but excluded from
-evaluation and best-copy — it keeps its own independent trajectory.
+ensemble0 (unperturbed control) is managed by e0_runner.py and is
+excluded from this script entirely.
 
 Docker binary note
 ------------------
@@ -64,28 +64,29 @@ from tqdm import tqdm
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from functions.par import overwrite_par_file_dates
 
-LAKE = "geneva"
+LAKE = "upperlugano"
 # ── Configuration ─────────────────────────────────────────────────────────────
 
 SIMSTRAT_VERSION  = "3.0.4"
 N_MEMBERS         = 20
 ROOT              = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ENSEMBLE_BASE     = os.path.join(ROOT, "assimilation", LAKE)
-OBS_PATH          = os.path.join(ROOT, "data", "T_obs_geneva.csv")
+OBS_PATH          = os.path.join(ROOT, "data", "filtered_upperlugano.csv")
 REF_DATE          = pd.Timestamp("1981-01-01", tz="UTC")
 REF_DATE_DT       = datetime(1981, 1, 1, tzinfo=timezone.utc)
-BEST_TRAJ_PATH    = os.path.join(ENSEMBLE_BASE, "T_out_best.dat")
-MEAN_TRAJ_PATH    = os.path.join(ENSEMBLE_BASE, "T_out_ens.dat")
-PERSIST_TRAJ_PATH = os.path.join(ENSEMBLE_BASE, "T_out_persist.dat")
-PF_RESULTS        = "Results_PF"
+PF_RESULTS        = "Results_PF_filtered"
+PF_PAR_FILE       = "Settings_PF_filtered.par"
+BEST_TRAJ_PATH    = os.path.join(ENSEMBLE_BASE, "T_out_best_filtered.dat")
+MEAN_TRAJ_PATH    = os.path.join(ENSEMBLE_BASE, "T_out_ens_filtered.dat")
+PERSIST_TRAJ_PATH = os.path.join(ENSEMBLE_BASE, "T_out_persist_filtered.dat")
 
 # Path to the Simstrat binary inside the Docker container.
 SIMSTRAT_BINARY  = "/entrypoint.sh"
 SIMSTRAT_WORKDIR = "/simstrat/run"   # volume mount point / WORKDIR inside container
 
 # Obs depths that need remapping to a sim column; all others map to -depth directly.
-# 0.25 m obs → sim column 0 (surface layer).
-OBS_TO_SIM_DEPTH = {0.25: 0}
+# 0.5 m obs → sim column 0 (surface layer).
+OBS_TO_SIM_DEPTH = {0.5: 0}
 
 # ── Persistent container management ───────────────────────────────────────────
 
@@ -115,11 +116,11 @@ def _start_containers(max_workers=None):
         return i, result.returncode
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as pool:
-        results = list(pool.map(_start_one, range(0, N_MEMBERS + 1)))
+        results = list(pool.map(_start_one, range(1, N_MEMBERS + 1)))
     failed = [i for i, code in results if code != 0]
     if failed:
         raise RuntimeError(f"Containers failed to start for members: {failed}")
-    print(f"Started {N_MEMBERS + 1} persistent containers.\n")
+    print(f"Started {N_MEMBERS} persistent containers.\n")
 
 
 def _stop_containers():
@@ -130,16 +131,16 @@ def _stop_containers():
         subprocess.run(f"docker rm   {name}", shell=True, capture_output=True)
 
     with concurrent.futures.ThreadPoolExecutor() as pool:
-        list(pool.map(_stop_one, range(0, N_MEMBERS + 1)))
+        list(pool.map(_stop_one, range(1, N_MEMBERS + 1)))
     print("Containers stopped and removed.")
 
 
 # ── Window runner (docker exec) ────────────────────────────────────────────────
 
 def _init_pf_par(ensemble_dir):
-    """Create Settings_PF.par — copy of Settings.par with Output.Path = Results_PF."""
+    """Create PF_PAR_FILE — copy of Settings.par with Output.Path = PF_RESULTS."""
     src = os.path.join(ensemble_dir, "Settings.par")
-    dst = os.path.join(ensemble_dir, "Settings_PF.par")
+    dst = os.path.join(ensemble_dir, PF_PAR_FILE)
     if os.path.exists(dst):
         return
     with open(src) as f:
@@ -175,12 +176,12 @@ def _run_one_window(i, window_start, window_end):
 
     _init_pf_par(ensemble_dir)
     overwrite_par_file_dates(
-        os.path.join(ensemble_dir, "Settings_PF.par"),
+        os.path.join(ensemble_dir, PF_PAR_FILE),
         window_start, window_end, REF_DATE_DT,
     )
 
     name = _container_name(i)
-    cmd  = f"docker exec -w {SIMSTRAT_WORKDIR} {name} {SIMSTRAT_BINARY} Settings_PF.par"
+    cmd  = f"docker exec -w {SIMSTRAT_WORKDIR} {name} {SIMSTRAT_BINARY} {PF_PAR_FILE}"
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     if result.returncode != 0:
         tqdm.write(f"[ensemble{i:02d}] FAILED  {window_start.date()}\n{result.stderr[-400:]}")
@@ -191,7 +192,7 @@ def _run_window_parallel(window_start, window_end, max_workers=None):
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as pool:
         futures = {
             pool.submit(_run_one_window, i, window_start, window_end): i
-            for i in range(0, N_MEMBERS + 1)
+            for i in range(1, N_MEMBERS + 1)
         }
         failed = []
         for future in concurrent.futures.as_completed(futures):
@@ -418,7 +419,7 @@ def run_pf_daily(start_date, end_date, max_workers=None, reset=False):
                   bootstrap picks up the latest dated snapshot
     """
     if reset:
-        for i in range(0, N_MEMBERS + 1):
+        for i in range(1, N_MEMBERS + 1):
             live = os.path.join(ENSEMBLE_BASE, f"ensemble{i}", PF_RESULTS, "simulation-snapshot.dat")
             if os.path.exists(live):
                 os.remove(live)
@@ -457,7 +458,7 @@ def run_pf_daily(start_date, end_date, max_workers=None, reset=False):
             # with concurrent.futures.ThreadPoolExecutor() as pool:
             #     pool.map(
             #         lambda i: _accumulate_output(os.path.join(ENSEMBLE_BASE, f"ensemble{i}")),
-            #         range(0, N_MEMBERS + 1),
+            #         range(1, N_MEMBERS + 1),
             #     )
             t_accum = 0.0
 

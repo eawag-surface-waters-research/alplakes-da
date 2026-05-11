@@ -46,27 +46,42 @@ LAKE = "upperlugano"
 SIMSTRAT_VERSION = "3.0.4"
 N_MEMBERS        = 20
 ENSEMBLE_BASE    = os.path.join(ROOT, "assimilation", LAKE)
-OBS_PATH         = os.path.join(ROOT, "data", "T_obs_castagnola.csv") # change!!!
 REF_DATE         = pd.Timestamp("1981-01-01", tz="UTC")
 REF_DATE_DT      = datetime(1981, 1, 1, tzinfo=timezone.utc)
-ENKF_RESULTS     = "Results_EnKF"
-MEAN_TRAJ_PATH   = os.path.join(ENSEMBLE_BASE, "T_out_enkf_mean.dat")
-CTRL_TRAJ_PATH   = os.path.join(ENSEMBLE_BASE, "T_out_enkf_ctrl.dat")
 
 SIMSTRAT_BINARY  = "/entrypoint.sh"
 SIMSTRAT_WORKDIR = "/simstrat/run"
 
-# 0.25 m obs → sim column 0 (surface layer); all other depths map to -depth.
 OBS_TO_SIM_DEPTH = {0.5: 0}
 
 SIGMA_OBS = 0.5    # observation error std (°C)
 INFLATION = 1.05   # multiplicative ensemble covariance inflation
 
+# ── Variant switch ─────────────────────────────────────────────────────────────
+# False → raw obs, Results_EnKF
+# True  → pre-filtered obs, Results_EnKF_filtered  (no files from the raw run are touched)
+USE_FILTERED = True
+
+if USE_FILTERED:
+    OBS_PATH       = os.path.join(ROOT, "data", "filtered_upperlugano.csv")
+    ENKF_RESULTS   = "Results_EnKF_filtered"
+    ENKF_PAR_FILE  = "Settings_EnKF_filtered.par"
+    CONTAINER_TAG  = "enkf_filt"
+    MEAN_TRAJ_PATH = os.path.join(ENSEMBLE_BASE, "T_out_enkf_filtered_mean.dat")
+    DIAG_PATH      = os.path.join(ENSEMBLE_BASE, "enkf_filtered_diagnostics.csv")
+else:
+    OBS_PATH       = os.path.join(ROOT, "data", "T_obs_castagnola.csv")
+    ENKF_RESULTS   = "Results_EnKF"
+    ENKF_PAR_FILE  = "Settings_EnKF.par"
+    CONTAINER_TAG  = "enkf"
+    MEAN_TRAJ_PATH = os.path.join(ENSEMBLE_BASE, "T_out_enkf_mean.dat")
+    DIAG_PATH      = os.path.join(ENSEMBLE_BASE, "enkf_diagnostics.csv")
+
 
 # ── Container management ───────────────────────────────────────────────────────
 
 def _container_name(i):
-    return f"simstrat_enkf_{i}"
+    return f"simstrat_{CONTAINER_TAG}_{i}"
 
 
 def _start_containers(max_workers=None):
@@ -107,9 +122,8 @@ def _stop_containers():
 # ── Window runner ──────────────────────────────────────────────────────────────
 
 def _init_enkf_par(ensemble_dir):
-    """Create Settings_EnKF.par — copy of Settings.par with Output.Path = Results_EnKF."""
     src = os.path.join(ensemble_dir, "Settings.par")
-    dst = os.path.join(ensemble_dir, "Settings_EnKF.par")
+    dst = os.path.join(ensemble_dir, ENKF_PAR_FILE)
     if os.path.exists(dst):
         return
     with open(src) as f:
@@ -136,12 +150,12 @@ def _run_one_window(i, window_start, window_end):
 
     _init_enkf_par(ensemble_dir)
     overwrite_par_file_dates(
-        os.path.join(ensemble_dir, "Settings_EnKF.par"),
+        os.path.join(ensemble_dir, ENKF_PAR_FILE),
         window_start, window_end, REF_DATE_DT,
     )
 
     name   = _container_name(i)
-    cmd    = f"docker exec -w {SIMSTRAT_WORKDIR} {name} {SIMSTRAT_BINARY} Settings_EnKF.par"
+    cmd    = f"docker exec -w {SIMSTRAT_WORKDIR} {name} {SIMSTRAT_BINARY} {ENKF_PAR_FILE}"
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     if result.returncode != 0:
         tqdm.write(f"[ensemble{i:02d}] FAILED  {window_start.date()}\n{result.stderr[-400:]}")
@@ -152,7 +166,7 @@ def _run_window_parallel(window_start, window_end, max_workers=None):
     with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as pool:
         futures = {
             pool.submit(_run_one_window, i, window_start, window_end): i
-            for i in range(0, N_MEMBERS + 1)
+            for i in range(1, N_MEMBERS + 1)
         }
         failed = []
         for future in concurrent.futures.as_completed(futures):
@@ -200,7 +214,7 @@ def _snap_path(i):
 
 
 def _par_path(i):
-    return os.path.join(ENSEMBLE_BASE, f"ensemble{i}", "Settings_EnKF.par")
+    return os.path.join(ENSEMBLE_BASE, f"ensemble{i}", ENKF_PAR_FILE)
 
 
 def _read_T_from_snap(member_id):
@@ -264,14 +278,15 @@ def _enkf_update(X_f, y_obs, H, sigma_obs, inflation=1.0, rng=None):
     inflation: multiplicative anomaly inflation applied before the update
     rng      : numpy Generator (created fresh if None)
 
-    Returns X_a : (n_state, N) analysis ensemble
+    Returns (X_a, diags) where diags is a dict of per-step diagnostics,
+    or (X_f.copy(), None) when no valid observations are available.
     """
     if rng is None:
         rng = np.random.default_rng()
 
     valid = ~np.isnan(y_obs)
     if not valid.any():
-        return X_f.copy()
+        return X_f.copy(), None
 
     y   = y_obs[valid]
     H_v = H[valid]
@@ -294,7 +309,22 @@ def _enkf_update(X_f, y_obs, H, sigma_obs, inflation=1.0, rng=None):
     eps   = rng.multivariate_normal(np.zeros(len(y)), R, size=N).T  # (n_obs_v, N)
     innov = (y[:, None] + eps) - H_v @ X_inf                        # (n_obs_v, N)
 
-    return X_inf + K @ innov
+    X_a = X_inf + K @ innov
+
+    # ── diagnostics ───────────────────────────────────────────────────────────
+    d    = y - (H_v @ x_bar)[:, 0]          # mean innovation per obs depth
+    S    = HPHT + R                          # innovation covariance
+    NIS  = float(d @ np.linalg.solve(S, d)) # should be ~n_obs if filter consistent
+    diags = {
+        "n_obs":       int(valid.sum()),
+        "innov_mean":  round(float(d.mean()), 6),
+        "innov_std":   round(float(d.std()),  6),
+        "NIS":         round(NIS, 6),
+        "spread_pre":  round(float(np.std(H_v @ X_f,  axis=1, ddof=1).mean()), 6),
+        "spread_post": round(float(np.std(H_v @ X_a,  axis=1, ddof=1).mean()), 6),
+    }
+
+    return X_a, diags
 
 
 # ── Output accumulation ────────────────────────────────────────────────────────
@@ -378,7 +408,7 @@ def run_enkf_daily(start_date, end_date, max_workers=None, reset=False):
             full = os.path.join(ENSEMBLE_BASE, f"ensemble{i}", ENKF_RESULTS, "T_out_full.dat")
             if os.path.exists(full):
                 os.remove(full)
-        for p in [MEAN_TRAJ_PATH, CTRL_TRAJ_PATH]:
+        for p in [MEAN_TRAJ_PATH, DIAG_PATH]:
             if os.path.exists(p):
                 os.remove(p)
         print(f"Reset: cleared {ENKF_RESULTS}/ snapshots and trajectory files.\n")
@@ -413,13 +443,7 @@ def run_enkf_daily(start_date, end_date, max_workers=None, reset=False):
             _accumulate_mean(member_ids)
             t_mean = time.perf_counter() - t0
 
-            # 3. Control (ensemble0) trajectory
-            _append_rows(
-                os.path.join(ENSEMBLE_BASE, "ensemble0", ENKF_RESULTS, "T_out.dat"),
-                CTRL_TRAJ_PATH,
-            )
-
-            # 3b. Per-member full trajectories (for spread analysis)
+            # 3. Per-member full trajectories (for spread analysis)
             def _accum_member(i):
                 _append_rows(
                     os.path.join(ENSEMBLE_BASE, f"ensemble{i}", ENKF_RESULTS, "T_out.dat"),
@@ -456,9 +480,9 @@ def run_enkf_daily(start_date, end_date, max_workers=None, reset=False):
                         lake_lev = snap_data[readable[0]][2]
 
                         # 6. Observation operator and EnKF update
-                        H   = _build_H(z_vol, lake_lev, sim_depths)
-                        X_a = _enkf_update(X_f, y_obs, H, SIGMA_OBS,
-                                           inflation=INFLATION, rng=rng)
+                        H        = _build_H(z_vol, lake_lev, sim_depths)
+                        X_a, diags = _enkf_update(X_f, y_obs, H, SIGMA_OBS,
+                                                   inflation=INFLATION, rng=rng)
 
                         # 7. Write updated T back to each member's snapshot
                         def _write_member(args):
@@ -473,6 +497,15 @@ def run_enkf_daily(start_date, end_date, max_workers=None, reset=False):
 
                         n_updated  = len(readable)
                         days_updated += 1
+
+                        # 8. Log diagnostics to CSV
+                        if diags is not None:
+                            row = {"date": current.date(), **diags}
+                            pd.DataFrame([row]).to_csv(
+                                DIAG_PATH, mode="a",
+                                header=not os.path.exists(DIAG_PATH),
+                                index=False,
+                            )
 
                     t_enkf = time.perf_counter() - t0
 
