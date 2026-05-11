@@ -320,6 +320,8 @@ W(z,t) = \text{clip}\!\left(W_\text{grad}(z,t) + W_\text{floor}(z,t),\ W_\text{M
 
 Applied as a causal trailing box filter (no lookahead, online-compatible).
 
+![Adaptive Filter](../images/adaptive_filter.png)
+
 3. Can the forcing perturbation be improved to account for daily cycle at least for wind?
 4. Can resampling improve the filtering?
 5. Currently using RMSE across depths without weights, is there a better objective?

@@ -217,24 +217,24 @@ for ax, d in zip(axes[:-1], PLOT_DEPTHS):
     ax.set_title(f"Depth {d:.2f} m")
     ax.legend(fontsize=8, loc="upper right")
     ax.grid(True, alpha=0.3)
-    for _, t0, t1 in ZOOM_PERIODS:
+    '''for _, t0, t1 in ZOOM_PERIODS:
         ax.axvspan(pd.Timestamp(t0, tz="UTC"), pd.Timestamp(t1, tz="UTC"),
-                   alpha=0.12, color="gold")
+                   alpha=0.12, color="gold")'''
 
 ax = axes[-1]
 for d in PLOT_DEPTHS:
     wh = W_df[d].resample("6h").median()
     ax.plot(wh.index, wh.values, lw=0.8, label=f"{d:.2f} m")
 ax.set_ylabel("Window (h)")
-ax.set_title(f"Filter window size — {LABEL} (shaded = zoom periods)")
+ax.set_title(f"") # Filter window size — {LABEL} (shaded = zoom periods)
 ax.legend(fontsize=8)
 ax.grid(True, alpha=0.3)
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
-for _, t0, t1 in ZOOM_PERIODS:
+'''for _, t0, t1 in ZOOM_PERIODS:
     ax.axvspan(pd.Timestamp(t0, tz="UTC"), pd.Timestamp(t1, tz="UTC"),
-               alpha=0.12, color="gold")
+               alpha=0.12, color="gold")'''
 
-fig.suptitle(LABEL, fontsize=13)
+#fig.suptitle(LABEL, fontsize=13)
 fig.tight_layout()
 fig.savefig(os.path.join(OUT_DIR, "overview_year.png"), dpi=150)
 plt.close(fig)
@@ -352,6 +352,6 @@ for d in depths_arr:
             "weight":    1,
         })
 
-out_df = pd.DataFrame(records).sort_values(["time", "depth"])
+'''out_df = pd.DataFrame(records).sort_values(["time", "depth"])
 out_df.to_csv(OUT_OBS, index=False)
-print(f"  {len(out_df):,} rows → {OUT_OBS}")
+print(f"  {len(out_df):,} rows → {OUT_OBS}")'''
