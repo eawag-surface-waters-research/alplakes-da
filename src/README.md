@@ -322,6 +322,13 @@ Applied as a causal trailing box filter (no lookahead, online-compatible).
 
 ![Adaptive Filter](../images/adaptive_filter.png)
 
+raw hourly temperature in thin transparent blue against the adaptively
+filtered signal in red. The gap between the two lines represents the high-frequency variability the filter removed at
+that depth — narrow near the surface (short window, little smoothing), wider near and below the thermocline (longer
+window, more aggressive smoothing). The last plot makes the seasonal behaviour of the filter directly visible — windows grow during summer
+stratification (strong thermocline gradient activates both the gradient-driven and depth-floor components) and collapse
+toward W_MIN in winter when the water column is well-mixed
+
 3. Can the forcing perturbation be improved to account for daily cycle at least for wind?
 4. Can resampling improve the filtering?
 5. Currently using RMSE across depths without weights, is there a better objective?
