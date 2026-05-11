@@ -269,6 +269,7 @@ The original code looped over each depth in Python to accumulate squared errors.
 **5. Exact depth lookup dict** (`OBS_TO_SIM_DEPTH`, line 88)
 
 Mapping an observation depth to the nearest model grid column used to call `np.argmin(np.abs(...))` at every depth and every timestep. A pre-built dictionary (`{obs_depth: sim_col}`) turns this into a single hash lookup with no array scan.
+
 2. How can we assimilate highly variable temperature timeseries around the thermocline and below?
 
 We develop an adaptive low-pass filter whose window size varies with both depth and time, based on stratification strength. The window at each depth and timestep is the sum of two components.
