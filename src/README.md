@@ -244,29 +244,48 @@ On the very first window, a pre-generated dated snapshot (`simulation-snapshot_Y
 ## Open questions and challenges 
 1. How can we assimilate highly variable temperature timeseries around the thermocline and below?
 
-We develope an adaptive filter to apply a low pass filter based on stratification and depth.
-The filter window-size (x hours) at each depth and timestep is the sum of two components:
+We develop an adaptive low-pass filter whose window size varies with both depth and time, based on stratification strength. The window at each depth and timestep is the sum of two components.
 
-  1. Temperature gradient-driven (thermocline signal):
-       W_grad(z,t) = clip(W_MAX * |dT/dz(z,t)| / G_MAX,  W_MIN, W_MAX)
-     - |dT/dz| is computed from a 72-h trailing mean of the local gradient
-     - Depths shallower than THERMO_DEPTH_MIN are excluded (surface heating dominant, we assume that these depths are not influenced significantly thermocline internal waves)
+**Step 0 — Gradient smoothing**
 
-  2. Depth floor (stability below thermocline):
-       W_floor(z,t) = clip((z - z_tc(t)) / (DEEP_REF - z_tc(t)), 0, 1) * (W_DEEP - W_MIN)
-     where z_tc(t) = depth of maximum |dT/dz| at time t (time-varying thermocline depth)
-     - Zero everywhere when peak gradient < THERMO_GRAD_MIN (no thermocline, e.g. winter)
-     - Zero at and above z_tc; ramps linearly to W_DEEP at DEEP_REF when active
+Raw local gradients are first smoothed with a causal `GRAD_SMOOTH_H`-hour trailing mean to reduce noise before driving the window:
 
-  Final window:
-       W(z,t) = clip(W_grad(z,t) + W_floor(z),  W_MIN, W_MAX)
+```math
+\bar{g}(z,t) = \frac{1}{W_s}\int_{t-W_s}^{t} \left|\frac{\partial T}{\partial z}(z,\tau)\right| d\tau
+\qquad W_s = \texttt{GRAD\_SMOOTH\_H}
+```
 
-  Zone summary:
-    surface  (z < THERMO_DEPTH_MIN)  → W_MIN only  (solar heating, not internal waves)
-    thermocline                       → dominated by W_grad, up to W_MAX
-    below thermocline                 → W_floor increases with depth, W_grad small
+Depths shallower than `THERMO_DEPTH_MIN` are set to zero (surface layer dominated by solar heating, not internal waves).
 
-  Applied as a causal trailing box filter (no lookahead, online-compatible option).
+**Component 1 — Gradient-driven (thermocline)**
+
+```math
+W_\text{grad}(z,t) = \text{clip}\!\left(\frac{W_\text{MAX} \cdot \bar{g}(z,t)}{G_\text{MAX}},\ W_\text{MIN},\ W_\text{MAX}\right)
+```
+
+where `G_MAX` is the gradient value that maps to `W_MAX` (default: 95th percentile of `ḡ` across thermocline depths, auto-computed).
+
+**Component 2 — Depth floor (below thermocline)**
+
+```math
+W_\text{floor}(z,t) = \text{clip}\!\left(\frac{z - z_{tc}(t)}{\max\!\left(D_\text{ref} - z_{tc}(t),\, 1\right)},\ 0,\ 1\right) \cdot (W_\text{DEEP} - W_\text{MIN})
+```
+
+where $z_{tc}(t) = \arg\max_z \bar{g}(z,t)$ is the time-varying thermocline depth. This component is set to zero when $\max_z \bar{g}(z,t) < \texttt{THERMO\_GRAD\_MIN}$ (no active stratification, e.g. winter). The $\max(\cdot, 1)$ guards against division by zero when $z_{tc} \geq D_\text{ref}$.
+
+**Final window**
+
+```math
+W(z,t) = \text{clip}\!\left(W_\text{grad}(z,t) + W_\text{floor}(z,t),\ W_\text{MIN},\ W_\text{MAX}\right)
+```
+
+| Zone | Dominant component | Typical window |
+|---|---|---|
+| $z < \texttt{THERMO\_DEPTH\_MIN}$ | none ($\bar{g} = 0$ forced) | $W_\text{MIN}$ |
+| thermocline | $W_\text{grad}$ | up to $W_\text{MAX}$ |
+| below thermocline | $W_\text{floor}$ ramps with depth | $W_\text{MIN}$ → $W_\text{DEEP}$ |
+
+Applied as a causal trailing box filter (no lookahead, online-compatible).
 
 2. Can the forcing perturbation be improved to account for daily cycle at least for wind?
 3. Can resampling improve the filtering?
