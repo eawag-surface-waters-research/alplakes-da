@@ -289,3 +289,21 @@ Applied as a causal trailing box filter (no lookahead, online-compatible).
 2. Can the forcing perturbation be improved to account for daily cycle at least for wind?
 3. Can resampling improve the filtering?
 4. Currently using RMSE across depths without weights, is there a better objective?
+
+`main_PF_fast.py` now uses a **depth-weighted RMSE** where each obs depth is weighted by its Voronoi cell width — half the distance to its nearest neighbours — so that a sensor spanning a larger depth interval contributes proportionally more to the score:
+
+```math
+w_d = \begin{cases}
+\dfrac{z_2 - z_1}{2} & d = 1 \text{ (shallowest)} \\[6pt]
+\dfrac{z_{d+1} - z_{d-1}}{2} & 1 < d < D \\[6pt]
+\dfrac{z_D - z_{D-1}}{2} & d = D \text{ (deepest)}
+\end{cases}
+```
+
+The pooled score over all matched obs times $t$ and depths $d$ within the daily window is then:
+
+```math
+\text{RMSE} = \sqrt{\frac{\displaystyle\sum_{t,\,d} w_d \cdot \bigl(T_\text{sim}(t,d) - T_\text{obs}(t,d)\bigr)^2}{\displaystyle\sum_{t,\,d} w_d}}
+```
+
+For uniformly spaced 1 m sensors every $w_d = 1$ and this reduces to the plain RMSE. For the Castagnola buoy, gaps between sensors widen below the thermocline, so deep sensors receive higher weight and the best-member selection is not dominated by the densely sampled surface layer. The EnKF does not yet apply equivalent depth weighting — all obs depths currently enter with the same `SIGMA_OBS`.
