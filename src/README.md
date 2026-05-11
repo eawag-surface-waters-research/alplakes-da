@@ -262,13 +262,19 @@ Rather than running member 1, waiting for it to finish, then running member 2, e
 
 After all containers finish, the 20 `T_out.dat` files are loaded and scored against observations concurrently in another `ThreadPoolExecutor`, so file I/O for all members overlaps.
 
+*Why it is safe:* each thread reads a different file and writes only to a local variable; no shared mutable state exists between threads, so there is no risk of one thread corrupting another's result.
+
 **4. Vectorised RMSE** (`_rmse_in_window`, line 251)
 
 The original code looped over each depth in Python to accumulate squared errors. The fast version pivots both the simulation and observation data into `(time × depth)` NumPy matrices and computes the entire weighted RMSE in two matrix operations (`sq_err * w_mat`), eliminating the inner Python loop.
 
+*Why it is safe:* this is a pure arithmetic refactor — the formula is identical to the loop version, just expressed as matrix operations. NumPy operates on copies of the data (`sim_vals`, `obs_vals`) extracted from the DataFrames, so the original data is never modified.
+
 **5. Exact depth lookup dict** (`OBS_TO_SIM_DEPTH`, line 88)
 
 Mapping an observation depth to the nearest model grid column used to call `np.argmin(np.abs(...))` at every depth and every timestep. A pre-built dictionary (`{obs_depth: sim_col}`) turns this into a single hash lookup with no array scan.
+
+*Why it is safe:* the dictionary is built once before the loop from the full set of unique observation depths, so every depth that appears during the run is guaranteed to be present. The fallback `dict.get(d, -d)` in `_obs_to_sim_col` means an unmapped depth silently maps to its negative value, which is the same convention the rest of the code uses for depths measured downward from the surface.
 
 2. How can we assimilate highly variable temperature timeseries around the thermocline and below?
 
