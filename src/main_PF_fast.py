@@ -2,14 +2,13 @@
 Particle-filter (best-member copy) data assimilation for Simstrat ensembles.
 Speed-optimised variant of main_PF.py.
 
-Key differences vs main_PF.py
+Key differences vs main_PF.py (V1)
 ------------------------------
 1. Persistent Docker containers — containers are started once at the beginning
    of the run via ``_start_containers`` and torn down at the end via
    ``_stop_containers``.  Each daily window invokes the binary with
    ``docker exec`` instead of ``docker run``, eliminating ~1-2 s of container
-   startup overhead per member per day
-   (21 members × 365 days ≈ 15 000 cold starts avoided).
+   startup overhead per member per day (21 members × 365 days ≈ 15 000 cold starts avoided).
 
 2. Parallel I/O — ``_accumulate_output``, ``_copy_best_to_all``, and
    ``_accumulate_mean`` all use ThreadPoolExecutor so file copies and reads
@@ -203,7 +202,7 @@ def _run_window_parallel(window_start, window_end, max_workers=None):
 
 
 # ── Data loading ───────────────────────────────────────────────────────────────
-
+# loading assimilated obs
 def _load_obs():
     obs = pd.read_csv(OBS_PATH, parse_dates=["time"])
     obs["time"] = pd.to_datetime(obs["time"], utc=True)
@@ -213,7 +212,7 @@ def _load_obs():
     )
     return obs
 
-
+# reading outputs
 def _load_T(ensemble_dir):
     path = os.path.join(ensemble_dir, PF_RESULTS, "T_out.dat")
     df = pd.read_csv(path, header=0)

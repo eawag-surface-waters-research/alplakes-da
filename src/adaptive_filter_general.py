@@ -69,7 +69,7 @@ PLOT_DEPTHS = list(cfg["plot_depths"])
 
 os.makedirs(OUT_DIR, exist_ok=True)
 
-# ── FILTER PARAMETERS (shared across lakes) ───────────────────────────────────
+# ── FILTER PARAMETERS (shared across lakes for now ...) ───────────────────────────────────
 W_MIN            = 1.0    # h  – minimum window
 W_MAX            = 72     # h  – maximum window (peak thermocline gradient)
 W_DEEP           = 72.0   # h  – depth-floor window at DEEP_REF
@@ -118,71 +118,88 @@ print(f"  {len(pivot)} timesteps × {len(depths_arr)} depths kept")
 print(f"  Plot depths: {PLOT_DEPTHS}")
 
 # ── LOCAL GRADIENT ────────────────────────────────────────────────────────────
+# This block computes a depth- and time-dependent weighting field based on the vertical temperature gradient (thermocline strength).
+# 1. Compute local vertical temperature gradients
+# T(t,z) rows = time, column are depths
+# G contain vertical gradients
 T = pivot.values
 G = np.full_like(T, np.nan)
-for i in range(len(depths_arr)):
-    d    = depths_arr[i]
-    i_lo = next((j for j in range(i-1, -1, -1) if depths_arr[j] >= THERMO_DEPTH_MIN), None)
-    i_hi = i + 1 if i + 1 < len(depths_arr) else None
-    if i_lo is not None and i_hi is not None:
+for i in range(len(depths_arr)): # Loop over depth levels
+    d    = depths_arr[i] # current depth
+    i_lo = next((j for j in range(i-1, -1, -1) if depths_arr[j] >= THERMO_DEPTH_MIN), None) # neighbour 1, deeper than minimum thermocline depth
+    i_hi = i + 1 if i + 1 < len(depths_arr) else None # neighbour 2
+    # Compute finite-difference gradient
+    if i_lo is not None and i_hi is not None: # Central-ish difference
         dz = depths_arr[i_hi] - depths_arr[i_lo]
         G[:, i] = np.abs(T[:, i_hi] - T[:, i_lo]) / dz
-    elif i_hi is not None:
+    elif i_hi is not None: # Forward difference
         dz = depths_arr[i_hi] - d
         G[:, i] = np.abs(T[:, i_hi] - T[:, i]) / dz
-    elif i_lo is not None:
+    elif i_lo is not None: # Backward difference
         dz = d - depths_arr[i_lo]
         G[:, i] = np.abs(T[:, i] - T[:, i_lo]) / dz
 
+# Convert to DataFrame
 grad_df = pd.DataFrame(G, index=pivot.index, columns=pivot.columns)
 shallow_cols = [d for d in grad_df.columns if d < THERMO_DEPTH_MIN]
-grad_df[shallow_cols] = 0.0
+grad_df[shallow_cols] = 0.0 # Force shallow gradients to zero
 
+# Temporal smoothing. Convert smoothing window from hours to number of timesteps.
 gs = int(GRAD_SMOOTH_H * 60 / DT_FILT)
 grad_smooth = grad_df.rolling(gs, center=False, min_periods=gs // 2).mean()
 grad_smooth = grad_smooth.ffill().bfill().fillna(0.0)
 
+# Estimate a characteristic maximum gradient
 thermo_cols = [d for d in grad_smooth.columns if d >= THERMO_DEPTH_MIN]
-G_MAX_auto  = np.nanpercentile(grad_smooth[thermo_cols].values, 95)
+G_MAX_auto  = np.nanpercentile(grad_smooth[thermo_cols].values, 95) # Automatic scaling
 print(f"  G_MAX auto (95th pct of thermocline gradients): {G_MAX_auto:.3f} °C/m  "
       f"({'using auto' if G_MAX is None else f'overridden with G_MAX={G_MAX:.2f}'})")
 G_MAX_use = G_MAX if G_MAX is not None else G_MAX_auto
-
+# Convert gradients into weights: weak gradient → low weight, strong gradient → high weight. Keeps weights bounded.
 W_df = (grad_smooth / G_MAX_use * W_MAX).clip(W_MIN, W_MAX)
-
+# Depth of strongest gradient (estimated thermocline depth)
 thermo_depth_t  = grad_smooth[thermo_cols].idxmax(axis=1)
+# Determine whether thermocline exists
 thermo_active_t = grad_smooth[thermo_cols].max(axis=1) >= THERMO_GRAD_MIN
 
+# Build deep-water enhancement. This will add extra weight below the thermocline.
 depth_floor_arr = np.zeros((len(W_df), len(depths_arr)))
-for i, (z_tc, active) in enumerate(zip(thermo_depth_t.values, thermo_active_t.values)):
-    if not active:
+for i, (z_tc, active) in enumerate(zip(thermo_depth_t.values, thermo_active_t.values)): # Loop over time
+    if not active: # Skip if no thermocline
         continue
-    span = max(DEEP_REF - z_tc, 1.0)
+    span = max(DEEP_REF - z_tc, 1.0) # Distance between thermocline and deep reference depth
+    # ramp: above thermocline → no extra weight, below thermocline → progressively stronger weight = stable stratified water gets emphasized
     depth_floor_arr[i] = np.clip((depths_arr - z_tc) / span, 0.0, 1.0) * (W_DEEP - W_MIN)
 
 depth_floor_df = pd.DataFrame(depth_floor_arr, index=W_df.index, columns=W_df.columns)
+# Add deep enhancement to original weights
 W_df = (W_df + depth_floor_df).clip(W_MIN, W_MAX)
 
 # ── CAUSAL TRAILING BOX FILTER ────────────────────────────────────────────────
-def variable_box_filter(x, widths):
+# Now we have W_df containing adaptive smoothing widths we can apply it to the raw signal
+def variable_box_filter(x, widths): # x = time series, widths[i] = smoothing window length at time i
     x_fill = np.where(np.isnan(x), 0.0, x)
     valid  = (~np.isnan(x)).astype(float)
+    # classic optimization trick --> Instead of recomputing moving averages repeatedly use cumulative sums
     cs     = np.concatenate([[0.0], np.cumsum(x_fill)])
     cv     = np.concatenate([[0.0], np.cumsum(valid)])
     result = np.empty(len(x))
-    for i in range(len(x)):
-        lo = max(0, i - widths[i] + 1)
+    for i in range(len(x)): # At each timestep
+        # Define trailing window
+        lo = max(0, i - widths[i] + 1) 
         hi = i + 1
-        n  = cv[hi] - cv[lo]
-        result[i] = (cs[hi] - cs[lo]) / n if n > 0 else np.nan
-    return result
+        n  = cv[hi] - cv[lo] # Count valid samples
+        result[i] = (cs[hi] - cs[lo]) / n if n > 0 else np.nan # Compute average
+    return result # smoothed series
 
+# Apply filter depth-by-depth
 print("Filtering …")
 filtered = pd.DataFrame(index=pivot.index, columns=pivot.columns, dtype=float)
-for d in depths_arr:
-    widths = np.maximum(1, np.round(W_df[d].values * 60 / DT_FILT).astype(int))
+for d in depths_arr: # Loop through depths
+    widths = np.maximum(1, np.round(W_df[d].values * 60 / DT_FILT).astype(int)) # Convert weights to window widths, ensures min = 1
     filtered[d] = variable_box_filter(pivot[d].values, widths)
 
+# Quality check
 nan_frac = filtered.isna().mean().mean()
 print(f"  Done. NaN fraction in filtered output: {nan_frac:.4f}")
 if nan_frac > 0.01:

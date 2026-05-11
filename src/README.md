@@ -237,12 +237,39 @@ Simstrat writes `Results_PF/simulation-snapshot.dat` at the end of every run. Be
 2. Simstrat detects the snapshot and restarts from it automatically.
 3. After the RMSE evaluation based on pooled Root Mean Squared Error (RMSE) (over both time (within a window) and depths), `_copy_best_to_all()` overwrites every member's snapshot with the best member's or a resampled likely state — this is the particle filter resampling step.
 
-On the very first window, a pre-generated dated snapshot (`simulation-snapshot_YYYYMMDD.dat` in the ensemble root) is used as the bootstrap state. Note that this was generated using a standard Simstrat run from 1981 up until 31.12.2024.
+On the very first window, a pre-generated dated snapshot (`simulation-snapshot_YYYYMMDD.dat` in the ensemble root) is used as the bootstrap state. Note that this was generated using a standard Simstrat run from 1981 up until 31.12.2024 (model spin up).
 
 ---
 
 ## Open questions and challenges 
-1. How can we assimilate highly variable temperature timeseries around the thermocline and below?
+1. How can we make the assimilation faster?
+
+`main_PF_fast.py` implements five optimisations over the original `main_PF.py`. Each one targets a different bottleneck in the daily loop.
+
+**1. Persistent Docker containers** (`_start_containers`, line 96 — `_run_one_window`, line 183)
+
+The naive approach calls `docker run` for every member on every day, which takes 1–2 s just to boot the container — before Simstrat even starts. `main_PF_fast.py` instead starts one container per member at the beginning of the entire run (`docker run … sleep infinity`) and then uses `docker exec` for each daily window. The container stays alive and ready; only the par file dates are patched between calls. For 20 members × 365 days this avoids ~7 300 cold starts.
+
+*Why it is safe:* each container mounts only its own ensemble directory and writes only to its own `Results_PF/` subdirectory, so concurrent containers can never overwrite each other's files.
+
+**2. All members run in parallel per day** (`_run_window_parallel`, line 190)
+
+Rather than running member 1, waiting for it to finish, then running member 2, etc., all 20 `docker exec` calls are submitted at once to a `ThreadPoolExecutor`. The wall-clock time per day becomes the time of the *slowest* member, not 20× the time of one member.
+
+*Why it is safe:* the 20 Simstrat processes are completely independent — they read different input files and write to different output directories. Python threads are used only to dispatch subprocesses; the GIL is not an issue here because the work happens inside the container processes, not in Python.
+
+**3. Parallel RMSE scoring** (`_load_and_score` inside `run_pf_daily`, line 475)
+
+After all containers finish, the 20 `T_out.dat` files are loaded and scored against observations concurrently in another `ThreadPoolExecutor`, so file I/O for all members overlaps.
+
+**4. Vectorised RMSE** (`_rmse_in_window`, line 251)
+
+The original code looped over each depth in Python to accumulate squared errors. The fast version pivots both the simulation and observation data into `(time × depth)` NumPy matrices and computes the entire weighted RMSE in two matrix operations (`sq_err * w_mat`), eliminating the inner Python loop.
+
+**5. Exact depth lookup dict** (`OBS_TO_SIM_DEPTH`, line 88)
+
+Mapping an observation depth to the nearest model grid column used to call `np.argmin(np.abs(...))` at every depth and every timestep. A pre-built dictionary (`{obs_depth: sim_col}`) turns this into a single hash lookup with no array scan.
+2. How can we assimilate highly variable temperature timeseries around the thermocline and below?
 
 We develop an adaptive low-pass filter whose window size varies with both depth and time, based on stratification strength. The window at each depth and timestep is the sum of two components.
 
@@ -286,9 +313,9 @@ W(z,t) = \text{clip}\!\left(W_\text{grad}(z,t) + W_\text{floor}(z,t),\ W_\text{M
 
 Applied as a causal trailing box filter (no lookahead, online-compatible).
 
-2. Can the forcing perturbation be improved to account for daily cycle at least for wind?
-3. Can resampling improve the filtering?
-4. Currently using RMSE across depths without weights, is there a better objective?
+3. Can the forcing perturbation be improved to account for daily cycle at least for wind?
+4. Can resampling improve the filtering?
+5. Currently using RMSE across depths without weights, is there a better objective?
 
 `main_PF_fast.py` now uses a **depth-weighted RMSE** where each obs depth is weighted by its Voronoi cell width — half the distance to its nearest neighbours — so that a sensor spanning a larger depth interval contributes proportionally more to the score:
 
