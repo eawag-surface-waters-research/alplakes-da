@@ -13,31 +13,34 @@ MAX_DEPTH = None
 
 LAKE_CONFIGS = {
     "upperlugano": {
-        "label":      "Upper Lugano",
-        "folder":     "upperlugano",
-        "obs_path":   os.path.join(ROOT, "data", "T_obs_castagnola.csv"),
-        "obs2_path":  os.path.join(ROOT, "data", "T_obs_gandria_new_raw.csv"),
-        "obs2_label": "gandria",
-        "ref_date":   pd.Timestamp("1981-01-01", tz="UTC"),
-        "n_members":  20,
+        "label":         "Upper Lugano",
+        "folder":        "upperlugano",
+        "obs_path":      os.path.join(ROOT, "data", "T_obs_castagnola.csv"),
+        "obs2_path":     os.path.join(ROOT, "data", "T_obs_gandria_new_raw.csv"),
+        "obs2_label":    "gandria",
+        "ref_date":      pd.Timestamp("1981-01-01", tz="UTC"),
+        "n_members":     20,
+        "pf_mean_subdir": "results_daily_update",
     },
     "murten": {
-        "label":      "Murten",
-        "folder":     "murten",
-        "obs_path":   os.path.join(ROOT, "data", "T_obs_murten.csv"),
-        "obs2_path":  None,
-        "obs2_label": None,
-        "ref_date":   pd.Timestamp("1981-01-01", tz="UTC"),
-        "n_members":  20,
+        "label":         "Murten",
+        "folder":        "murten",
+        "obs_path":      os.path.join(ROOT, "data", "T_obs_murten.csv"),
+        "obs2_path":     None,
+        "obs2_label":    None,
+        "ref_date":      pd.Timestamp("1981-01-01", tz="UTC"),
+        "n_members":     20,
+        "pf_mean_subdir": "results_daily_update",
     },
     "geneva": {
-        "label":      "Geneva",
-        "folder":     "geneva",
-        "obs_path":   os.path.join(ROOT, "data", "T_obs_geneva.csv"),
-        "obs2_path":  None,
-        "obs2_label": None,
-        "ref_date":   pd.Timestamp("1981-01-01", tz="UTC"),
-        "n_members":  20,
+        "label":         "Geneva",
+        "folder":        "geneva",
+        "obs_path":      os.path.join(ROOT, "data", "T_obs_geneva.csv"),
+        "obs2_path":     None,
+        "obs2_label":    None,
+        "ref_date":      pd.Timestamp("1981-01-01", tz="UTC"),
+        "n_members":     20,
+        "pf_mean_subdir": "old",
     },
 }
 # ─────────────────────────────────────────────────────────────────────────────
@@ -50,6 +53,7 @@ OBS2_PATH     = cfg["obs2_path"]
 OBS2_LABEL    = cfg["obs2_label"]
 REF_DATE      = cfg["ref_date"]
 N_MEMBERS     = cfg["n_members"]
+PF_MEAN_SUBDIR = cfg["pf_mean_subdir"]
 
 
 # ── Loaders ───────────────────────────────────────────────────────────────────
@@ -147,7 +151,7 @@ if OBS2_PATH and os.path.exists(OBS2_PATH):
 e0_traj             = load_traj(os.path.join(ENSEMBLE_BASE, "ensemble0", "Results_PF", "T_out_full.dat"))
 enkf_mean_traj      = load_traj(os.path.join(ENSEMBLE_BASE, "T_out_enkf_mean.dat"))
 enkf_filt_mean_traj = load_traj(os.path.join(ENSEMBLE_BASE, "T_out_enkf_filtered_mean.dat"))
-pf_mean_traj        = load_traj(os.path.join(ENSEMBLE_BASE, "results_daily_update", "T_out_ens.dat"))
+pf_mean_traj        = load_traj(os.path.join(ENSEMBLE_BASE, PF_MEAN_SUBDIR, "T_out_ens.dat"))
 pf_filt_mean_traj   = load_traj(os.path.join(ENSEMBLE_BASE, "T_out_ens_filtered.dat"))
 
 print(f"e0:                {'OK' if e0_traj              is not None else 'MISSING'}")
@@ -186,9 +190,9 @@ for ax, target_depth in zip(axes, _plot_depths):
         ax.scatter(obs2_sub["time"], obs2_sub["value"], s=20, color="black", zorder=10, marker="x",
                    label=f"{OBS2_LABEL} ({nearest_obs2_depth:.1f} m)")
 
-    if enkf_members:
+    '''if enkf_members:
         idx, mn, mx = member_minmax(enkf_members, target_depth)
-        ax.fill_between(idx, mn, mx, color="mediumpurple", alpha=0.15, zorder=2, label="EnKF min–max")
+        ax.fill_between(idx, mn, mx, color="mediumpurple", alpha=0.15, zorder=2, label="EnKF min–max")'''
 
     if enkf_filt_members:
         idx, mn, mx = member_minmax(enkf_filt_members, target_depth)

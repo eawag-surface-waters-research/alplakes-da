@@ -12,6 +12,8 @@ snapshot/
 *.dat
 *.nml
 *.par
+*.json
+*.geojson
 
 # Ignore temporary files
 *.log
