@@ -8,13 +8,12 @@ Ensemble-based lake temperature data assimilation driven by the [Simstrat](https
 
 ```
 src/
-├── main.py                  # parallel ensemble Docker runner
 ├── ensembles.py             # AR(1) ensemble forcing perturbation
 ├── copy_standard_inputs.py  # Populate ensemble dirs with shared inputs
-├── main_PF.py               # Sequential daily particle filter
-├── main_PF_weekly.py        # Same filter with 7-day windows to speed up simulation time and compare
+├── main_PF_fast.py          # Sequential daily particle filter
 ├── main_PF_resampling.py    # Sequential daily particle filter with resampling of likely particles
-├── analyze_results.py       # Visualise: raw ensemble spread, PF trajectories and respective RMSE 
+├── main_EnKF.py             # Ensemble Kalman Filter applied on daily window (average)
+├── analyze_results.py       # Visualise results 
 └── functions/               # Reusable 
     └── par.py               # overwrite_par_file_dates(): updates only the start/end timestamps
 ```
@@ -29,7 +28,7 @@ The workflow described here runs in four stages. Steps 1–2 are needed to prepa
   
   Download data: 
   
-  Source it from Alplakes, Datalakes, then process and ultimately store in /data directory. 
+  Source it from Alplakes, Datalakes, then process and ultimately store in /data or /standard_inputs directory. 
   In our example we use the temperature observations from the Castagnola buoy (and Gandria sampling only for comparison) as observations.
   For meteorological station values we take the ones from the closest station, namely the LUG station. "Upperlugano" inputs for Simstrat are prepackaged and downloaded from Alplakes.
 
@@ -45,15 +44,11 @@ Make sure that the modelled times correspond to observation times. For hourly as
 
 **Stage 3 — Simulation + assimilation**  
 
-  main.py / main_PF.py / main_PF_weekly.py / main_PF_resampled
+main_PF.py / main_PF_resampled 
   
-  Generate free ensemble runs 
-  
-  and/or
-
   Run daily (or weekly) assimilation loop:
 
-  1. Run 21 Docker containers (ensemble0–20) in parallel for the window
+  1. Run 21 Docker containers (ensemble1–20) in parallel for the window
 
   2. Compute per-member RMSE vs in-situ observations
 
@@ -99,8 +94,8 @@ python src/ensembles.py
 python src/copy_standard_inputs.py
 ```
 `ensembles.py` expects:
-- `data/obs_2025.csv` — observed hourly meteorology (time, wind speed/dir, T, radiation, RH, precip, vapour pressure, cloud cover)
-- `data/lake_mean_ICON_2025.csv` — ICON reanalysis (average over the lake) for the same period for the variables to perturb
+- `data/obs_2025.csv` — observed hourly meteorology (time, wind speed/dir, T, radiation, RH, precip, vapour pressure, cloud cover), you can use also Forcing.dat instead for simplicity
+- `data/lake_mean_ICON_2025.csv` — ICON reanalysis (average over the lake) for the same period for the variables to perturb, needs lake [contours] (https://alplakes-eawag.s3.eu-central-1.amazonaws.com/static/website/metadata/master/lakes.geojson).
 
 Outputs: `assimilation/upperlugano/ensemble{0..20}/Forcing.dat` + other unchanged files.
 
@@ -118,7 +113,6 @@ Outputs: `assimilation/upperlugano/ensemble{0..20}/Forcing.dat` + other unchange
 
 ```bash
 python src/main_PF.py             # daily windows --> best-member selection filter 
-python src/main_PF_weekly.py      # 7-day windows --> best-member selection filter
 python src/main_PF_resampling.py  # daily updates + resampling of likely particles --> weights particles by likelihood and resamples probabilistically
 python src/main_EnKF.py           # daily windows --> EnKF update (see below)
 
