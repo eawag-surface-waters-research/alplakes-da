@@ -144,21 +144,24 @@ if OBS2_PATH and os.path.exists(OBS2_PATH):
 # enkf_mean : EnKF assimilation mean → T_out_enkf_mean.dat
 # pf_mean   : PF  assimilation mean  → results_daily_update/T_out_ens.dat
 
-e0_traj            = load_traj(os.path.join(ENSEMBLE_BASE, "ensemble0", "Results_PF", "T_out_full.dat"))
-enkf_mean_traj     = load_traj(os.path.join(ENSEMBLE_BASE, "T_out_enkf_mean.dat"))
-pf_mean_traj       = load_traj(os.path.join(ENSEMBLE_BASE, "results_daily_update", "T_out_ens.dat"))
-pf_filt_mean_traj  = load_traj(os.path.join(ENSEMBLE_BASE, "T_out_ens_filtered.dat"))
+e0_traj             = load_traj(os.path.join(ENSEMBLE_BASE, "ensemble0", "Results_PF", "T_out_full.dat"))
+enkf_mean_traj      = load_traj(os.path.join(ENSEMBLE_BASE, "T_out_enkf_mean.dat"))
+enkf_filt_mean_traj = load_traj(os.path.join(ENSEMBLE_BASE, "T_out_enkf_filtered_mean.dat"))
+pf_mean_traj        = load_traj(os.path.join(ENSEMBLE_BASE, "results_daily_update", "T_out_ens.dat"))
+pf_filt_mean_traj   = load_traj(os.path.join(ENSEMBLE_BASE, "T_out_ens_filtered.dat"))
 
-print(f"e0:           {'OK' if e0_traj           is not None else 'MISSING'}")
-print(f"EnKF mean:    {'OK' if enkf_mean_traj    is not None else 'MISSING'}")
-print(f"PF mean:      {'OK' if pf_mean_traj      is not None else 'MISSING'}")
-print(f"PF filt mean: {'OK' if pf_filt_mean_traj is not None else 'MISSING'}")
+print(f"e0:                {'OK' if e0_traj              is not None else 'MISSING'}")
+print(f"EnKF mean:         {'OK' if enkf_mean_traj       is not None else 'MISSING'}")
+print(f"EnKF filt mean:    {'OK' if enkf_filt_mean_traj  is not None else 'MISSING'}")
+print(f"PF mean:           {'OK' if pf_mean_traj         is not None else 'MISSING'}")
+print(f"PF filt mean:      {'OK' if pf_filt_mean_traj    is not None else 'MISSING'}")
 
-enkf_members = load_members(N_MEMBERS, os.path.join("Results_EnKF", "T_out_full.dat"))
-pf_members   = load_members(N_MEMBERS, os.path.join("Results_PF",   "T_out_full.dat"))
-print(f"EnKF members: {len(enkf_members)}   PF members: {len(pf_members)}")
+enkf_members      = load_members(N_MEMBERS, os.path.join("Results_EnKF",          "T_out_full.dat"))
+enkf_filt_members = load_members(N_MEMBERS, os.path.join("Results_EnKF_filtered", "T_out_full.dat"))
+pf_members        = load_members(N_MEMBERS, os.path.join("Results_PF",            "T_out_full.dat"))
+print(f"EnKF members: {len(enkf_members)}   EnKF filt members: {len(enkf_filt_members)}   PF members: {len(pf_members)}")
 
-_ref_traj = next((t for t in [e0_traj, enkf_mean_traj, pf_mean_traj] if t is not None), None)
+_ref_traj = next((t for t in [e0_traj, enkf_mean_traj, enkf_filt_mean_traj, pf_mean_traj, pf_filt_mean_traj] if t is not None), None)
 if _ref_traj is None:
     raise RuntimeError("No trajectory files found.")
 
@@ -187,6 +190,10 @@ for ax, target_depth in zip(axes, _plot_depths):
         idx, mn, mx = member_minmax(enkf_members, target_depth)
         ax.fill_between(idx, mn, mx, color="mediumpurple", alpha=0.15, zorder=2, label="EnKF min–max")
 
+    if enkf_filt_members:
+        idx, mn, mx = member_minmax(enkf_filt_members, target_depth)
+        ax.fill_between(idx, mn, mx, color="darkorchid", alpha=0.12, zorder=2, label="EnKF filt min–max")
+
     '''if pf_members:
         idx, mn, mx = member_minmax(pf_members, target_depth)
         ax.fill_between(idx, mn, mx, color="steelblue", alpha=0.15, zorder=2, label="PF min–max")'''
@@ -200,6 +207,11 @@ for ax, target_depth in zip(axes, _plot_depths):
         col = nearest_col(enkf_mean_traj, target_depth)
         s = enkf_mean_traj[col].loc[~enkf_mean_traj[col].index.duplicated(keep="first")]
         ax.plot(s.index, s.values, color="mediumpurple", lw=1.5, zorder=7, label="EnKF mean")
+
+    if enkf_filt_mean_traj is not None:
+        col = nearest_col(enkf_filt_mean_traj, target_depth)
+        s = enkf_filt_mean_traj[col].loc[~enkf_filt_mean_traj[col].index.duplicated(keep="first")]
+        ax.plot(s.index, s.values, color="darkorchid", lw=1.5, zorder=7, label="EnKF filt mean")
 
     if pf_mean_traj is not None:
         col = nearest_col(pf_mean_traj, target_depth)
@@ -249,45 +261,50 @@ def compute_rmse_by_depth(traj, obs_df, depths_arr):
     return rmses
 
 
-_active = [t for t in [e0_traj, enkf_mean_traj, pf_mean_traj, pf_filt_mean_traj] if t is not None]
+_active = [t for t in [e0_traj, enkf_mean_traj, enkf_filt_mean_traj, pf_mean_traj, pf_filt_mean_traj] if t is not None]
 common_obs_depths = _common_depths(obs_depths, _active[0])
 for _ref in _active[1:]:
     common_obs_depths = np.intersect1d(common_obs_depths, _common_depths(obs_depths, _ref))
 
-e0_rmses        = compute_rmse_by_depth(e0_traj,           obs, common_obs_depths) if e0_traj           is not None else None
-enkf_rmses      = compute_rmse_by_depth(enkf_mean_traj,   obs, common_obs_depths) if enkf_mean_traj    is not None else None
-pf_rmses        = compute_rmse_by_depth(pf_mean_traj,     obs, common_obs_depths) if pf_mean_traj      is not None else None
-pf_filt_rmses   = compute_rmse_by_depth(pf_filt_mean_traj, obs, common_obs_depths) if pf_filt_mean_traj is not None else None
+e0_rmses             = compute_rmse_by_depth(e0_traj,            obs, common_obs_depths) if e0_traj            is not None else None
+enkf_rmses           = compute_rmse_by_depth(enkf_mean_traj,     obs, common_obs_depths) if enkf_mean_traj     is not None else None
+enkf_filt_rmses      = compute_rmse_by_depth(enkf_filt_mean_traj, obs, common_obs_depths) if enkf_filt_mean_traj is not None else None
+pf_rmses             = compute_rmse_by_depth(pf_mean_traj,       obs, common_obs_depths) if pf_mean_traj       is not None else None
+pf_filt_rmses        = compute_rmse_by_depth(pf_filt_mean_traj,  obs, common_obs_depths) if pf_filt_mean_traj  is not None else None
 
 # ── Print RMSE table ──────────────────────────────────────────────────────────
 
 print(f"\nRMSE (°C) — {LABEL} {YEAR}")
-header = f"{'depth':>8}" + (f"{'e0':>10}"            if e0_rmses        else "") \
-                         + (f"{'EnKF mean':>12}"      if enkf_rmses      else "") \
-                         + (f"{'PF mean':>10}"        if pf_rmses        else "") \
-                         + (f"{'PF filt mean':>14}"   if pf_filt_rmses   else "")
+header = f"{'depth':>8}" + (f"{'e0':>10}"               if e0_rmses             else "") \
+                         + (f"{'EnKF mean':>12}"         if enkf_rmses           else "") \
+                         + (f"{'EnKF filt mean':>16}"    if enkf_filt_rmses      else "") \
+                         + (f"{'PF mean':>10}"           if pf_rmses             else "") \
+                         + (f"{'PF filt mean':>14}"      if pf_filt_rmses        else "")
 print(header)
 for i, d in enumerate(common_obs_depths):
     row = f"{d:>8.1f} m"
-    if e0_rmses:      row += f"  {e0_rmses[i]:>8.4f}"
-    if enkf_rmses:    row += f"  {enkf_rmses[i]:>10.4f}"
-    if pf_rmses:      row += f"  {pf_rmses[i]:>8.4f}"
-    if pf_filt_rmses: row += f"  {pf_filt_rmses[i]:>12.4f}"
+    if e0_rmses:           row += f"  {e0_rmses[i]:>8.4f}"
+    if enkf_rmses:         row += f"  {enkf_rmses[i]:>10.4f}"
+    if enkf_filt_rmses:    row += f"  {enkf_filt_rmses[i]:>14.4f}"
+    if pf_rmses:           row += f"  {pf_rmses[i]:>8.4f}"
+    if pf_filt_rmses:      row += f"  {pf_filt_rmses[i]:>12.4f}"
     print(row)
 totals_row = f"{'total':>10}"
-if e0_rmses:      totals_row += f"  {np.nansum(e0_rmses):>8.4f}"
-if enkf_rmses:    totals_row += f"  {np.nansum(enkf_rmses):>10.4f}"
-if pf_rmses:      totals_row += f"  {np.nansum(pf_rmses):>8.4f}"
-if pf_filt_rmses: totals_row += f"  {np.nansum(pf_filt_rmses):>12.4f}"
+if e0_rmses:           totals_row += f"  {np.nansum(e0_rmses):>8.4f}"
+if enkf_rmses:         totals_row += f"  {np.nansum(enkf_rmses):>10.4f}"
+if enkf_filt_rmses:    totals_row += f"  {np.nansum(enkf_filt_rmses):>14.4f}"
+if pf_rmses:           totals_row += f"  {np.nansum(pf_rmses):>8.4f}"
+if pf_filt_rmses:      totals_row += f"  {np.nansum(pf_filt_rmses):>12.4f}"
 print(totals_row)
 
 # ── Plot 2 — RMSE bar chart ───────────────────────────────────────────────────
 
 comp_entries = []
-if e0_rmses        is not None: comp_entries.append(("e0",              e0_rmses,        np.nansum(e0_rmses),        "dimgrey"))
-if enkf_rmses      is not None: comp_entries.append(("EnKF\nmean",      enkf_rmses,      np.nansum(enkf_rmses),      "mediumpurple"))
-if pf_rmses        is not None: comp_entries.append(("PF\nmean",        pf_rmses,        np.nansum(pf_rmses),        "steelblue"))
-if pf_filt_rmses   is not None: comp_entries.append(("PF filt\nmean",   pf_filt_rmses,   np.nansum(pf_filt_rmses),   "teal"))
+if e0_rmses            is not None: comp_entries.append(("e0",                e0_rmses,           np.nansum(e0_rmses),           "dimgrey"))
+if enkf_rmses          is not None: comp_entries.append(("EnKF\nmean",        enkf_rmses,         np.nansum(enkf_rmses),         "mediumpurple"))
+if enkf_filt_rmses     is not None: comp_entries.append(("EnKF filt\nmean",   enkf_filt_rmses,    np.nansum(enkf_filt_rmses),    "darkorchid"))
+if pf_rmses            is not None: comp_entries.append(("PF\nmean",          pf_rmses,           np.nansum(pf_rmses),           "steelblue"))
+if pf_filt_rmses       is not None: comp_entries.append(("PF filt\nmean",     pf_filt_rmses,      np.nansum(pf_filt_rmses),      "teal"))
 comp_entries.sort(key=lambda e: e[2], reverse=True)
 
 ref_total  = np.nansum(e0_rmses) if e0_rmses is not None else comp_entries[0][2]

@@ -168,6 +168,12 @@ with:
 
 representing perturbed observations. The updated temperature profiles are written back into the Simstrat snapshot files, allowing the simulation to continue from the assimilated state while preserving ensemble spread and dynamically estimated uncertainty structures.
 
+**Comment:**
+1. Inflation makes it a modified prior system
+2. Observation errors assumed independent (diagonal R)
+3. This is a perturbed-observation EnKF, not deterministic EnKF
+4. Sample covariance approximations are standard but noisy for small ensemble size (N)
+
 ---
 
 ## Free parameters and sensitivity

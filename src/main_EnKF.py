@@ -37,7 +37,7 @@ from functions.par import overwrite_par_file_dates
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "snapshot"))
-from snapshot_io import read_snapshot, write_snapshot
+from snapshot_io import read_snapshot, write_snapshot # Key! necessary to read and write Simstrat (Fortran) binary files and to update them
 
 LAKE = "upperlugano"
 
@@ -54,8 +54,9 @@ SIMSTRAT_WORKDIR = "/simstrat/run"
 
 OBS_TO_SIM_DEPTH = {0.5: 0}
 
-SIGMA_OBS = 0.5    # observation error std (°C)
-INFLATION = 1.05   # multiplicative ensemble covariance inflation
+# Tuning parameters for the EnKF
+SIGMA_OBS = 0.2    # observation error std (°C)
+INFLATION = 1.20   # multiplicative ensemble covariance inflation
 
 # ── Variant switch ─────────────────────────────────────────────────────────────
 # False → raw obs, Results_EnKF
@@ -210,10 +211,16 @@ def _window_obs_vector(obs_df, window_start, window_end):
 # ── Snapshot I/O ───────────────────────────────────────────────────────────────
 
 def _snap_path(i):
+    """
+    path helper
+    """
     return os.path.join(ENSEMBLE_BASE, f"ensemble{i}", ENKF_RESULTS, "simulation-snapshot.dat")
 
 
 def _par_path(i):
+    """
+    path helper
+    """
     return os.path.join(ENSEMBLE_BASE, f"ensemble{i}", ENKF_PAR_FILE)
 
 
@@ -280,36 +287,72 @@ def _enkf_update(X_f, y_obs, H, sigma_obs, inflation=1.0, rng=None):
 
     Returns (X_a, diags) where diags is a dict of per-step diagnostics,
     or (X_f.copy(), None) when no valid observations are available.
+    
+    Intuition: You slightly perturb observations, compare them to model predictions, 
+    compute how trustworthy each is, and shift each ensemble member toward the observations proportionally.
     """
+    # random generator: used later to generate stochastic observation perturbations
     if rng is None:
         rng = np.random.default_rng()
-
+    
+    # 1. Handle missing observations
+    
+    # Identify valid observations & handle no observations
     valid = ~np.isnan(y_obs)
     if not valid.any():
-        return X_f.copy(), None
+        return X_f.copy(), None # If all observations are missing: return forecast unchanged, diagnostics = None
 
-    y   = y_obs[valid]
-    H_v = H[valid]
-    r   = (np.full(valid.sum(), sigma_obs) if np.ndim(sigma_obs) == 0
+    # 2. Observation vector and operator
+    
+    y   = y_obs[valid] # Keep only valid observations: observation vector
+    H_v = H[valid] # Keep only valid observations: observation operator
+    
+    # 3. Observation error covariance
+    
+    # Observation error standard deviations:
+    r   = (np.full(valid.sum(), sigma_obs) if np.ndim(sigma_obs) == 0 # can define observation-specific errors or single scalar
            else np.asarray(sigma_obs)[valid])
-    R   = np.diag(r ** 2)
+    # Observation covariance matrix
+    R   = np.diag(r ** 2) # Creates diagonal covariance matrix, represents measurement uncertainty
 
-    N     = X_f.shape[1]
-    x_bar = X_f.mean(axis=1, keepdims=True)
-    A     = (X_f - x_bar) * inflation   # inflated anomalies
-    X_inf = x_bar + A                   # inflated forecast ensemble
+    # 4. Ensemble mean and anomalies
+    
+    N     = X_f.shape[1] # Number of ensemble members
+    x_bar = X_f.mean(axis=1, keepdims=True) # Ensemble mean, computes mean state over ensemble members.
+    A     = (X_f - x_bar) * inflation   # Ensemble anomalies (deviations from ensemble mean): inflated anomalies, Inflation prevents ensemble collapse
+    
+    # 5. Reconstruct inflated ensemble
+    
+    X_inf = x_bar + A                   # Reconstruct inflated forecast ensemble: mean + inflated anomalies
 
-    HA   = H_v @ A                      # (n_obs_v, N)
-    PHT  = A @ HA.T / (N - 1)          # (n_state, n_obs_v)
-    HPHT = HA @ HA.T / (N - 1)         # (n_obs_v, n_obs_v)
+    # 6. Map ensemble into observation space
+    
+    HA   = H_v @ A                      # (n_obs_v, N) Transforms ensemble anomalies from state space → observation space
+    
+    # 7. Covariances
+    
+    PHT  = A @ HA.T / (N - 1)          # (n_state, n_obs_v) Cross covariance (Relationship between state and observations) --> Computes forecast covariance between: state variables and observations
+    HPHT = HA @ HA.T / (N - 1)         # (n_obs_v, n_obs_v) Observation covariance (uncertainty of predictions in observation space) --> Forecast covariance in observation space
 
-    # K = PHT @ inv(HPHT + R)  — solved via lstsq for numerical stability
+    # 8. Kalman gain (core of the filter)
+    
+    # Kalman gain --> K = PHT @ inv(HPHT + R)  — solved via lstsq for numerical stability, equivalent expression
     K = np.linalg.solve((HPHT + R).T, PHT.T).T   # (n_state, n_obs_v)
-
+    
+    # 9. Observation perturbations (stochastic EnKF step)
+    
+    # Generate stochastic observation perturbations. Each ensemble member receives slightly different observations
     eps   = rng.multivariate_normal(np.zeros(len(y)), R, size=N).T  # (n_obs_v, N)
+    
+    # 10. Innovation (mismatch)
+    
+    # Innovation --> Difference between: perturbed observations and predicted observations
     innov = (y[:, None] + eps) - H_v @ X_inf                        # (n_obs_v, N)
-
-    X_a = X_inf + K @ innov
+    
+    # 11. Final update (analysis step)
+    
+    # Ensemble update: Forecast ensemble becomes analysis ensemble
+    X_a = X_inf + K @ innov # Correct each ensemble member using innovation.
 
     # ── diagnostics ───────────────────────────────────────────────────────────
     d    = y - (H_v @ x_bar)[:, 0]          # mean innovation per obs depth
