@@ -95,7 +95,7 @@ python src/copy_standard_inputs.py
 ```
 `ensembles.py` expects:
 - `data/obs_2025.csv` — observed hourly meteorology (time, wind speed/dir, T, radiation, RH, precip, vapour pressure, cloud cover), you can use also Forcing.dat instead for simplicity
-- `data/lake_mean_ICON_2025.csv` — ICON reanalysis (average over the lake) for the same period for the variables to perturb, needs lake [contours] (https://alplakes-eawag.s3.eu-central-1.amazonaws.com/static/website/metadata/master/lakes.geojson).
+- `data/lake_mean_ICON_2025.csv` — ICON reanalysis (average over the lake) for the same period for the variables to perturb, needs lake [contours](https://alplakes-eawag.s3.eu-central-1.amazonaws.com/static/website/metadata/master/lakes.geojson).
 
 Outputs: `assimilation/upperlugano/ensemble{0..20}/Forcing.dat` + other unchanged files.
 
