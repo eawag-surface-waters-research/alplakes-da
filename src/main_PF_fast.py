@@ -63,14 +63,14 @@ from tqdm import tqdm
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from functions.par import overwrite_par_file_dates
 
-LAKE = "upperlugano"
+LAKE = "geneva"
 # ── Configuration ─────────────────────────────────────────────────────────────
 
 SIMSTRAT_VERSION  = "3.0.4"
 N_MEMBERS         = 20
 ROOT              = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ENSEMBLE_BASE     = os.path.join(ROOT, "assimilation", LAKE)
-OBS_PATH          = os.path.join(ROOT, "data", "filtered_upperlugano.csv")
+OBS_PATH          = os.path.join(ROOT, "data", "T_obs_geneva.csv")
 REF_DATE          = pd.Timestamp("1981-01-01", tz="UTC")
 REF_DATE_DT       = datetime(1981, 1, 1, tzinfo=timezone.utc)
 PF_RESULTS        = "Results_PF_filtered"
@@ -85,7 +85,7 @@ SIMSTRAT_WORKDIR = "/simstrat/run"   # volume mount point / WORKDIR inside conta
 
 # Obs depths that need remapping to a sim column; all others map to -depth directly.
 # 0.5 m obs → sim column 0 (surface layer).
-OBS_TO_SIM_DEPTH = {0.5: 0}
+OBS_TO_SIM_DEPTH = {0.25: 0} # Lugano {0.5: 0}
 
 # ── Persistent container management ───────────────────────────────────────────
 

@@ -4,7 +4,7 @@ Causal gradient- and depth-dependent low-pass filter for lake observations.
 The filter window at each depth and timestep is the sum of two components:
 
   1. Temperature gradient-driven (thermocline signal):
-       W_grad(z,t) = clip(W_MAX * |dT/dz(z,t)| / G_MAX,  W_MIN, W_MAX)
+       W_grad(z,t) = W_MAX * |dT/dz(z,t)| / G_MAX
      - |dT/dz| is computed from a causal 72-h trailing mean of the local gradient
      - Depths shallower than THERMO_DEPTH_MIN are excluded (surface heating dominant)
 
@@ -13,7 +13,7 @@ The filter window at each depth and timestep is the sum of two components:
      where z_tc(t) = depth of maximum |dT/dz| at time t (time-varying thermocline depth)
 
   Final window:
-       W(z,t) = clip(W_grad(z,t) + W_floor(z),  W_MIN, W_MAX)
+       W(z,t) = W_grad(z,t) + W_floor(z)
 
   Applied as a causal trailing box filter (no lookahead, online-compatible).
 """
@@ -29,7 +29,7 @@ warnings.filterwarnings("ignore")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # ── CONFIGURE HERE ────────────────────────────────────────────────────────────
-LAKE = "upperlugano"   # "upperlugano", "murten", "geneva"
+LAKE = "geneva"   # "upperlugano", "murten", "geneva"
 
 LAKE_CONFIGS = {
     "upperlugano": {
@@ -51,10 +51,10 @@ LAKE_CONFIGS = {
     "geneva": {
         "label":       "Geneva",
         "obs_path":    os.path.join(ROOT, "data", "T_obs_geneva.csv"),
-        "out_obs":     os.path.join(ROOT, "data", "filtered_geneva.csv"),
+        "out_obs":     os.path.join(ROOT, "data", "filtered_genevaV2.csv"),
         "out_dir":     os.path.join(ROOT, "analysis", "oscillations_geneva", "filter_check"),
         "depth_max":   50.0,
-        "plot_depths": [0.25, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 10.0, 12.0, 18.0, 27.0, 30.0, 35.0, 39.0],
+        "plot_depths": [0.25, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 10.0, 12.0, 18.0, 27.0, 30.0, 35.0, 40.0, 45.0, 50.0],
     },
 }
 # ─────────────────────────────────────────────────────────────────────────────
@@ -71,8 +71,8 @@ os.makedirs(OUT_DIR, exist_ok=True)
 
 # ── FILTER PARAMETERS (shared across lakes for now ...) ───────────────────────────────────
 W_MIN            = 1.0    # h  – minimum window
-W_MAX            = 72     # h  – maximum window (peak thermocline gradient)
-W_DEEP           = 72.0   # h  – depth-floor window at DEEP_REF
+W_MAX            = 24.0     # h  – maximum window (peak thermocline gradient)
+W_DEEP           = 504.0   # h  – depth-floor window at DEEP_REF
 DEEP_REF         = 40.0   # m  – depth at which depth-floor reaches W_DEEP
 G_MAX            = None   # °C/m – gradient at W_MAX; None = auto (95th pct)
 GRAD_SMOOTH_H    = 72     # h  – rolling window to smooth gradient
@@ -156,7 +156,7 @@ print(f"  G_MAX auto (95th pct of thermocline gradients): {G_MAX_auto:.3f} °C/m
       f"({'using auto' if G_MAX is None else f'overridden with G_MAX={G_MAX:.2f}'})")
 G_MAX_use = G_MAX if G_MAX is not None else G_MAX_auto
 # Convert gradients into weights: weak gradient → low weight, strong gradient → high weight. Keeps weights bounded.
-W_df = (grad_smooth / G_MAX_use * W_MAX).clip(W_MIN, W_MAX)
+W_df = grad_smooth / G_MAX_use * W_MAX
 # Depth of strongest gradient (estimated thermocline depth)
 thermo_depth_t  = grad_smooth[thermo_cols].idxmax(axis=1)
 # Determine whether thermocline exists
@@ -173,7 +173,7 @@ for i, (z_tc, active) in enumerate(zip(thermo_depth_t.values, thermo_active_t.va
 
 depth_floor_df = pd.DataFrame(depth_floor_arr, index=W_df.index, columns=W_df.columns)
 # Add deep enhancement to original weights
-W_df = (W_df + depth_floor_df).clip(W_MIN, W_MAX)
+W_df = W_df + depth_floor_df
 
 # ── CAUSAL TRAILING BOX FILTER ────────────────────────────────────────────────
 # Now we have W_df containing adaptive smoothing widths we can apply it to the raw signal
@@ -352,6 +352,6 @@ for d in depths_arr:
             "weight":    1,
         })
 
-'''out_df = pd.DataFrame(records).sort_values(["time", "depth"])
+out_df = pd.DataFrame(records).sort_values(["time", "depth"])
 out_df.to_csv(OUT_OBS, index=False)
-print(f"  {len(out_df):,} rows → {OUT_OBS}")'''
+print(f"  {len(out_df):,} rows → {OUT_OBS}")

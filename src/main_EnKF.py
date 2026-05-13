@@ -55,8 +55,8 @@ SIMSTRAT_WORKDIR = "/simstrat/run"
 OBS_TO_SIM_DEPTH = {0.5: 0}
 
 # Tuning parameters for the EnKF
-SIGMA_OBS = 0.2    # observation error std (°C)
-INFLATION = 1.20   # multiplicative ensemble covariance inflation
+SIGMA_OBS = 0.4    # observation error std (°C)
+INFLATION = 1.05   # multiplicative ensemble covariance inflation
 
 # ── Variant switch ─────────────────────────────────────────────────────────────
 # False → raw obs, Results_EnKF
@@ -68,15 +68,19 @@ if USE_FILTERED:
     ENKF_RESULTS   = "Results_EnKF_filtered"
     ENKF_PAR_FILE  = "Settings_EnKF_filtered.par"
     CONTAINER_TAG  = "enkf_filt"
-    MEAN_TRAJ_PATH = os.path.join(ENSEMBLE_BASE, "T_out_enkf_filtered_mean.dat")
-    DIAG_PATH      = os.path.join(ENSEMBLE_BASE, "enkf_filtered_diagnostics.csv")
+    MEAN_TRAJ_PATH   = os.path.join(ENSEMBLE_BASE, "T_out_enkf_filtered_mean.dat")
+    DIAG_PATH        = os.path.join(ENSEMBLE_BASE, "enkf_filtered_diagnostics.csv")
+    INNOV_DEPTH_PATH = os.path.join(ENSEMBLE_BASE, "enkf_filtered_innov_by_depth.csv")
+    KGAIN_DEPTH_PATH = os.path.join(ENSEMBLE_BASE, "enkf_filtered_kgain_by_depth.csv")
 else:
-    OBS_PATH       = os.path.join(ROOT, "data", "T_obs_castagnola.csv")
-    ENKF_RESULTS   = "Results_EnKF"
-    ENKF_PAR_FILE  = "Settings_EnKF.par"
-    CONTAINER_TAG  = "enkf"
-    MEAN_TRAJ_PATH = os.path.join(ENSEMBLE_BASE, "T_out_enkf_mean.dat")
-    DIAG_PATH      = os.path.join(ENSEMBLE_BASE, "enkf_diagnostics.csv")
+    OBS_PATH         = os.path.join(ROOT, "data", "T_obs_castagnola.csv")
+    ENKF_RESULTS     = "Results_EnKF"
+    ENKF_PAR_FILE    = "Settings_EnKF.par"
+    CONTAINER_TAG    = "enkf"
+    MEAN_TRAJ_PATH   = os.path.join(ENSEMBLE_BASE, "T_out_enkf_mean.dat")
+    DIAG_PATH        = os.path.join(ENSEMBLE_BASE, "enkf_diagnostics.csv")
+    INNOV_DEPTH_PATH = os.path.join(ENSEMBLE_BASE, "enkf_innov_by_depth.csv")
+    KGAIN_DEPTH_PATH = os.path.join(ENSEMBLE_BASE, "enkf_kgain_by_depth.csv")
 
 
 # ── Container management ───────────────────────────────────────────────────────
@@ -196,16 +200,17 @@ def _obs_to_sim_col(obs_depth):
 def _window_obs_vector(obs_df, window_start, window_end):
     """
     Temporal mean observation per depth over the window.
-    Returns (y_obs array, sim_depths list) or (None, None) if no data.
+    Returns (y_obs array, sim_depths list, obs_depths list) or (None, None, None) if no data.
     """
     obs_win = obs_df[(obs_df["time"] >= window_start) & (obs_df["time"] < window_end)]
     if obs_win.empty:
-        return None, None
+        return None, None, None
     mean_per_depth = obs_win.groupby("depth")["value"].mean().dropna()
     if mean_per_depth.empty:
-        return None, None
-    sim_depths = [_obs_to_sim_col(d) for d in mean_per_depth.index]
-    return mean_per_depth.values, sim_depths
+        return None, None, None
+    obs_depths = list(mean_per_depth.index)
+    sim_depths = [_obs_to_sim_col(d) for d in obs_depths]
+    return mean_per_depth.values, sim_depths, obs_depths
 
 
 # ── Snapshot I/O ───────────────────────────────────────────────────────────────
@@ -358,6 +363,7 @@ def _enkf_update(X_f, y_obs, H, sigma_obs, inflation=1.0, rng=None):
     d    = y - (H_v @ x_bar)[:, 0]          # mean innovation per obs depth
     S    = HPHT + R                          # innovation covariance
     NIS  = float(d @ np.linalg.solve(S, d)) # should be ~n_obs if filter consistent
+
     diags = {
         "n_obs":       int(valid.sum()),
         "innov_mean":  round(float(d.mean()), 6),
@@ -365,6 +371,9 @@ def _enkf_update(X_f, y_obs, H, sigma_obs, inflation=1.0, rng=None):
         "NIS":         round(NIS, 6),
         "spread_pre":  round(float(np.std(H_v @ X_f,  axis=1, ddof=1).mean()), 6),
         "spread_post": round(float(np.std(H_v @ X_a,  axis=1, ddof=1).mean()), 6),
+        "_innov_vec":  d.tolist(),
+        "_valid_mask": valid.tolist(),
+        "_K":          K,
     }
 
     return X_a, diags
@@ -451,7 +460,7 @@ def run_enkf_daily(start_date, end_date, max_workers=None, reset=False):
             full = os.path.join(ENSEMBLE_BASE, f"ensemble{i}", ENKF_RESULTS, "T_out_full.dat")
             if os.path.exists(full):
                 os.remove(full)
-        for p in [MEAN_TRAJ_PATH, DIAG_PATH]:
+        for p in [MEAN_TRAJ_PATH, DIAG_PATH, INNOV_DEPTH_PATH, KGAIN_DEPTH_PATH]:
             if os.path.exists(p):
                 os.remove(p)
         print(f"Reset: cleared {ENKF_RESULTS}/ snapshots and trajectory files.\n")
@@ -496,7 +505,7 @@ def run_enkf_daily(start_date, end_date, max_workers=None, reset=False):
                 list(pool.map(_accum_member, member_ids))
 
             # 4. Window-mean observation vector
-            y_obs, sim_depths = _window_obs_vector(obs, current, window_end)
+            y_obs, sim_depths, obs_depths = _window_obs_vector(obs, current, window_end)
 
             t_enkf    = 0.0
             n_updated = 0
@@ -543,10 +552,41 @@ def run_enkf_daily(start_date, end_date, max_workers=None, reset=False):
 
                         # 8. Log diagnostics to CSV
                         if diags is not None:
+                            valid_mask = diags.pop("_valid_mask")
+                            innov_vec  = diags.pop("_innov_vec")
+                            K_arr      = diags.pop("_K")
+
                             row = {"date": current.date(), **diags}
                             pd.DataFrame([row]).to_csv(
                                 DIAG_PATH, mode="a",
                                 header=not os.path.exists(DIAG_PATH),
+                                index=False,
+                            )
+
+                            full_innov = np.full(len(y_obs), np.nan)
+                            full_innov[np.array(valid_mask)] = innov_vec
+                            innov_row  = {"date": current.date(),
+                                          **{f"d_{d}": round(float(v), 6)
+                                             for d, v in zip(obs_depths, full_innov)}}
+                            pd.DataFrame([innov_row]).to_csv(
+                                INNOV_DEPTH_PATH, mode="a",
+                                header=not os.path.exists(INNOV_DEPTH_PATH),
+                                index=False,
+                            )
+
+                            depth_fs  = lake_lev - z_vol               # depth from surface per cell
+                            K_mean    = K_arr.mean(axis=1)             # mean gain across obs depths
+                            sort_idx  = np.argsort(depth_fs)           # ascending: surface→deep
+                            std_depths = np.arange(0, int(lake_lev) + 1)
+                            K_interp  = np.interp(std_depths,
+                                                  depth_fs[sort_idx],
+                                                  K_mean[sort_idx])
+                            kgain_row = {"date": current.date(),
+                                         **{f"K_{d}": round(float(v), 8)
+                                            for d, v in enumerate(K_interp)}}
+                            pd.DataFrame([kgain_row]).to_csv(
+                                KGAIN_DEPTH_PATH, mode="a",
+                                header=not os.path.exists(KGAIN_DEPTH_PATH),
                                 index=False,
                             )
 
