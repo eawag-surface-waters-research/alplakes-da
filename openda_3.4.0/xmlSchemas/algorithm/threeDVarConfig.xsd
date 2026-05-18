@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2009 sp1 (http://www.altova.com) by ICT (Stichting Deltares) -->
+<xs:schema xmlns:openda="http://www.openda.org" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.openda.org" elementFormDefault="qualified" attributeFormDefault="unqualified">
+	<xs:include schemaLocation="outerLoop3DVar.xsd"/>
+	<xs:complexType name="LineSearchXML">
+		<xs:sequence>
+			<xs:element name="brent">
+				<xs:annotation>
+					<xs:documentation>Back tracking if the line search produces estimate with larger cost.</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:attribute name="startBracketValue" type="xs:double" default="1.0">
+						<xs:annotation>
+							<xs:documentation>First value evaluated for bracketing in linesearch.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="maxItBracket" type="xs:double" use="optional" default="0.5">
+						<xs:annotation>
+							<xs:documentation>Maximum number of iterations for bracketing.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="maxExtension" type="xs:double" use="optional" default="100.0">
+						<xs:annotation>
+							<xs:documentation>Maximum number of iterations before searching in opposite direction.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+		</xs:sequence>
+		<xs:attribute name="type" type="xs:string" default="brent">
+			<xs:annotation>
+				<xs:documentation>Type of linesearch algorithm. Default: brent.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="maxIterations" type="xs:integer" use="optional" default="100">
+			<xs:annotation>
+				<xs:documentation>Maximum iterations of linesearch.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="absTolBrent" type="xs:double" use="optional" default="0.01">
+			<xs:annotation>
+				<xs:documentation>Tolerance of the absolute search range.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+		<xs:attribute name="relTolBrent" type="xs:double" default="0.01">
+			<xs:annotation>
+				<xs:documentation>Tolerance of the relative search range.</xs:documentation>
+			</xs:annotation>
+		</xs:attribute>
+	</xs:complexType>
+	<xs:complexType name="ThreeDVarConfigXML">
+		<xs:sequence>
+			<xs:element name="costFunction">
+				<xs:annotation>
+					<xs:documentation>Configure cost function to minimize</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:attribute name="factor" type="xs:double" default="0.5">
+						<xs:annotation>
+							<xs:documentation>Specify the multiplication factor for the quadratic cost function.</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="algorithm" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>algorithm</xs:documentation>
+				</xs:annotation>
+				<xs:complexType>
+					<xs:attribute name="type" type="xs:string" use="optional">
+						<xs:annotation>
+							<xs:documentation>type of algorithm, default = BFGS, other option = ConjugateGradient</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="method" type="xs:string" use="optional">
+						<xs:annotation>
+							<xs:documentation>method for conjugategradient algorithm</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="maxIterations" type="xs:integer" use="optional">
+						<xs:annotation>
+							<xs:documentation>maxIterations, default 25</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="absTolGrad" type="xs:double" use="optional">
+						<xs:annotation>
+							<xs:documentation>absTolGrad, defalut 0.01</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="relTolGrad" type="xs:double" use="optional">
+						<xs:annotation>
+							<xs:documentation>relTolGrad, defalut 0.01</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="absTolStep" type="xs:double" use="optional">
+						<xs:annotation>
+							<xs:documentation>absTolStep, defalut 0.001</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+					<xs:attribute name="relTolStep" type="xs:double" use="optional">
+						<xs:annotation>
+							<xs:documentation>relTolStep, defalut 0.01</xs:documentation>
+						</xs:annotation>
+					</xs:attribute>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="outerLoop" type="openda:OuterLoopXML" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>Specify outer-loop stopping criteria.</xs:documentation>
+				</xs:annotation>
+			</xs:element>
+			<xs:element name="lineSearch" type="openda:LineSearchXML">
+				<xs:annotation>
+					<xs:documentation>Specify inner-loop / linesearch criteria. </xs:documentation>
+				</xs:annotation>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+	<xs:element name="ThreeDVarConfig" type="openda:ThreeDVarConfigXML">
+		<xs:annotation>
+			<xs:documentation>Configuration of 3DVar algorithm.</xs:documentation>
+		</xs:annotation>
+	</xs:element>
+</xs:schema>

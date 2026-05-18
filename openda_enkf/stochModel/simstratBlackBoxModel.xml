@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blackBoxModelConfig xmlns="http://www.openda.org"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.openda.org http://schemas.openda.org/blackBoxModelConfig.xsd">
+
+    <wrapperConfig>
+        <file>simstratWrapper.xml</file>
+    </wrapperConfig>
+
+    <!--
+        All paths relative to the stochModel/ directory.
+        Adjust ensembleBase and scriptsDir if the project is moved.
+
+        instanceDir:  OpenDA exchange-file dirs  (one per ensemble member)
+                      Full path per member = instanceDir + instanceNumber
+                      e.g. ../instances/instance0 ... ../instances/instance19
+        ensembleBase: root of existing Simstrat ensemble directories
+                      member i uses ensembleBase/ensemble{i+1}/
+    -->
+    <aliasValues>
+        <alias key="instanceDir"   value="instances/instance"/>
+        <alias key="scriptsDir"    value="../scripts"/>
+        <alias key="ensembleBase"  value="../../assimilation/upperlugano"/>
+        <alias key="resultsSubdir" value="Results_EnKF_openda"/>
+        <alias key="containerTag"  value="enkf_openda"/>
+        <alias key="parFile"       value="Settings_EnKF_openda.par"/>
+    </aliasValues>
+
+    <!--
+        Time is exchanged as Modified Julian Date (MJD).
+        Simstrat time = MJD - 44239  (MJD of 1981-01-01 00:00 UTC).
+        OpenDA writes start_time and end_time before each compute() call.
+        run_simstrat.py reads time_config.txt and converts to Simstrat format.
+    -->
+    <timeInfoExchangeItems start="start_time" timeStep="time_step" end="end_time"/>
+
+    <exchangeItems>
+        <!-- Full temperature profile (n_cells values, one per line in ASCII) -->
+        <vector id="temperature.grid"
+                ioObjectId="state_temperature"
+                elementId="temperature_state"/>
+
+        <!-- Time window written by OpenDA before each run -->
+        <vector id="start_time"
+                ioObjectId="time_config"
+                elementId="start_time"/>
+        <vector id="time_step"
+                ioObjectId="time_config"
+                elementId="time_step"/>
+        <vector id="end_time"
+                ioObjectId="time_config"
+                elementId="end_time"/>
+
+        <!-- Obs-space prediction: T at 0.5 m depth, written by run_simstrat.py -->
+        <vector id="depth_0.5.temperature"
+                ioObjectId="obs_predictions"
+                elementId="temperature_obs"/>
+    </exchangeItems>
+
+    <doCleanUp>false</doCleanUp>
+
+</blackBoxModelConfig>

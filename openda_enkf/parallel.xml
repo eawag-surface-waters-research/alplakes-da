@@ -1,0 +1,8 @@
+<threadConfigstoch>
+    <!-- Limit to 4 simultaneous Simstrat runs; raise if you have more CPU cores -->
+    <maxThreads>4</maxThreads>
+    <stochModelFactory className="org.openda.blackbox.wrapper.BBStochModelFactory">
+        <workingDirectory>./stochModel</workingDirectory>
+        <configFile>simstratStochModel.xml</configFile>
+    </stochModelFactory>
+</threadConfigstoch>

@@ -1,0 +1,11 @@
+       <modelbuild_sp>
+          <functions>
+             <CTA_FUNCTION id="create"     name="pollute2d_mw_create"  library="libpollute2d.so" function="pollute2d_mw_create" />
+             <CTA_FUNCTION id="covariance" name="pollute2d_mw_covar"   library="libpollute2d.so" function="pollute2d_mw_covar"  />
+             <CTA_FUNCTION id="getobsvals" name="pollute2d_mw_obs"     library="libpollute2d.so" function="pollute2d_mw_obs"    />
+             <CTA_FUNCTION id="compute"    name="pollute2d_mw_compute" library="libpollute2d.so" function="pollute2d_mw_compute"/>
+             <CTA_FUNCTION id="free"       name="pollute2d_mw_free"    library="libpollute2d.so" function="pollute2d_mw_free"   />
+          </functions>
+          <model>  
+          </model> 
+       </modelbuild_sp> 

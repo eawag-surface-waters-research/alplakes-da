@@ -1,0 +1,8 @@
+output_labels=['defaultOutput1','defaultOutput2']
+output_locations=[1,2]
+output_values['defaultOutput1']=[0.2,0.1,0.0,0.01,0.02,0.03,0.03,0.03,0.03,0.03,0.03]
+output_values['defaultOutput2']=[0.3,5.2,5.1,5.0,5.01,5.02,5.03,5.03,5.03,5.03,5.03]
+c=[0.03,0.03,5.03,5.03,5.03]
+refdate='01 dec 2000'
+unit='seconds'
+time=[0.000000,1.000000,10.000000] 

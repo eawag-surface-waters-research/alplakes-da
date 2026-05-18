@@ -1,0 +1,14 @@
+stochModel/output/work2
+Iteration 1: cost 308.00093;source.factory1.discharge 0; source.factory2.discharge 0
+stochModel/output/work3
+Iteration 2: cost 285.01255;source.factory1.discharge 0.1; source.factory2.discharge 0
+stochModel/output/work4
+Iteration 3: cost 427.21656;source.factory1.discharge 0; source.factory2.discharge 0.1
+stochModel/output/work5
+Iteration 4: cost 27.3694;source.factory1.discharge 0.31692; source.factory2.discharge -0.47541
+stochModel/output/work6
+Iteration 5: cost 1.52813;source.factory1.discharge 0.26718; source.factory2.discharge -0.62822
+stochModel/output/work7
+Iteration 6: cost 0.22429;source.factory1.discharge 0.28898; source.factory2.discharge -0.66927
+stochModel/output/work8
+Iteration 7: cost 1.89094E-3;source.factory1.discharge 0.28772; source.factory2.discharge -0.69084

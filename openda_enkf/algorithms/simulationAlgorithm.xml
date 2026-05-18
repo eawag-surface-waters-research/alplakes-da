@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SimulationConfig xmlns="http://www.openda.org"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.openda.org http://schemas.openda.org/algorithm/simulationConfig.xsd">
+
+    <!-- Single deterministic run: no parameter or forcing perturbations. -->
+    <instance repeat="1" stochParameter="false" stochForcing="false"/>
+
+    <!-- Write predicted vs observed T@0.5m for visual inspection after the run. -->
+    <writeObservations filename="../simulation_predictions.csv" addNoise="false" format="csv"/>
+
+</SimulationConfig>

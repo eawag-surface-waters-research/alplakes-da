@@ -1,0 +1,23 @@
+# written by HYDROLIB-core 0.9.8
+
+[Boundary]
+quantity     = waterlevelbnd
+locationFile = lake2d_01.pli
+forcingFile  = lake2d_01.bc
+
+[Meteo]
+quantity             = windxy              # Name of the quantity. See UM Section C.5.3
+forcingFile          = lake2d-original.wnd # Name of file containing the forcing for this meteo quantity.
+forcingFileType      = uniMagDir           # Type of forcingFile.
+interpolationMethod  = linearSpaceTime     # Type of (spatial) interpolation.
+operand              = O                   # How this data is combined with previous data for the same quantity (if any).
+extrapolationAllowed = 0                   # Optionally allow nearest neighbour extrapolation in space (0: no, 1: yes). Default off.
+
+[Meteo]
+quantity             = windx                  # Name of the quantity. See UM Section C.5.3
+forcingFile          = lake2d_windx_noise.amu # Name of file containing the forcing for this meteo quantity.
+forcingFileType      = arcInfo                # Type of forcingFile.
+interpolationMethod  = linearSpaceTime        # Type of (spatial) interpolation.
+operand              = +                      # How this data is combined with previous data for the same quantity (if any).
+extrapolationAllowed = 0                      # Optionally allow nearest neighbour extrapolation in space (0: no, 1: yes). Default off.
+

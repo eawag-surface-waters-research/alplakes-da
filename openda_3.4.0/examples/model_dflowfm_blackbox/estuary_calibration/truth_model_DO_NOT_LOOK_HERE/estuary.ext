@@ -1,0 +1,22 @@
+# written by HYDROLIB-core 0.9.8
+
+[Boundary]
+quantity     = waterlevelbnd
+locationFile = estuary_west_tide.pli
+forcingFile  = estuary_west_tide.bc
+
+[Boundary]
+quantity     = waterlevelbnd
+locationFile = estuary_west_surge.pli
+forcingFile  = estuary_west_surge.bc
+
+[Boundary]
+quantity     = waterlevelbnd
+locationFile = estuary_west_noise.pli
+forcingFile  = estuary_west_noise.bc
+
+[Boundary]
+quantity     = dischargebnd
+locationFile = estuary_east.pli
+forcingFile  = estuary_east.bc
+

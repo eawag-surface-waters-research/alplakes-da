@@ -1,0 +1,50 @@
+Application initializing
+Application initializing
+OpenDA version 3.4.0.-1 February 27 2026
+seriesTrees[0]<?xml version="1.0"?>
+<timeSeries id="depth_0.5.temperature" status="use" standardDeviation="0.4">
+        obs_depth_0.5m.noo
+    </timeSeries>
+
+status=use
+Starting Algorithm: 
+	className: org.openda.algorithms.Simulation
+	dir.: ././algorithms
+	config.: simulationAlgorithm.xml
+Application initializing finished
+Initializing Algorithm
+Algorithm initialized
+Algorithm starting next step
+starting model :0
+New value Distributed counter 1
+Start Instance initialization
+SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+Error running algorithm step.
+Error message: BBModelInstance.getExchangeItem(start_time):
+Exchange item 'start_time' not found
+Existing exchange items are:
+
+
+Error type :RuntimeException
+Stacktrace :java.lang.RuntimeException: BBModelInstance.getExchangeItem(start_time):
+Exchange item 'start_time' not found
+Existing exchange items are:
+
+
+	at org.openda.blackbox.wrapper.BBModelInstance.getExchangeItem(BBModelInstance.java:434)
+	at org.openda.blackbox.wrapper.BBModelInstance.getStartOrEndTime(BBModelInstance.java:726)
+	at org.openda.blackbox.wrapper.BBModelInstance.determineTimeHorizon(BBModelInstance.java:170)
+	at org.openda.blackbox.wrapper.BBModelInstance.<init>(BBModelInstance.java:121)
+	at org.openda.blackbox.wrapper.BBModelFactory.getInstance(BBModelFactory.java:77)
+	at org.openda.blackbox.wrapper.BBModelFactory.getInstance(BBModelFactory.java:38)
+	at org.openda.blackbox.wrapper.BBStochModelFactory.getInstance(BBStochModelFactory.java:146)
+	at org.openda.algorithms.Simulation.next(Simulation.java:110)
+	at org.openda.application.ApplicationRunnerSingleThreaded.runSingleThreaded(ApplicationRunnerSingleThreaded.java:86)
+	at org.openda.application.OpenDaApplication.runApplicationBatch(OpenDaApplication.java:114)
+	at org.openda.application.OpenDaApplication.main(OpenDaApplication.java:102)
+
+Application Done
+2026-05-18, 18:36:18
+DURATION, 1

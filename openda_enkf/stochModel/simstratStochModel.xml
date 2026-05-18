@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blackBoxStochModel xmlns="http://www.openda.org"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.openda.org http://schemas.openda.org/blackBoxStochModelConfig.xsd">
+
+    <modelConfig>
+        <file>./simstratBlackBoxModel.xml</file>
+    </modelConfig>
+
+    <vectorSpecification>
+
+        <!--
+            State: full temperature profile at all Simstrat volume cells.
+            OpenDA applies the EnKF update to this vector and writes it back
+            to temperature_state.txt, from which run_simstrat.py restores
+            the Simstrat snapshot before the next forward run.
+        -->
+        <state>
+            <vector id="temperature.grid"/>
+        </state>
+
+        <!--
+            Predictor: temperature at 0.5 m depth (obs space).
+            Computed by run_simstrat.py and written to temperature_obs.txt.
+            Must match the timeSeries id in stochObserver/noosObservations.xml
+            (derived from Location + Unit headers in the .noo file).
+        -->
+        <predictor>
+            <vector id="depth_0.5.temperature"/>
+        </predictor>
+
+    </vectorSpecification>
+
+</blackBoxStochModel>

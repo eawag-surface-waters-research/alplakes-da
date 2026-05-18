@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # ── CONFIGURE HERE ────────────────────────────────────────────────────────────
-LAKE      = "upperlugano"
+LAKE      = "geneva"
 YEAR      = 2025
 MAX_DEPTH = None
 

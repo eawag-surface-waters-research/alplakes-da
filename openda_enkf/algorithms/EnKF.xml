@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<EnkfConfig xmlns="http://www.openda.org"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.openda.org http://schemas.openda.org/algorithm/enkf.xsd">
+
+    <!--
+        Analysis at every observation time in stochObserver/obs_depth_0.5m.csv.
+        Each analysis window = one calendar day (obs timestamps are 00:00:00 of day+1).
+    -->
+    <analysisTimes type="fromObservationTimes"/>
+
+    <!--
+        Main (control) model: no stochastic perturbations.
+        Ensemble models: no stochastic forcing; initial states are loaded from
+        pre-existing Simstrat snapshots by init_instances.py.
+
+        NOTE: OpenDA does not support multiplicative covariance inflation natively.
+        To match main_EnKF.py (INFLATION=1.05), apply inflation externally inside
+        run_simstrat.py (see APPLY_INFLATION flag).
+    -->
+    <mainModel   stochParameter="false" stochForcing="false" stochInit="false"/>
+    <ensembleSize>20</ensembleSize>
+    <ensembleModel stochParameter="false" stochForcing="false" stochInit="false"/>
+
+</EnkfConfig>

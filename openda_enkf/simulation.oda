@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openDaApplication xmlns="http://www.openda.org"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.openda.org http://schemas.openda.org/openDaApplication.xsd">
+
+    <!--
+        Step 1 diagnostic: org.openda.algorithms.Simulation
+        Runs a single Simstrat instance through the full observation period
+        without any data-assimilation update.  This verifies:
+          - BBStochModelFactory can create a model instance
+          - simstratWrapper.xml resolves all aliases and file paths
+          - run_simstrat.sh executes correctly for instance 0
+          - time_config.txt / temperature_state.txt / temperature_obs.txt
+            are read and written correctly
+          - The stochObserver can parse obs_depth_0.5m.noo
+
+        Run from this directory:
+            od.bat simulation.oda    (Windows)
+            od.sh  simulation.oda   (Linux)
+
+        Output: algorithms/simulation_predictions.csv
+            columns: time (MJD), predicted T at 0.5 m, observed T at 0.5 m
+    -->
+
+    <stochObserver className="org.openda.observers.NoosTimeSeriesStochObserver">
+        <workingDirectory>./stochObserver</workingDirectory>
+        <configFile>noosObservations.xml</configFile>
+    </stochObserver>
+
+    <stochModelFactory className="org.openda.blackbox.wrapper.BBStochModelFactory">
+        <workingDirectory>./stochModel</workingDirectory>
+        <configFile>simstratStochModel.xml</configFile>
+    </stochModelFactory>
+
+    <algorithm className="org.openda.algorithms.Simulation">
+        <workingDirectory>./algorithms</workingDirectory>
+        <configString>simulationAlgorithm.xml</configString>
+    </algorithm>
+
+</openDaApplication>

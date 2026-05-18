@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blackBoxWrapperConfig xmlns="http://www.openda.org"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.openda.org http://schemas.openda.org/blackBoxWrapperConfig.xsd">
+
+    <aliasDefinitions defaultKeyPrefix="%" defaultKeySuffix="%">
+        <alias key="instanceDir"/>
+        <alias key="scriptsDir"/>
+        <alias key="ensembleBase"/>
+        <alias key="resultsSubdir"/>
+        <alias key="containerTag"/>
+        <alias key="parFile"/>
+    </aliasDefinitions>
+
+    <run>
+
+        <!--
+            Instance directories are pre-created by scripts/init_instances.py.
+            initializeActions is left empty; initial temperature states come from
+            existing Simstrat snapshots, not a shared template.
+        -->
+        <initializeActions/>
+
+        <computeActions>
+            <!--
+                run_simstrat.py performs the full model step:
+                  1. Reads temperature_state.txt → writes Simstrat snapshot
+                  2. Reads time_config.txt → updates .par file with time window
+                  3. docker exec to run Simstrat
+                  4. Extracts T at obs depth → writes temperature_obs.txt
+                  5. Reads final snapshot → updates temperature_state.txt (= x_f)
+
+                %instanceNumber% is a built-in OpenDA alias (0-indexed).
+                Member ID = instanceNumber  (our ensemble dirs are 0-indexed).
+            -->
+            <action linuxExe="/bin/bash" windowsExe="..\scripts\run_simstrat.bat"
+                    workingDirectory="%scriptsDir%">
+                <arg>run_simstrat.sh</arg>
+                <arg>--instance-number</arg>
+                <arg>%instanceNumber%</arg>
+                <arg>--instance-dir</arg>
+                <arg>%instanceDir%%instanceNumber%</arg>
+                <arg>--ensemble-base</arg>
+                <arg>%ensembleBase%</arg>
+                <arg>--results-subdir</arg>
+                <arg>%resultsSubdir%</arg>
+                <arg>--container-tag</arg>
+                <arg>%containerTag%</arg>
+                <arg>--par-file</arg>
+                <arg>%parFile%</arg>
+                <checkOutput file="%instanceDir%%instanceNumber%/temperature_obs.txt"/>
+            </action>
+        </computeActions>
+
+        <additionalComputeActions></additionalComputeActions>
+        <finalizeActions></finalizeActions>
+
+    </run>
+
+    <inputOutput>
+
+        <!--
+            State vector: OpenDA reads x_f after compute(), applies EnKF update,
+            writes x_a back. run_simstrat.py reads x_a at the start of next step.
+            File lives in the instance directory.
+        -->
+        <dataObject className="org.openda.exchange.dataobjects.AsciiVectorDataObject">
+            <file>%instanceDir%%instanceNumber%/temperature_state.txt</file>
+            <id>state_temperature</id>
+        </dataObject>
+
+        <!--
+            Time window (MJD): OpenDA writes start_time, time_step, end_time
+            before each compute() call. run_simstrat.py reads and converts to
+            Simstrat time (days since 1981-01-01).
+            Format: key = value  (one per line, AsciiKeywordDataObject format)
+        -->
+        <dataObject className="org.openda.exchange.dataobjects.AsciiKeywordDataObject">
+            <file>%instanceDir%%instanceNumber%/time_config.txt</file>
+            <id>time_config</id>
+        </dataObject>
+
+        <!--
+            Observation-space prediction: single value (T at 0.5 m depth).
+            Written by run_simstrat.py; read by OpenDA as H*x_f.
+        -->
+        <dataObject className="org.openda.exchange.dataobjects.AsciiVectorDataObject">
+            <file>%instanceDir%%instanceNumber%/temperature_obs.txt</file>
+            <id>obs_predictions</id>
+        </dataObject>
+
+    </inputOutput>
+
+</blackBoxWrapperConfig>

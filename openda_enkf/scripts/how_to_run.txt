@@ -1,0 +1,10 @@
+cd /mnt/c/Users/toschith/Documents/Work/alplakes-da
+
+  export OPENDADIR=$PWD/openda_3.4.0/bin
+  export PATH=$PWD/openda_3.4.0/jre/bin:$OPENDADIR:$PATH
+  export OPENDA_NATIVE=linux64_gnu
+  export OPENDALIB=$OPENDADIR/$OPENDA_NATIVE
+  export LD_LIBRARY_PATH=$OPENDALIB/lib:$LD_LIBRARY_PATH
+
+  cd openda_enkf
+  oda_run.sh enkf.oda

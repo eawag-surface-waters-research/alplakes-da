@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blackBoxWrapperConfig xmlns="http://www.openda.org"
+                       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                       xsi:schemaLocation="http://www.openda.org http://schemas.openda.org/blackBoxWrapperConfig.xsd">
+
+    <!-- declare all the used aliases, specify the prefix and suffix of an alias key in a variable  -->
+    <aliasDefinitions defaultKeyPrefix="%" defaultKeySuffix="%">
+        <alias key="exedir"/>
+        <alias key="instanceDir"/>
+        <alias key="templateDir"/>
+        <alias key="runid"/>
+        <alias key="frictionMultiplierFile"/>
+        <alias key="frictionMultiplierTemplateFile"/>
+        <alias key="depthMultiplierFile"/>
+        <alias key="depthMultiplierTemplateFile"/>
+        <alias key="mduFile"/>
+        <alias key="dimrFile"/>
+        <alias key="netcdfoutput"/>
+    </aliasDefinitions>
+
+    <run>
+
+        <!-- for each model instance, the template directory will be cloned to create the instance directory -->
+        <initializeActionsUsingDirClone instanceDir="%instanceDir%%instanceNumber%" templateDir="%templateDir%"/>
+
+        <computeActions>
+            <action workingDirectory="%instanceDir%" linuxExe="%exedir%/start_dimr.sh" windowsExe="%exedir%/start_dimr.bat">
+                <arg>%dimrFile%</arg>
+                <checkOutput file="%netcdfoutput%"/>
+            </action>
+        </computeActions>
+
+        <finalizeActions/>
+
+    </run>
+
+    <inputOutput>
+        <dataObject className="org.openda.model_dflowfm.DFlowFMXyzFile">
+            <file>%frictionMultiplierFile%</file>
+            <id>frictionCoefFile</id>
+            <arg>idsFromTemplateFile=%frictionMultiplierTemplateFile%</arg>
+            <arg>idPrefix=friction_</arg>
+        </dataObject>
+
+        <dataObject className="org.openda.model_dflowfm.DFlowFMXyzFile">
+            <file>%depthMultiplierFile%</file>
+            <id>depthCoefFile</id>
+            <arg>idsFromTemplateFile=%depthMultiplierTemplateFile%</arg>
+            <arg>idPrefix=depth_</arg>
+        </dataObject>
+
+        <dataObject className="org.openda.exchange.dataobjects.NetcdfDataObject">
+            <file>%netcdfoutput%</file>
+            <id>%netcdfoutput%</id>
+            <arg>true</arg>
+            <arg>false</arg>
+			<arg>stationDimensionVarName=station</arg>
+        </dataObject>
+		<dataObject className="org.openda.model_dflowfm.BcFile">
+			<file>estuary_west_noise.bc</file>
+			<id>noise_boundaries</id>
+			<arg>estuary_west_noise.bc</arg>
+		</dataObject>
+		<dataObject className="org.openda.model_dflowfm.BcFile">
+			<file>estuary_west_tide.bc</file>
+			<id>tide_boundaries</id>
+			<arg>estuary_west_tide.bc</arg>
+		</dataObject>
+    </inputOutput>
+
+</blackBoxWrapperConfig>
