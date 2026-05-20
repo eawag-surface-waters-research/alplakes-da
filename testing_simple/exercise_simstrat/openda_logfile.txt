@@ -30,10 +30,10 @@ workingDir=././stochModel/./../work/work0
 </OUTPUT>
 <ERROR>
 INFO     Time window: 16071.0000 -> 16078.0000 (dt=7.0000 days)
-INFO     state temperatures: [5.555, 5.511, 5.0, 5.0, 5.0, 4.5, 4.5]
+INFO     state temperatures: [6.7809, 6.8214, 6.7989, 6.3934, 5.7641, 5.1901, 4.7575]
 INFO     InitialConditions.dat written from state file
 INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
-INFO     snapshot_path: Results/simulation-snapshot.dat  exists=False  size=N/A
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
 INFO     Settings.par written:
 {
     "Input": {
@@ -127,9 +127,9 @@ INFO     Settings.par written:
 }
 INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
 INFO     Simstrat finished (exit 0)
-INFO     Written T_0m.csv (57 timesteps, depth -0.0 m)
-INFO     Written T_10m.csv (57 timesteps, depth -10.0 m)
-INFO     Written T_20m.csv (57 timesteps, depth -20.0 m)
+INFO     Written T_0m.csv (56 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (56 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (56 timesteps, depth -20.0 m)
 INFO     temperature_state.txt updated from end of run
 INFO     Simstrat wrapper completed successfully
 </ERROR>
@@ -159,7 +159,7 @@ workingDir=././stochModel/./../work/work0
 </OUTPUT>
 <ERROR>
 INFO     Time window: 16078.0000 -> 16085.0000 (dt=7.0000 days)
-INFO     state temperatures: [5.0453, 5.0912, 5.0798, 5.0009, 4.9251, 4.5663, 4.5017]
+INFO     state temperatures: [6.3733, 6.4106, 6.4186, 6.2748, 5.7893, 5.2877, 4.8672]
 INFO     InitialConditions.dat written from state file
 INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
 INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
@@ -256,9 +256,9 @@ INFO     Settings.par written:
 }
 INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
 INFO     Simstrat finished (exit 0)
-INFO     Written T_0m.csv (113 timesteps, depth -0.0 m)
-INFO     Written T_10m.csv (113 timesteps, depth -10.0 m)
-INFO     Written T_20m.csv (113 timesteps, depth -20.0 m)
+INFO     Written T_0m.csv (112 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (112 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (112 timesteps, depth -20.0 m)
 INFO     temperature_state.txt updated from end of run
 INFO     Simstrat wrapper completed successfully
 </ERROR>
@@ -288,7 +288,7 @@ workingDir=././stochModel/./../work/work0
 </OUTPUT>
 <ERROR>
 INFO     Time window: 16085.0000 -> 16099.0000 (dt=7.0000 days)
-INFO     state temperatures: [4.7672, 4.8431, 4.8632, 4.8688, 4.822, 4.6621, 4.5062]
+INFO     state temperatures: [5.9906, 6.0509, 6.0675, 6.0615, 5.792, 5.357, 4.9696]
 INFO     InitialConditions.dat written from state file
 INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
 INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
@@ -385,9 +385,9 @@ INFO     Settings.par written:
 }
 INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
 INFO     Simstrat finished (exit 0)
-INFO     Written T_0m.csv (225 timesteps, depth -0.0 m)
-INFO     Written T_10m.csv (225 timesteps, depth -10.0 m)
-INFO     Written T_20m.csv (225 timesteps, depth -20.0 m)
+INFO     Written T_0m.csv (224 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (224 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (224 timesteps, depth -20.0 m)
 INFO     temperature_state.txt updated from end of run
 INFO     Simstrat wrapper completed successfully
 </ERROR>
@@ -400,5 +400,5 @@ Instance computation done
 Algorithm Done
 Start Instance finalization
 Application Done
-2026-05-20, 12:26:16
-DURATION, 43
+2026-05-20, 12:49:43
+DURATION, 29
