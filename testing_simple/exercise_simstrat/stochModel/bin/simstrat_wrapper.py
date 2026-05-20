@@ -178,14 +178,32 @@ if __name__ == '__main__':
     logger.info("Settings.par written:\n%s", json.dumps(settings, indent=4))
 
     # ------------------------------------------------------------------
+    # 3.5 Inject perturbed Forcing.dat for ensemble members
+    # ------------------------------------------------------------------
+    work_dir_abs = os.path.abspath(os.getcwd())
+    instance_num = int(os.path.basename(work_dir_abs).replace("work", ""))
+    if instance_num > 0:
+        exercise_dir = os.path.dirname(os.path.dirname(work_dir_abs))
+        forcing_src  = os.path.join(exercise_dir, "forcings", f"Forcing_{instance_num}.dat")
+        if os.path.exists(forcing_src):
+            shutil.copy2(forcing_src, "Forcing.dat")
+            logger.info("Injected forcings/Forcing_%d.dat", instance_num)
+        else:
+            logger.warning("Perturbed forcing not found: %s — using template Forcing.dat", forcing_src)
+
+    # ------------------------------------------------------------------
     # 4. Run Simstrat
     # ------------------------------------------------------------------
-    exe_dir = os.path.dirname(os.path.abspath(__file__))
-    simstrat_exe = os.path.join(exe_dir, 'simstrat_win_304.exe')
+    SIMSTRAT_IMAGE = "eawag/simstrat:3.0.4"
+    work_dir = os.path.abspath(os.getcwd()).replace("\\", "/")
 
-    logger.info("Running: %s %s", simstrat_exe, args.config)
-    result = subprocess.run([simstrat_exe, args.config],
-                            capture_output=True, text=True)
+    logger.info("Running Simstrat via Docker image %s in %s", SIMSTRAT_IMAGE, work_dir)
+    cmd = (
+        f"docker run --rm "
+        f"-v {work_dir}:/simstrat/run "
+        f"{SIMSTRAT_IMAGE} {args.config}"
+    )
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     if result.stdout:
         logger.debug("stdout: %s", result.stdout)
     if result.returncode != 0:

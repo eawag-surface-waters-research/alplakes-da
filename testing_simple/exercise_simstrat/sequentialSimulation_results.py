@@ -32,7 +32,7 @@ import numpy as np
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 x_f_central=[]
 #  state: temperature.state
-x_f_central.append([7.4729, 7.4964, 7.5006, 6.7733, 5.6399, 4.9386, 4.5694])
+x_f_central.append([8.0682, 8.091, 8.0979, 8.0789, 7.6202, 7.1676, 6.658])
 # ========================================================================
 # 
 #  analysis at 190211200000UTC (16073.0) 
@@ -49,25 +49,25 @@ analysis_time.append(16073.0)
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 pred_f_central=[]
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([7.4729, 7.4964, 7.5006])
+pred_f_central.append([8.0682, 8.091, 8.0979])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs=[]
 obs.append([7.940208,7.916181,7.897431])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 x_a=[]
 #  state: temperature.state
-x_a.append([7.4729, 7.4964, 7.5006, 6.7733, 5.6399, 4.9386, 4.5694])
+x_a.append([8.0682, 8.091, 8.0979, 8.0789, 7.6202, 7.1676, 6.658])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 pred_a_central=[]
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([7.4729, 7.4964, 7.5006])
+pred_a_central.append([8.0682, 8.091, 8.0979])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 x_a_central=[]
 #  state: temperature.state
-x_a_central.append([7.4729, 7.4964, 7.5006, 6.7733, 5.6399, 4.9386, 4.5694])
+x_a_central.append([8.0682, 8.091, 8.0979, 8.0789, 7.6202, 7.1676, 6.658])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -79,7 +79,7 @@ x_a_central.append([7.4729, 7.4964, 7.5006, 6.7733, 5.6399, 4.9386, 4.5694])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([7.3726, 7.4172, 7.4258, 6.7558, 5.6635, 4.9575, 4.5695])
+x_f_central.append([7.9856, 8.0259, 8.0378, 8.0389, 7.6256, 7.1788, 6.6583])
 # ========================================================================
 # 
 #  analysis at 190211210000UTC (16074.0) 
@@ -94,21 +94,21 @@ analysis_time.append(16074.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([7.3726, 7.4172, 7.4258])
+pred_f_central.append([7.9856, 8.0259, 8.0378])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.866181,7.861181,7.850764])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([7.3726, 7.4172, 7.4258, 6.7558, 5.6635, 4.9575, 4.5695])
+x_a.append([7.9856, 8.0259, 8.0378, 8.0389, 7.6256, 7.1788, 6.6583])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([7.3726, 7.4172, 7.4258])
+pred_a_central.append([7.9856, 8.0259, 8.0378])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([7.3726, 7.4172, 7.4258, 6.7558, 5.6635, 4.9575, 4.5695])
+x_a_central.append([7.9856, 8.0259, 8.0378, 8.0389, 7.6256, 7.1788, 6.6583])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -120,7 +120,7 @@ x_a_central.append([7.3726, 7.4172, 7.4258, 6.7558, 5.6635, 4.9575, 4.5695])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([7.2908, 7.3169, 7.3238, 6.738, 5.6853, 4.977, 4.5696])
+x_f_central.append([7.9202, 7.9482, 7.9579, 7.9627, 7.6319, 7.1899, 6.6587])
 # ========================================================================
 # 
 #  analysis at 190211220000UTC (16075.0) 
@@ -135,21 +135,21 @@ analysis_time.append(16075.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([7.2908, 7.3169, 7.3238])
+pred_f_central.append([7.9202, 7.9482, 7.9579])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.803889,7.805556,7.795208])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([7.2908, 7.3169, 7.3238, 6.738, 5.6853, 4.977, 4.5696])
+x_a.append([7.9202, 7.9482, 7.9579, 7.9627, 7.6319, 7.1899, 6.6587])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([7.2908, 7.3169, 7.3238])
+pred_a_central.append([7.9202, 7.9482, 7.9579])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([7.2908, 7.3169, 7.3238, 6.738, 5.6853, 4.977, 4.5696])
+x_a_central.append([7.9202, 7.9482, 7.9579, 7.9627, 7.6319, 7.1899, 6.6587])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -161,7 +161,7 @@ x_a_central.append([7.2908, 7.3169, 7.3238, 6.738, 5.6853, 4.977, 4.5696])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([7.2278, 7.2504, 7.255, 6.7186, 5.7049, 4.9963, 4.5697])
+x_f_central.append([7.8752, 7.8967, 7.9034, 7.9068, 7.6357, 7.2007, 6.659])
 # ========================================================================
 # 
 #  analysis at 190211230000UTC (16076.0) 
@@ -176,21 +176,21 @@ analysis_time.append(16076.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([7.2278, 7.2504, 7.255])
+pred_f_central.append([7.8752, 7.8967, 7.9034])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.758264,7.764236,7.755139])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([7.2278, 7.2504, 7.255, 6.7186, 5.7049, 4.9963, 4.5697])
+x_a.append([7.8752, 7.8967, 7.9034, 7.9068, 7.6357, 7.2007, 6.659])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([7.2278, 7.2504, 7.255])
+pred_a_central.append([7.8752, 7.8967, 7.9034])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([7.2278, 7.2504, 7.255, 6.7186, 5.7049, 4.9963, 4.5697])
+x_a_central.append([7.8752, 7.8967, 7.9034, 7.9068, 7.6357, 7.2007, 6.659])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -202,7 +202,7 @@ x_a_central.append([7.2278, 7.2504, 7.255, 6.7186, 5.7049, 4.9963, 4.5697])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([7.1709, 7.1917, 7.1963, 6.6984, 5.7224, 5.0153, 4.5698])
+x_f_central.append([7.8296, 7.8498, 7.8564, 7.8596, 7.6365, 7.211, 6.6594])
 # ========================================================================
 # 
 #  analysis at 190211240000UTC (16077.0) 
@@ -217,21 +217,21 @@ analysis_time.append(16077.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([7.1709, 7.1917, 7.1963])
+pred_f_central.append([7.8296, 7.8498, 7.8564])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.807917,7.750764,7.72375])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([7.1709, 7.1917, 7.1963, 6.6984, 5.7224, 5.0153, 4.5698])
+x_a.append([7.8296, 7.8498, 7.8564, 7.8596, 7.6365, 7.211, 6.6594])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([7.1709, 7.1917, 7.1963])
+pred_a_central.append([7.8296, 7.8498, 7.8564])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([7.1709, 7.1917, 7.1963, 6.6984, 5.7224, 5.0153, 4.5698])
+x_a_central.append([7.8296, 7.8498, 7.8564, 7.8596, 7.6365, 7.211, 6.6594])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -243,7 +243,7 @@ x_a_central.append([7.1709, 7.1917, 7.1963, 6.6984, 5.7224, 5.0153, 4.5698])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([7.1124, 7.1451, 7.1518, 6.6784, 5.7378, 5.0336, 4.57])
+x_f_central.append([7.7793, 7.8107, 7.8199, 7.8242, 7.6371, 7.2208, 6.6597])
 # ========================================================================
 # 
 #  analysis at 190211250000UTC (16078.0) 
@@ -258,21 +258,21 @@ analysis_time.append(16078.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([7.1124, 7.1451, 7.1518])
+pred_f_central.append([7.7793, 7.8107, 7.8199])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.70875,7.700972,7.688056])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([7.1124, 7.1451, 7.1518, 6.6784, 5.7378, 5.0336, 4.57])
+x_a.append([7.7793, 7.8107, 7.8199, 7.8242, 7.6371, 7.2208, 6.6597])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([7.1124, 7.1451, 7.1518])
+pred_a_central.append([7.7793, 7.8107, 7.8199])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([7.1124, 7.1451, 7.1518, 6.6784, 5.7378, 5.0336, 4.57])
+x_a_central.append([7.7793, 7.8107, 7.8199, 7.8242, 7.6371, 7.2208, 6.6597])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -284,7 +284,7 @@ x_a_central.append([7.1124, 7.1451, 7.1518, 6.6784, 5.7378, 5.0336, 4.57])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([7.0706, 7.0887, 7.0928, 6.6591, 5.7514, 5.0515, 4.5701])
+x_f_central.append([7.75, 7.7676, 7.7736, 7.7768, 7.6391, 7.2302, 6.6601])
 # ========================================================================
 # 
 #  analysis at 190211260000UTC (16079.0) 
@@ -299,21 +299,21 @@ analysis_time.append(16079.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([7.0706, 7.0887, 7.0928])
+pred_f_central.append([7.75, 7.7676, 7.7736])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.719167,7.699931,7.682986])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([7.0706, 7.0887, 7.0928, 6.6591, 5.7514, 5.0515, 4.5701])
+x_a.append([7.75, 7.7676, 7.7736, 7.7768, 7.6391, 7.2302, 6.6601])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([7.0706, 7.0887, 7.0928])
+pred_a_central.append([7.75, 7.7676, 7.7736])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([7.0706, 7.0887, 7.0928, 6.6591, 5.7514, 5.0515, 4.5701])
+x_a_central.append([7.75, 7.7676, 7.7736, 7.7768, 7.6391, 7.2302, 6.6601])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -325,7 +325,7 @@ x_a_central.append([7.0706, 7.0887, 7.0928, 6.6591, 5.7514, 5.0515, 4.5701])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([7.0335, 7.0564, 7.0605, 6.6407, 5.7633, 5.0686, 4.5702])
+x_f_central.append([7.719, 7.7409, 7.7469, 7.7498, 7.6283, 7.2392, 6.6604])
 # ========================================================================
 # 
 #  analysis at 190211270000UTC (16080.0) 
@@ -340,21 +340,21 @@ analysis_time.append(16080.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([7.0335, 7.0564, 7.0605])
+pred_f_central.append([7.719, 7.7409, 7.7469])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.656597,7.661458,7.64875])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([7.0335, 7.0564, 7.0605, 6.6407, 5.7633, 5.0686, 4.5702])
+x_a.append([7.719, 7.7409, 7.7469, 7.7498, 7.6283, 7.2392, 6.6604])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([7.0335, 7.0564, 7.0605])
+pred_a_central.append([7.719, 7.7409, 7.7469])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([7.0335, 7.0564, 7.0605, 6.6407, 5.7633, 5.0686, 4.5702])
+x_a_central.append([7.719, 7.7409, 7.7469, 7.7498, 7.6283, 7.2392, 6.6604])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -366,7 +366,7 @@ x_a_central.append([7.0335, 7.0564, 7.0605, 6.6407, 5.7633, 5.0686, 4.5702])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([6.9673, 6.9922, 6.9969, 6.64, 5.7744, 5.0862, 4.5704])
+x_f_central.append([7.6694, 7.6923, 7.6996, 7.7033, 7.6342, 7.2487, 6.6607])
 # ========================================================================
 # 
 #  analysis at 190211280000UTC (16081.0) 
@@ -381,21 +381,21 @@ analysis_time.append(16081.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([6.9673, 6.9922, 6.9969])
+pred_f_central.append([7.6694, 7.6923, 7.6996])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.642639,7.615694,7.603889])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([6.9673, 6.9922, 6.9969, 6.64, 5.7744, 5.0862, 4.5704])
+x_a.append([7.6694, 7.6923, 7.6996, 7.7033, 7.6342, 7.2487, 6.6607])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([6.9673, 6.9922, 6.9969])
+pred_a_central.append([7.6694, 7.6923, 7.6996])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([6.9673, 6.9922, 6.9969, 6.64, 5.7744, 5.0862, 4.5704])
+x_a_central.append([7.6694, 7.6923, 7.6996, 7.7033, 7.6342, 7.2487, 6.6607])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -407,7 +407,7 @@ x_a_central.append([6.9673, 6.9922, 6.9969, 6.64, 5.7744, 5.0862, 4.5704])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([6.8783, 6.9273, 6.9373, 6.6287, 5.7847, 5.1035, 4.5705])
+x_f_central.append([7.593, 7.6396, 7.6519, 7.6579, 7.609, 7.2666, 6.6611])
 # ========================================================================
 # 
 #  analysis at 190211290000UTC (16082.0) 
@@ -422,21 +422,21 @@ analysis_time.append(16082.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([6.8783, 6.9273, 6.9373])
+pred_f_central.append([7.593, 7.6396, 7.6519])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.560833,7.541458,7.532431])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([6.8783, 6.9273, 6.9373, 6.6287, 5.7847, 5.1035, 4.5705])
+x_a.append([7.593, 7.6396, 7.6519, 7.6579, 7.609, 7.2666, 6.6611])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([6.8783, 6.9273, 6.9373])
+pred_a_central.append([7.593, 7.6396, 7.6519])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([6.8783, 6.9273, 6.9373, 6.6287, 5.7847, 5.1035, 4.5705])
+x_a_central.append([7.593, 7.6396, 7.6519, 7.6579, 7.609, 7.2666, 6.6611])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -448,7 +448,7 @@ x_a_central.append([6.8783, 6.9273, 6.9373, 6.6287, 5.7847, 5.1035, 4.5705])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([6.8096, 6.8513, 6.8615, 6.5995, 5.7954, 5.1205, 4.5707])
+x_f_central.append([7.5426, 7.582, 7.595, 7.6029, 7.5789, 7.2886, 6.6615])
 # ========================================================================
 # 
 #  analysis at 190211300000UTC (16083.0) 
@@ -463,21 +463,21 @@ analysis_time.append(16083.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([6.8096, 6.8513, 6.8615])
+pred_f_central.append([7.5426, 7.582, 7.595])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.529722,7.489861,7.477847])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([6.8096, 6.8513, 6.8615, 6.5995, 5.7954, 5.1205, 4.5707])
+x_a.append([7.5426, 7.582, 7.595, 7.6029, 7.5789, 7.2886, 6.6615])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([6.8096, 6.8513, 6.8615])
+pred_a_central.append([7.5426, 7.582, 7.595])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([6.8096, 6.8513, 6.8615, 6.5995, 5.7954, 5.1205, 4.5707])
+x_a_central.append([7.5426, 7.582, 7.595, 7.6029, 7.5789, 7.2886, 6.6615])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -489,7 +489,7 @@ x_a_central.append([6.8096, 6.8513, 6.8615, 6.5995, 5.7954, 5.1205, 4.5707])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([6.7314, 6.7679, 6.7795, 6.5733, 5.8063, 5.1372, 4.5708])
+x_f_central.append([7.4813, 7.5199, 7.5338, 7.5432, 7.5356, 7.3112, 6.6618])
 # ========================================================================
 # 
 #  analysis at 190212010000UTC (16084.0) 
@@ -504,21 +504,21 @@ analysis_time.append(16084.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([6.7314, 6.7679, 6.7795])
+pred_f_central.append([7.4813, 7.5199, 7.5338])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.459375,7.418056,7.402847])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([6.7314, 6.7679, 6.7795, 6.5733, 5.8063, 5.1372, 4.5708])
+x_a.append([7.4813, 7.5199, 7.5338, 7.5432, 7.5356, 7.3112, 6.6618])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([6.7314, 6.7679, 6.7795])
+pred_a_central.append([7.4813, 7.5199, 7.5338])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([6.7314, 6.7679, 6.7795, 6.5733, 5.8063, 5.1372, 4.5708])
+x_a_central.append([7.4813, 7.5199, 7.5338, 7.5432, 7.5356, 7.3112, 6.6618])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -530,7 +530,7 @@ x_a_central.append([6.7314, 6.7679, 6.7795, 6.5733, 5.8063, 5.1372, 4.5708])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([6.6484, 6.69, 6.701, 6.5394, 5.8157, 5.154, 4.571])
+x_f_central.append([7.4258, 7.4639, 7.4775, 7.4864, 7.4903, 7.3156, 6.6622])
 # ========================================================================
 # 
 #  analysis at 190212020000UTC (16085.0) 
@@ -545,21 +545,21 @@ analysis_time.append(16085.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([6.6484, 6.69, 6.701])
+pred_f_central.append([7.4258, 7.4639, 7.4775])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.397639,7.359236,7.344236])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([6.6484, 6.69, 6.701, 6.5394, 5.8157, 5.154, 4.571])
+x_a.append([7.4258, 7.4639, 7.4775, 7.4864, 7.4903, 7.3156, 6.6622])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([6.6484, 6.69, 6.701])
+pred_a_central.append([7.4258, 7.4639, 7.4775])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([6.6484, 6.69, 6.701, 6.5394, 5.8157, 5.154, 4.571])
+x_a_central.append([7.4258, 7.4639, 7.4775, 7.4864, 7.4903, 7.3156, 6.6622])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -571,7 +571,7 @@ x_a_central.append([6.6484, 6.69, 6.701, 6.5394, 5.8157, 5.154, 4.571])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([6.575, 6.6173, 6.6291, 6.5045, 5.8228, 5.1706, 4.5712])
+x_f_central.append([7.3731, 7.4113, 7.4245, 7.4331, 7.4369, 7.3254, 6.6626])
 # ========================================================================
 # 
 #  analysis at 190212030000UTC (16086.0) 
@@ -586,21 +586,21 @@ analysis_time.append(16086.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([6.575, 6.6173, 6.6291])
+pred_f_central.append([7.3731, 7.4113, 7.4245])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.359722,7.318125,7.303194])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([6.575, 6.6173, 6.6291, 6.5045, 5.8228, 5.1706, 4.5712])
+x_a.append([7.3731, 7.4113, 7.4245, 7.4331, 7.4369, 7.3254, 6.6626])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([6.575, 6.6173, 6.6291])
+pred_a_central.append([7.3731, 7.4113, 7.4245])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([6.575, 6.6173, 6.6291, 6.5045, 5.8228, 5.1706, 4.5712])
+x_a_central.append([7.3731, 7.4113, 7.4245, 7.4331, 7.4369, 7.3254, 6.6626])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -612,7 +612,7 @@ x_a_central.append([6.575, 6.6173, 6.6291, 6.5045, 5.8228, 5.1706, 4.5712])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([6.5152, 6.5553, 6.5665, 6.4649, 5.8275, 5.1868, 4.5714])
+x_f_central.append([7.3288, 7.3667, 7.3789, 7.3869, 7.3907, 7.3177, 6.663])
 # ========================================================================
 # 
 #  analysis at 190212040000UTC (16087.0) 
@@ -627,21 +627,21 @@ analysis_time.append(16087.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([6.5152, 6.5553, 6.5665])
+pred_f_central.append([7.3288, 7.3667, 7.3789])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.280278,7.263889,7.248542])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([6.5152, 6.5553, 6.5665, 6.4649, 5.8275, 5.1868, 4.5714])
+x_a.append([7.3288, 7.3667, 7.3789, 7.3869, 7.3907, 7.3177, 6.663])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([6.5152, 6.5553, 6.5665])
+pred_a_central.append([7.3288, 7.3667, 7.3789])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([6.5152, 6.5553, 6.5665, 6.4649, 5.8275, 5.1868, 4.5714])
+x_a_central.append([7.3288, 7.3667, 7.3789, 7.3869, 7.3907, 7.3177, 6.663])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -653,7 +653,7 @@ x_a_central.append([6.5152, 6.5553, 6.5665, 6.4649, 5.8275, 5.1868, 4.5714])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([6.4606, 6.5008, 6.5113, 6.4276, 5.8302, 5.2026, 4.5717])
+x_f_central.append([7.2915, 7.327, 7.3391, 7.3468, 7.3504, 7.3032, 6.6634])
 # ========================================================================
 # 
 #  analysis at 190212050000UTC (16088.0) 
@@ -668,21 +668,21 @@ analysis_time.append(16088.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([6.4606, 6.5008, 6.5113])
+pred_f_central.append([7.2915, 7.327, 7.3391])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.306736,7.219444,7.205])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([6.4606, 6.5008, 6.5113, 6.4276, 5.8302, 5.2026, 4.5717])
+x_a.append([7.2915, 7.327, 7.3391, 7.3468, 7.3504, 7.3032, 6.6634])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([6.4606, 6.5008, 6.5113])
+pred_a_central.append([7.2915, 7.327, 7.3391])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([6.4606, 6.5008, 6.5113, 6.4276, 5.8302, 5.2026, 4.5717])
+x_a_central.append([7.2915, 7.327, 7.3391, 7.3468, 7.3504, 7.3032, 6.6634])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -694,7 +694,7 @@ x_a_central.append([6.4606, 6.5008, 6.5113, 6.4276, 5.8302, 5.2026, 4.5717])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([6.4214, 6.452, 6.4609, 6.3881, 5.8312, 5.2176, 4.5719])
+x_f_central.append([7.2661, 7.2927, 7.303, 7.3092, 7.3117, 7.2823, 6.6638])
 # ========================================================================
 # 
 #  analysis at 190212060000UTC (16089.0) 
@@ -709,21 +709,21 @@ analysis_time.append(16089.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([6.4214, 6.452, 6.4609])
+pred_f_central.append([7.2661, 7.2927, 7.303])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.228403,7.215278,7.2])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([6.4214, 6.452, 6.4609, 6.3881, 5.8312, 5.2176, 4.5719])
+x_a.append([7.2661, 7.2927, 7.303, 7.3092, 7.3117, 7.2823, 6.6638])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([6.4214, 6.452, 6.4609])
+pred_a_central.append([7.2661, 7.2927, 7.303])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([6.4214, 6.452, 6.4609, 6.3881, 5.8312, 5.2176, 4.5719])
+x_a_central.append([7.2661, 7.2927, 7.303, 7.3092, 7.3117, 7.2823, 6.6638])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -735,7 +735,7 @@ x_a_central.append([6.4214, 6.452, 6.4609, 6.3881, 5.8312, 5.2176, 4.5719])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([6.3995, 6.4173, 6.4229, 6.3544, 5.8306, 5.2319, 4.5722])
+x_f_central.append([7.2509, 7.2685, 7.2757, 7.2807, 7.2837, 7.2653, 6.6642])
 # ========================================================================
 # 
 #  analysis at 190212070000UTC (16090.0) 
@@ -750,21 +750,21 @@ analysis_time.append(16090.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([6.3995, 6.4173, 6.4229])
+pred_f_central.append([7.2509, 7.2685, 7.2757])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.213819,7.197986,7.177708])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([6.3995, 6.4173, 6.4229, 6.3544, 5.8306, 5.2319, 4.5722])
+x_a.append([7.2509, 7.2685, 7.2757, 7.2807, 7.2837, 7.2653, 6.6642])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([6.3995, 6.4173, 6.4229])
+pred_a_central.append([7.2509, 7.2685, 7.2757])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([6.3995, 6.4173, 6.4229, 6.3544, 5.8306, 5.2319, 4.5722])
+x_a_central.append([7.2509, 7.2685, 7.2757, 7.2807, 7.2837, 7.2653, 6.6642])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -776,7 +776,7 @@ x_a_central.append([6.3995, 6.4173, 6.4229, 6.3544, 5.8306, 5.2319, 4.5722])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([6.3716, 6.3934, 6.3989, 6.324, 5.8287, 5.245, 4.5724])
+x_f_central.append([7.2307, 7.2504, 7.2571, 7.2614, 7.2637, 7.248, 6.6647])
 # ========================================================================
 # 
 #  analysis at 190212080000UTC (16091.0) 
@@ -791,21 +791,21 @@ analysis_time.append(16091.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([6.3716, 6.3934, 6.3989])
+pred_f_central.append([7.2307, 7.2504, 7.2571])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.34625,7.230069,7.180278])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([6.3716, 6.3934, 6.3989, 6.324, 5.8287, 5.245, 4.5724])
+x_a.append([7.2307, 7.2504, 7.2571, 7.2614, 7.2637, 7.248, 6.6647])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([6.3716, 6.3934, 6.3989])
+pred_a_central.append([7.2307, 7.2504, 7.2571])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([6.3716, 6.3934, 6.3989, 6.324, 5.8287, 5.245, 4.5724])
+x_a_central.append([7.2307, 7.2504, 7.2571, 7.2614, 7.2637, 7.248, 6.6647])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -817,7 +817,7 @@ x_a_central.append([6.3716, 6.3934, 6.3989, 6.324, 5.8287, 5.245, 4.5724])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([6.3678, 6.3992, 6.3757, 6.3008, 5.8258, 5.2565, 4.5727])
+x_f_central.append([7.2261, 7.2555, 7.2456, 7.2457, 7.2458, 7.2331, 6.6651])
 # ========================================================================
 # 
 #  analysis at 190212090000UTC (16092.0) 
@@ -832,21 +832,21 @@ analysis_time.append(16092.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([6.3678, 6.3992, 6.3757])
+pred_f_central.append([7.2261, 7.2555, 7.2456])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.313403,7.242361,7.184583])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([6.3678, 6.3992, 6.3757, 6.3008, 5.8258, 5.2565, 4.5727])
+x_a.append([7.2261, 7.2555, 7.2456, 7.2457, 7.2458, 7.2331, 6.6651])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([6.3678, 6.3992, 6.3757])
+pred_a_central.append([7.2261, 7.2555, 7.2456])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([6.3678, 6.3992, 6.3757, 6.3008, 5.8258, 5.2565, 4.5727])
+x_a_central.append([7.2261, 7.2555, 7.2456, 7.2457, 7.2458, 7.2331, 6.6651])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -858,7 +858,7 @@ x_a_central.append([6.3678, 6.3992, 6.3757, 6.3008, 5.8258, 5.2565, 4.5727])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([6.3369, 6.3563, 6.361, 6.2758, 5.8222, 5.2674, 4.573])
+x_f_central.append([7.2021, 7.2204, 7.227, 7.2315, 7.2341, 7.2232, 6.6655])
 # ========================================================================
 # 
 #  analysis at 190212100000UTC (16093.0) 
@@ -873,21 +873,21 @@ analysis_time.append(16093.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([6.3369, 6.3563, 6.361])
+pred_f_central.append([7.2021, 7.2204, 7.227])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.257569,7.228403,7.203333])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([6.3369, 6.3563, 6.361, 6.2758, 5.8222, 5.2674, 4.573])
+x_a.append([7.2021, 7.2204, 7.227, 7.2315, 7.2341, 7.2232, 6.6655])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([6.3369, 6.3563, 6.361])
+pred_a_central.append([7.2021, 7.2204, 7.227])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([6.3369, 6.3563, 6.361, 6.2758, 5.8222, 5.2674, 4.573])
+x_a_central.append([7.2021, 7.2204, 7.227, 7.2315, 7.2341, 7.2232, 6.6655])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -899,7 +899,7 @@ x_a_central.append([6.3369, 6.3563, 6.361, 6.2758, 5.8222, 5.2674, 4.573])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([6.3185, 6.351, 6.3402, 6.2557, 5.8184, 5.2771, 4.5733])
+x_f_central.append([7.1859, 7.2159, 7.2168, 7.217, 7.2172, 7.2082, 6.666])
 # ========================================================================
 # 
 #  analysis at 190212110000UTC (16094.0) 
@@ -914,21 +914,21 @@ analysis_time.append(16094.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([6.3185, 6.351, 6.3402])
+pred_f_central.append([7.1859, 7.2159, 7.2168])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.274375,7.185486,7.170208])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([6.3185, 6.351, 6.3402, 6.2557, 5.8184, 5.2771, 4.5733])
+x_a.append([7.1859, 7.2159, 7.2168, 7.217, 7.2172, 7.2082, 6.666])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([6.3185, 6.351, 6.3402])
+pred_a_central.append([7.1859, 7.2159, 7.2168])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([6.3185, 6.351, 6.3402, 6.2557, 5.8184, 5.2771, 4.5733])
+x_a_central.append([7.1859, 7.2159, 7.2168, 7.217, 7.2172, 7.2082, 6.666])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -940,7 +940,7 @@ x_a_central.append([6.3185, 6.351, 6.3402, 6.2557, 5.8184, 5.2771, 4.5733])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([6.3093, 6.3353, 6.315, 6.242, 5.8143, 5.2858, 4.5736])
+x_f_central.append([7.1807, 7.2046, 7.199, 7.1992, 7.1993, 7.1924, 6.6665])
 # ========================================================================
 # 
 #  analysis at 190212120000UTC (16095.0) 
@@ -955,21 +955,21 @@ analysis_time.append(16095.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([6.3093, 6.3353, 6.315])
+pred_f_central.append([7.1807, 7.2046, 7.199])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.200694,7.182708,7.164931])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([6.3093, 6.3353, 6.315, 6.242, 5.8143, 5.2858, 4.5736])
+x_a.append([7.1807, 7.2046, 7.199, 7.1992, 7.1993, 7.1924, 6.6665])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([6.3093, 6.3353, 6.315])
+pred_a_central.append([7.1807, 7.2046, 7.199])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([6.3093, 6.3353, 6.315, 6.242, 5.8143, 5.2858, 4.5736])
+x_a_central.append([7.1807, 7.2046, 7.199, 7.1992, 7.1993, 7.1924, 6.6665])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -981,7 +981,7 @@ x_a_central.append([6.3093, 6.3353, 6.315, 6.242, 5.8143, 5.2858, 4.5736])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([6.2867, 6.3026, 6.3067, 6.2201, 5.8101, 5.294, 4.5739])
+x_f_central.append([7.1641, 7.1789, 7.1846, 7.1883, 7.1905, 7.1844, 6.667])
 # ========================================================================
 # 
 #  analysis at 190212130000UTC (16096.0) 
@@ -996,21 +996,21 @@ analysis_time.append(16096.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([6.2867, 6.3026, 6.3067])
+pred_f_central.append([7.1641, 7.1789, 7.1846])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.282778,7.230625,7.179375])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([6.2867, 6.3026, 6.3067, 6.2201, 5.8101, 5.294, 4.5739])
+x_a.append([7.1641, 7.1789, 7.1846, 7.1883, 7.1905, 7.1844, 6.667])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([6.2867, 6.3026, 6.3067])
+pred_a_central.append([7.1641, 7.1789, 7.1846])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([6.2867, 6.3026, 6.3067, 6.2201, 5.8101, 5.294, 4.5739])
+x_a_central.append([7.1641, 7.1789, 7.1846, 7.1883, 7.1905, 7.1844, 6.667])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -1022,7 +1022,7 @@ x_a_central.append([6.2867, 6.3026, 6.3067, 6.2201, 5.8101, 5.294, 4.5739])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([6.2869, 6.3084, 6.2887, 6.2038, 5.8064, 5.3013, 4.5743])
+x_f_central.append([7.1638, 7.1842, 7.176, 7.1762, 7.1763, 7.1709, 6.6676])
 # ========================================================================
 # 
 #  analysis at 190212140000UTC (16097.0) 
@@ -1037,21 +1037,21 @@ analysis_time.append(16097.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([6.2869, 6.3084, 6.2887])
+pred_f_central.append([7.1638, 7.1842, 7.176])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.262917,7.219583,7.182153])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([6.2869, 6.3084, 6.2887, 6.2038, 5.8064, 5.3013, 4.5743])
+x_a.append([7.1638, 7.1842, 7.176, 7.1762, 7.1763, 7.1709, 6.6676])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([6.2869, 6.3084, 6.2887])
+pred_a_central.append([7.1638, 7.1842, 7.176])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([6.2869, 6.3084, 6.2887, 6.2038, 5.8064, 5.3013, 4.5743])
+x_a_central.append([7.1638, 7.1842, 7.176, 7.1762, 7.1763, 7.1709, 6.6676])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -1063,7 +1063,7 @@ x_a_central.append([6.2869, 6.3084, 6.2887, 6.2038, 5.8064, 5.3013, 4.5743])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([6.257, 6.2771, 6.2809, 6.1869, 5.8023, 5.3081, 4.5746])
+x_f_central.append([7.1386, 7.1579, 7.1634, 7.1673, 7.1696, 7.1652, 6.6682])
 # ========================================================================
 # 
 #  analysis at 190212150000UTC (16098.0) 
@@ -1078,21 +1078,21 @@ analysis_time.append(16098.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([6.257, 6.2771, 6.2809])
+pred_f_central.append([7.1386, 7.1579, 7.1634])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.157222,7.157917,7.134792])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([6.257, 6.2771, 6.2809, 6.1869, 5.8023, 5.3081, 4.5746])
+x_a.append([7.1386, 7.1579, 7.1634, 7.1673, 7.1696, 7.1652, 6.6682])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([6.257, 6.2771, 6.2809])
+pred_a_central.append([7.1386, 7.1579, 7.1634])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([6.257, 6.2771, 6.2809, 6.1869, 5.8023, 5.3081, 4.5746])
+x_a_central.append([7.1386, 7.1579, 7.1634, 7.1673, 7.1696, 7.1652, 6.6682])
 # Algorithm starting next step
 # ========================================================================
 # 
@@ -1104,7 +1104,7 @@ x_a_central.append([6.257, 6.2771, 6.2809, 6.1869, 5.8023, 5.3081, 4.5746])
 # 
 #  resultItem id: x_f_central, outputLevel: Verbose, context: forecast step
 #  state: temperature.state
-x_f_central.append([6.222, 6.2547, 6.2605, 6.1689, 5.798, 5.3143, 4.575])
+x_f_central.append([7.1104, 7.1399, 7.1475, 7.1523, 7.1548, 7.1496, 6.6688])
 # ========================================================================
 # 
 #  analysis at 190212160000UTC (16099.0) 
@@ -1119,21 +1119,21 @@ analysis_time.append(16099.0)
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_f_central.append([6.222, 6.2547, 6.2605])
+pred_f_central.append([7.1104, 7.1399, 7.1475])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.169236,7.141389,7.116667])
 #  resultItem id: x_a, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a.append([6.222, 6.2547, 6.2605, 6.1689, 5.798, 5.3143, 4.575])
+x_a.append([7.1104, 7.1399, 7.1475, 7.1523, 7.1548, 7.1496, 6.6688])
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_a_central, outputLevel: Essential, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
-pred_a_central.append([6.222, 6.2547, 6.2605])
+pred_a_central.append([7.1104, 7.1399, 7.1475])
 #  resultItem id: x_a_central, outputLevel: Verbose, context: analysis step
 #  state: temperature.state
-x_a_central.append([6.222, 6.2547, 6.2605, 6.1689, 5.798, 5.3143, 4.575])
+x_a_central.append([7.1104, 7.1399, 7.1475, 7.1523, 7.1548, 7.1496, 6.6688])
 # Algorithm Done
 # Application Done
 # Try to merge lists into arrays
