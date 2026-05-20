@@ -23,8 +23,8 @@ SIMSTRAT_EXE = os.path.join(SCRIPT_DIR, 'stochModel', 'bin', 'simstrat_win_304.e
 SETTINGS_PAR = os.path.join(WORK0_DIR, 'Settings.par')
 
 # Simstrat days since 1981-01-01
-WARMUP_START = 15705.0   # 2024-01-01
-WARMUP_END   = 16070.0   # 2024-12-31
+WARMUP_START = 1.0   # 2024-01-01
+WARMUP_END   = 16071.0   # 2024-12-31
 
 # IC depth levels that match temperature_state.txt
 IC_DEPTHS = [0.0, -10.0, -20.0, -30.0, -40.0, -50.0, -95.0]
@@ -129,6 +129,7 @@ def main():
     template_dir = os.path.join(SCRIPT_DIR, 'stochModel', 'template')
     template_snapshot = os.path.join(template_dir, output_dir, 'simulation-snapshot.dat')
     template_state    = os.path.join(template_dir, 'temperature_state.txt')
+    os.makedirs(os.path.dirname(template_snapshot), exist_ok=True)
     shutil.copy2(snapshot_path, template_snapshot)
     shutil.copy2(state_path,    template_state)
     print("Copied snapshot  -> {}".format(template_snapshot))
