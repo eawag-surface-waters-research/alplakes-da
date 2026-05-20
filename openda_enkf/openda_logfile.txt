@@ -8,43 +8,25 @@ seriesTrees[0]<?xml version="1.0"?>
 
 status=use
 Starting Algorithm: 
-	className: org.openda.algorithms.Simulation
+	className: org.openda.algorithms.SequentialSimulation
 	dir.: ././algorithms
 	config.: simulationAlgorithm.xml
-Application initializing finished
-Initializing Algorithm
-Algorithm initialized
-Algorithm starting next step
-starting model :0
-New value Distributed counter 1
-Start Instance initialization
-SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
-SLF4J: Defaulting to no-operation (NOP) logger implementation
-SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
-Error running algorithm step.
-Error message: BBModelInstance.getExchangeItem(start_time):
-Exchange item 'start_time' not found
-Existing exchange items are:
-
-
-Error type :RuntimeException
-Stacktrace :java.lang.RuntimeException: BBModelInstance.getExchangeItem(start_time):
-Exchange item 'start_time' not found
-Existing exchange items are:
-
-
-	at org.openda.blackbox.wrapper.BBModelInstance.getExchangeItem(BBModelInstance.java:434)
-	at org.openda.blackbox.wrapper.BBModelInstance.getStartOrEndTime(BBModelInstance.java:726)
-	at org.openda.blackbox.wrapper.BBModelInstance.determineTimeHorizon(BBModelInstance.java:170)
-	at org.openda.blackbox.wrapper.BBModelInstance.<init>(BBModelInstance.java:121)
-	at org.openda.blackbox.wrapper.BBModelFactory.getInstance(BBModelFactory.java:77)
-	at org.openda.blackbox.wrapper.BBModelFactory.getInstance(BBModelFactory.java:38)
-	at org.openda.blackbox.wrapper.BBStochModelFactory.getInstance(BBStochModelFactory.java:146)
-	at org.openda.algorithms.Simulation.next(Simulation.java:110)
-	at org.openda.application.ApplicationRunnerSingleThreaded.runSingleThreaded(ApplicationRunnerSingleThreaded.java:86)
-	at org.openda.application.OpenDaApplication.runApplicationBatch(OpenDaApplication.java:114)
+Exception in thread "main" java.lang.RuntimeException: java.lang.RuntimeException: ClassNotFoundException creating Algorithm: 
+	className: org.openda.algorithms.SequentialSimulation
+	dir.: ././algorithms
+	config.: simulationAlgorithm.xml
+	at org.openda.application.ApplicationRunner.startApplication(ApplicationRunner.java:357)
+	at org.openda.application.ApplicationRunner.startApplication(ApplicationRunner.java:342)
+	at org.openda.application.ApplicationRunnerSingleThreaded.initialize(ApplicationRunnerSingleThreaded.java:38)
+	at org.openda.application.OpenDaApplication.runApplicationBatch(OpenDaApplication.java:113)
 	at org.openda.application.OpenDaApplication.main(OpenDaApplication.java:102)
-
-Application Done
-2026-05-18, 18:36:18
-DURATION, 1
+Caused by: java.lang.RuntimeException: ClassNotFoundException creating Algorithm: 
+	className: org.openda.algorithms.SequentialSimulation
+	dir.: ././algorithms
+	config.: simulationAlgorithm.xml
+	at org.openda.utils.ObjectSupport.createAlgorithm(ObjectSupport.java:96)
+	at org.openda.application.ApplicationRunner.createApplicationComponents(ApplicationRunner.java:388)
+	at org.openda.application.ApplicationRunner.startApplication(ApplicationRunner.java:351)
+	... 4 more
+2026-05-19, 14:30:12
+DURATION, 2

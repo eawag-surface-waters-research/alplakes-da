@@ -18,7 +18,7 @@
                       member i uses ensembleBase/ensemble{i+1}/
     -->
     <aliasValues>
-        <alias key="instanceDir"   value="instances/instance"/>
+        <alias key="instanceDir"   value="../instances/instance"/>
         <alias key="scriptsDir"    value="../scripts"/>
         <alias key="ensembleBase"  value="../../assimilation/upperlugano"/>
         <alias key="resultsSubdir" value="Results_EnKF_openda"/>

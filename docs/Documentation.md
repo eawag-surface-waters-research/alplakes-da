@@ -42,6 +42,67 @@ For the MVP we aim to first use a particle-filter-type assimilation process. We 
 
 A second implementation replaces the best-particle selection/survival of the fittest with an ensemble Kalman filter (see above for more details) update: the ensemble cross-covariance is used to compute a corrected state from all members, which is then propagated to the next observation cycle. Assimilation can essentially be applied to model parameters, inputs, forcing, or state — which can also be modified jointly. For our case the Simstrat model is already calibrated for Lake Lugano, so we see little reason to start updating calibrated parameters for now. Updating the forcing instead of the state can provide multiple advantages: physical consistency is ensured, and error attribution is more fitting. On the other hand, state correction is more agnostic about the error source, can better compensate for any kind of model deficiency, and has been shown to produce much more significant improvements compared to updating only parameters and forcing. A negative of the latter could be the generation of shocks in the temperature time series, which however can be limited by frequent assimilation of observations and by keeping the corrections small. Given the scarcity of published EnKF-based forcing correction examples for lakes and oceans, however, we need to consider the state update as the more standard strategy forward.
 
+## Filtering Internal Wave 
+
+The assimilation of observed lake temperature profiles into one-dimensional hydrodynamic lake models such as Simstrat can be challenged by unresolved sub-daily variability in the water column. In particular, temperature observations near and below the thermocline frequently exhibit short-term oscillations caused by internal waves and basin-scale seiches. These processes induce rapid vertical displacements of isotherms, leading to strong temporal fluctuations in measured temperatures at fixed depths.
+
+Because internal wave dynamics are not represented in Simstrat, the model cannot reproduce these observed sub-daily oscillatory behaviors in temperature profiles. As a result, direct assimilation of high-frequency temperature observations may introduce inconsistencies between the model state and the observations. This mismatch can destabilize the assimilation procedure, generate spurious corrections, and reduce the reliability of the assimilated results
+
+Therefore, a key challenge is to develop assimilation strategies that account for unresolved internal wave variability while preserving the physical consistency and numerical stability of the lake model. To address this issue, we develop an adaptive low-pass filter whose window size varies both in depth and time as a function of stratification strength. The filter window at each depth and timestep is defined as the sum of two components: a baseline temporal smoothing term and an additional adaptive component that increases in regions and periods of strong stratification, where internal wave activity is expected to be more pronounced.
+
+**Step 0 — Gradient smoothing**
+
+Raw local gradients are first smoothed with a causal `GRAD_SMOOTH_H`-hour trailing mean (parameter $W_s$) to reduce noise before driving the window:
+
+```math
+\bar{g}(z,t) = \frac{1}{W_s}\int_{t-W_s}^{t} \left|\frac{\partial T}{\partial z}(z,\tau)\right| d\tau
+```
+
+Depths shallower than `THERMO_DEPTH_MIN` are set to zero (surface layer dominated by solar heating, not internal waves).
+
+**Component 1 — Gradient-driven (thermocline)**
+
+```math
+W_\text{grad}(z,t) = \text{clip}\!\left(\frac{W_\text{MAX} \cdot \bar{g}(z,t)}{G_\text{MAX}},\ W_\text{MIN},\ W_\text{MAX}\right)
+```
+
+`G_MAX` is the gradient value that maps to `W_MAX` (default: 95th percentile of $\bar{g}$ across thermocline depths, auto-computed).
+
+**Component 2 — Depth floor (below thermocline)**
+
+```math
+W_\text{floor}(z,t) = \text{clip}\!\left(\frac{z - z_{tc}(t)}{\max\!\left(D_\text{ref} - z_{tc}(t),\; 1\right)},\ 0,\ 1\right) \cdot (W_\text{DEEP} - W_\text{MIN})
+```
+
+where $z_{tc}(t) = \arg\max_z \bar{g}(z,t)$ is the time-varying thermocline depth (depth of peak smoothed gradient). This component is zero when the peak gradient falls below `THERMO_GRAD_MIN` (no active stratification, e.g. winter). The $\max(\cdot, 1)$ in the denominator guards against division by zero when $z_{tc} \geq D_\text{ref}$.
+
+**Final window**
+
+```math
+W(z,t) = \text{clip}\!\left(W_\text{grad}(z,t) + W_\text{floor}(z,t),\ W_\text{MIN},\ W_\text{MAX}\right)
+```
+
+| Zone | Dominant component | Typical window |
+|---|---|---|
+| $z <$ `THERMO_DEPTH_MIN` | none ($\bar{g} = 0$ forced) | $W_\text{MIN}$ |
+| thermocline | $W_\text{grad}$ | up to $W_\text{MAX}$ |
+| below thermocline | $W_\text{floor}$ ramps with depth | $W_\text{MIN}$ → $W_\text{DEEP}$ |
+
+Applied as a causal trailing box filter (no lookahead, online-compatible).
+
+![Adaptive Filter](../images/adaptive_filter.png)
+
+raw hourly temperature in thin transparent blue against the adaptively
+filtered signal in red. The gap between the two lines represents the high-frequency variability the filter removed at
+that depth — narrow near the surface (short window, little smoothing), wider near and below the thermocline (longer
+window, more aggressive smoothing). The last plot makes the seasonal behaviour of the filter directly visible — windows grow during summer
+stratification (strong thermocline gradient activates both the gradient-driven and depth-floor components) and collapse
+toward W_MIN in winter when the water column is well-mixed.
+
+We provide this filtering approach as an optional component that can be integrated into the assimilation workflow of alplakes_da. At the current stage, the results do not show a substantial improvement from the filtering procedure, likely because the assimilation already applies averaged corrections over a one-day window, which partially mitigates the impact of sub-daily oscillations.
+
+Nevertheless, this implementation serves as a proof of concept and demonstrates how adaptive filtering strategies can be flexibly incorporated within the framework. We consider this filtering step a promising direction for future research, particularly for higher-frequency assimilation setups or applications where unresolved internal wave variability has a stronger impact. However, due to project priorities and time constraints, further development and evaluation of the approach are left for future work.
+
 ## Extension to 3D Models
 
 When expanding our module to include 3D models, a couple of considerations are needed. First, there is a need for spatio-temporal forcing perturbation accounting both for spatial and temporal correlations. Second, observation location matters much more: in 3D, an observation at one location primarily constrains the state near that location, and localization becomes essential to avoid spurious correlations and keep computational costs low. Finally, ensemble size becomes a serious constraint — examples in 3D use around 20 ensemble members, while for 1D they use up to 400 because the computational load is small.

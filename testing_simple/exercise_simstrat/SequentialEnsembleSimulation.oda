@@ -6,9 +6,9 @@
 		<configFile>timeSeriesFormatter.xml</configFile>
 	</stochObserver>
 
-	<stochModelFactory className="org.openda.blackbox.wrapper.BBStochModelFactory">
-		<workingDirectory>./stochModel</workingDirectory>
-		<configFile>simstratStochModel.xml</configFile>
+	<stochModelFactory className="org.openda.models.threadModel.ThreadStochModelFactory">
+		<workingDirectory>.</workingDirectory>
+		<configFile>parallel.xml</configFile>
 	</stochModelFactory>
 
 	<algorithm className="org.openda.algorithms.kalmanFilter.SequentialEnsembleSimulation">

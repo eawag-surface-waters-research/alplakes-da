@@ -101,11 +101,21 @@ def main():
 
         mjd_start = (pd.Timestamp(args.start) - pd.Timestamp("1858-11-17")).days
         mjd_end   = (pd.Timestamp(args.end)   - pd.Timestamp("1858-11-17")).days
+
+        # Legacy key=value file (used by enkf configs / AsciiKeywordDataObject)
         tc_file = os.path.join(instance_dir, "time_config.txt")
         with open(tc_file, "w") as f:
             f.write(f"start_time = {float(mjd_start)}\n")
             f.write(f"time_step = 1.0\n")
             f.write(f"end_time = {float(mjd_end)}\n")
+
+        # Single-value files used by simulation.oda (AsciiVectorDataObject)
+        with open(os.path.join(instance_dir, "time_start.txt"), "w") as f:
+            f.write(f"{float(mjd_start)}\n")
+        with open(os.path.join(instance_dir, "time_step.txt"), "w") as f:
+            f.write("1.0\n")
+        with open(os.path.join(instance_dir, "time_end.txt"), "w") as f:
+            f.write(f"{float(mjd_end)}\n")
 
     print(f"\nDone.  Instance dirs: {INSTANCES_DIR}")
     print("Next: run prep_obs.py, then start_containers.sh, then OpenDA.")

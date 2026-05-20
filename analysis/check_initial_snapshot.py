@@ -118,7 +118,7 @@ legend_handles.insert(0, mlines.Line2D([], [], color="steelblue", lw=2.5,
 
 # single-point obs
 obs_label = f"LéXPLORE obs {pd.Timestamp(closest_time).strftime('%d %b %H:%M UTC')}"
-ax.scatter(obs_slice["value"], obs_slice["depth"], color="tomato", zorder=6, s=55,
+ax.plot(obs_slice["value"], obs_slice["depth"], color="tomato", zorder=6, lw = 2.5,
            label=obs_label)
 legend_handles.append(mlines.Line2D([], [], color="tomato", marker="o", lw=0,
                                      markersize=6, label=obs_label))
@@ -126,7 +126,7 @@ legend_handles.append(mlines.Line2D([], [], color="tomato", marker="o", lw=0,
 ax.invert_yaxis()
 ax.set_xlabel("Temperature (°C)")
 ax.set_ylabel("Depth (m)")
-ax.set_title("Geneva – initial snapshot vs LéXPLORE T-chain")
+ax.set_title("Geneva – initial snapshot vs T-chain data")
 ax.legend(handles=legend_handles, fontsize=8)
 ax.grid(True, alpha=0.3)
 

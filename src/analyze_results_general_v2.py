@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # ── CONFIGURE HERE ────────────────────────────────────────────────────────────
-LAKE      = "geneva"
+LAKE      = "upperlugano"
 YEAR      = 2025
 MAX_DEPTH = None
 
@@ -235,7 +235,7 @@ for ax, target_depth in zip(axes, _plot_depths):
 axes[-1].set_xlabel("Date")
 if YEAR is not None:
     axes[0].set_xlim(pd.Timestamp(f"{YEAR}-01-01", tz="UTC"),
-                     pd.Timestamp(f"{YEAR}-12-31", tz="UTC"))
+                     pd.Timestamp(f"{YEAR}-01-31", tz="UTC")) # 12
 fig.autofmt_xdate()
 plt.tight_layout(rect=[0, 0, 0.82, 1])
 plt.show()

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blackBoxWrapperConfig xmlns="http://www.openda.org"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.openda.org http://schemas.openda.org/blackBoxWrapperConfig.xsd">
+
+    <aliasDefinitions defaultKeyPrefix="%" defaultKeySuffix="%">
+        <alias key="instanceDir"/>
+        <alias key="scriptsDir"/>
+        <alias key="ensembleBase"/>
+        <alias key="resultsSubdir"/>
+        <alias key="containerTag"/>
+        <alias key="parFile"/>
+    </aliasDefinitions>
+
+    <run>
+        <initializeActions/>
+
+        <computeActions>
+            <!--
+                No state injection/extraction.  Simstrat carries its own snapshot
+                forward between steps.  The script only needs the time window
+                (read from time_start.txt / time_end.txt) to advance one day.
+            -->
+            <action linuxExe="/bin/bash" windowsExe="..\scripts\run_simstrat_sim.bat"
+                    workingDirectory="%scriptsDir%">
+                <arg>run_simstrat_sim.sh</arg>
+                <arg>--instance-number</arg>
+                <arg>%instanceNumber%</arg>
+                <arg>--instance-dir</arg>
+                <arg>%instanceDir%%instanceNumber%</arg>
+                <arg>--ensemble-base</arg>
+                <arg>%ensembleBase%</arg>
+                <arg>--results-subdir</arg>
+                <arg>%resultsSubdir%</arg>
+                <arg>--container-tag</arg>
+                <arg>%containerTag%</arg>
+                <arg>--par-file</arg>
+                <arg>%parFile%</arg>
+                <checkOutput file="%instanceDir%%instanceNumber%/temperature_obs.txt"/>
+            </action>
+        </computeActions>
+
+        <additionalComputeActions></additionalComputeActions>
+        <finalizeActions></finalizeActions>
+    </run>
+
+    <inputOutput>
+
+        <!--
+            Time window (MJD): three single-value files written by OpenDA before
+            each compute() call.  Using AsciiVectorDataObject (one float per file)
+            avoids any dependency on AsciiKeywordDataObject.
+        -->
+        <dataObject className="org.openda.exchange.dataobjects.AsciiVectorDataObject">
+            <file>%instanceDir%%instanceNumber%/time_start.txt</file>
+            <id>start_time</id>
+        </dataObject>
+
+        <dataObject className="org.openda.exchange.dataobjects.AsciiVectorDataObject">
+            <file>%instanceDir%%instanceNumber%/time_step.txt</file>
+            <id>time_step</id>
+        </dataObject>
+
+        <dataObject className="org.openda.exchange.dataobjects.AsciiVectorDataObject">
+            <file>%instanceDir%%instanceNumber%/time_end.txt</file>
+            <id>end_time</id>
+        </dataObject>
+
+        <!--
+            Obs-space prediction: T at 0.5 m depth, written by run_simstrat_sim.py.
+        -->
+        <dataObject className="org.openda.exchange.dataobjects.AsciiVectorDataObject">
+            <file>%instanceDir%%instanceNumber%/temperature_obs.txt</file>
+            <id>obs_predictions</id>
+        </dataObject>
+
+    </inputOutput>
+
+</blackBoxWrapperConfig>

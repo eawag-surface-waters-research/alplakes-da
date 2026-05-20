@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blackBoxModelConfig xmlns="http://www.openda.org"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.openda.org http://schemas.openda.org/blackBoxModelConfig.xsd">
+
+    <wrapperConfig>
+        <file>simstratWrapper_sim.xml</file>
+    </wrapperConfig>
+
+    <!--
+        Paths relative to stochModel/ directory.
+        instanceDir: one level up so ../instances/instance0 resolves correctly.
+    -->
+    <aliasValues>
+        <alias key="instanceDir"   value="instances/instance"/>
+        <alias key="scriptsDir"    value="../scripts"/>
+        <alias key="ensembleBase"  value="../../assimilation/upperlugano"/>
+        <alias key="resultsSubdir" value="Results_EnKF_openda"/>
+        <alias key="containerTag"  value="enkf_openda"/>
+        <alias key="parFile"       value="Settings_EnKF_openda.par"/>
+    </aliasValues>
+
+    <!--
+        Time horizon: OpenDA reads start_time and end_time from the pre-written
+        files to determine the simulation period, then overwrites them at each step.
+    -->
+    <!-- elementId = filename without extension (AsciiVectorDataObject naming rule) -->
+    <timeInfoExchangeItems start="time_start" timeStep="time_step" end="time_end"/>
+
+    <exchangeItems>
+
+        <!-- Time window: ioObjectId matches data object <id>; elementId matches filename stem -->
+        <vector id="time_start" ioObjectId="start_time" elementId="time_start"/>
+        <vector id="time_step"  ioObjectId="time_step"  elementId="time_step"/>
+        <vector id="time_end"   ioObjectId="end_time"   elementId="time_end"/>
+
+        <!-- Obs-space prediction: temperature_obs.txt → elementId="temperature_obs" -->
+        <vector id="depth_0.5.temperature"
+                ioObjectId="obs_predictions"
+                elementId="temperature_obs"/>
+
+    </exchangeItems>
+
+    <doCleanUp>false</doCleanUp>
+
+</blackBoxModelConfig>

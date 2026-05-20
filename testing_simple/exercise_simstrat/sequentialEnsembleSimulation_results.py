@@ -1,6 +1,7 @@
 import numpy as np
 # OpenDA version 3.4.0.-1 February 27 2026
 # opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochObserver/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././parallel.xml
 # Starting Algorithm: 
 # 	className: org.openda.algorithms.kalmanFilter.SequentialEnsembleSimulation
 # 	dir.: ././algorithms
@@ -88,7 +89,7 @@ x_f_central.append([8.0682, 8.091, 8.0979, 8.0789, 7.6202, 7.1676, 6.658])
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time=[]
 analysis_time.append(16073.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -99,7 +100,7 @@ pred_f_central.append([8.0682, 8.091, 8.0979])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs=[]
 obs.append([7.940208,7.916181,7.897431])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -107,7 +108,7 @@ obs.append([7.940208,7.916181,7.897431])
 pred_f_0=[]
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([8.0452, 8.0761, 8.0832])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -115,7 +116,7 @@ pred_f_0.append([8.0452, 8.0761, 8.0832])
 pred_f_1=[]
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([8.021, 8.0447, 8.0517])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -123,7 +124,7 @@ pred_f_1.append([8.021, 8.0447, 8.0517])
 pred_f_2=[]
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([8.3809, 8.252, 8.1627])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -131,7 +132,7 @@ pred_f_2.append([8.3809, 8.252, 8.1627])
 pred_f_3=[]
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([8.1423, 8.1657, 8.1514])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -211,7 +212,7 @@ x_f_central.append([7.9856, 8.0259, 8.0378, 8.0389, 7.6256, 7.1788, 6.6583])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16074.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -220,35 +221,35 @@ analysis_time.append(16074.0)
 pred_f_central.append([7.9856, 8.0259, 8.0378])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.866181,7.861181,7.850764])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.9953, 8.0529, 8.0514])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.9586, 7.9964, 8.0061])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([8.13, 8.1901, 8.1661])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([8.1005, 8.1371, 8.1314])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -320,7 +321,7 @@ x_f_central.append([7.9202, 7.9482, 7.9579, 7.9627, 7.6319, 7.1899, 6.6587])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16075.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -329,35 +330,35 @@ analysis_time.append(16075.0)
 pred_f_central.append([7.9202, 7.9482, 7.9579])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.803889,7.805556,7.795208])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.9426, 7.9896, 7.998])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.8946, 7.9207, 7.9304])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([8.068, 8.0939, 8.1025])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.9796, 8.0187, 8.0331])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -429,7 +430,7 @@ x_f_central.append([7.8752, 7.8967, 7.9034, 7.9068, 7.6357, 7.2007, 6.659])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16076.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -438,35 +439,35 @@ analysis_time.append(16076.0)
 pred_f_central.append([7.8752, 7.8967, 7.9034])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.758264,7.764236,7.755139])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([8.0275, 8.0119, 7.9703])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.8284, 7.855, 7.8622])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([8.0057, 8.0254, 8.032])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.9523, 7.9738, 7.9802])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -538,7 +539,7 @@ x_f_central.append([7.8296, 7.8498, 7.8564, 7.8596, 7.6365, 7.211, 6.6594])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16077.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -547,35 +548,35 @@ analysis_time.append(16077.0)
 pred_f_central.append([7.8296, 7.8498, 7.8564])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.807917,7.750764,7.72375])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.967, 7.9938, 7.9742])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.7822, 7.805, 7.812])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.9484, 7.9685, 7.975])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.916, 7.9361, 7.9428])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -647,7 +648,7 @@ x_f_central.append([7.7793, 7.8107, 7.8199, 7.8242, 7.6371, 7.2208, 6.6597])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16078.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -656,35 +657,35 @@ analysis_time.append(16078.0)
 pred_f_central.append([7.7793, 7.8107, 7.8199])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.70875,7.700972,7.688056])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.9611, 7.9898, 7.9652])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.7016, 7.7401, 7.7506])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.9328, 7.9681, 7.952])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.8743, 7.9112, 7.9115])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -756,7 +757,7 @@ x_f_central.append([7.75, 7.7676, 7.7736, 7.7768, 7.6391, 7.2302, 6.6601])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16079.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -765,35 +766,35 @@ analysis_time.append(16079.0)
 pred_f_central.append([7.75, 7.7676, 7.7736])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.719167,7.699931,7.682986])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.8904, 7.9066, 7.9126])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.6986, 7.7237, 7.7207])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.8959, 7.9213, 7.9267])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.9087, 7.9187, 7.8892])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -865,7 +866,7 @@ x_f_central.append([7.719, 7.7409, 7.7469, 7.7498, 7.6283, 7.2392, 6.6604])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16080.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -874,35 +875,35 @@ analysis_time.append(16080.0)
 pred_f_central.append([7.719, 7.7409, 7.7469])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.656597,7.661458,7.64875])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.9562, 7.921, 7.8992])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.6535, 7.6772, 7.6838])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.9404, 7.9616, 7.9133])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.8808, 7.8994, 7.8939])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -974,7 +975,7 @@ x_f_central.append([7.6694, 7.6923, 7.6996, 7.7033, 7.6342, 7.2487, 6.6607])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16081.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -983,35 +984,35 @@ analysis_time.append(16081.0)
 pred_f_central.append([7.6694, 7.6923, 7.6996])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.642639,7.615694,7.603889])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.8157, 7.8452, 7.8527])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.8449, 7.7443, 7.6742])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.8487, 7.8769, 7.8854])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.8494, 7.8705, 7.8646])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -1083,7 +1084,7 @@ x_f_central.append([7.593, 7.6396, 7.6519, 7.6579, 7.609, 7.2666, 6.6611])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16082.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -1092,35 +1093,35 @@ analysis_time.append(16082.0)
 pred_f_central.append([7.593, 7.6396, 7.6519])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.560833,7.541458,7.532431])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.826, 7.8565, 7.8263])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.6819, 7.733, 7.6817])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.7951, 7.8389, 7.8485])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.8445, 7.8719, 7.843])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -1192,7 +1193,7 @@ x_f_central.append([7.5426, 7.582, 7.595, 7.6029, 7.5789, 7.2886, 6.6615])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16083.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -1201,35 +1202,35 @@ analysis_time.append(16083.0)
 pred_f_central.append([7.5426, 7.582, 7.595])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.529722,7.489861,7.477847])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.9199, 7.9319, 7.8137])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.6013, 7.643, 7.6539])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.692, 7.7337, 7.7475])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.7411, 7.781, 7.7938])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -1301,7 +1302,7 @@ x_f_central.append([7.4813, 7.5199, 7.5338, 7.5432, 7.5356, 7.3112, 6.6618])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16084.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -1310,35 +1311,35 @@ analysis_time.append(16084.0)
 pred_f_central.append([7.4813, 7.5199, 7.5338])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.459375,7.418056,7.402847])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.7726, 7.804, 7.8135])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.4842, 7.5291, 7.5437])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.718, 7.7474, 7.7042])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.669, 7.7102, 7.723])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -1410,7 +1411,7 @@ x_f_central.append([7.4258, 7.4639, 7.4775, 7.4864, 7.4903, 7.3156, 6.6622])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16085.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -1419,35 +1420,35 @@ analysis_time.append(16085.0)
 pred_f_central.append([7.4258, 7.4639, 7.4775])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.397639,7.359236,7.344236])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.7825, 7.8124, 7.7743])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.3763, 7.4238, 7.4389])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.5983, 7.6337, 7.6469])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.5885, 7.627, 7.6404])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -1519,7 +1520,7 @@ x_f_central.append([7.3731, 7.4113, 7.4245, 7.4331, 7.4369, 7.3254, 6.6626])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16086.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -1528,35 +1529,35 @@ analysis_time.append(16086.0)
 pred_f_central.append([7.3731, 7.4113, 7.4245])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.359722,7.318125,7.303194])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.6654, 7.7105, 7.7231])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.2814, 7.3347, 7.35])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.5692, 7.6073, 7.6163])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.6359, 7.6644, 7.6077])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -1628,7 +1629,7 @@ x_f_central.append([7.3288, 7.3667, 7.3789, 7.3869, 7.3907, 7.3177, 6.663])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16087.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -1637,35 +1638,35 @@ analysis_time.append(16087.0)
 pred_f_central.append([7.3288, 7.3667, 7.3789])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.280278,7.263889,7.248542])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.5899, 7.6229, 7.6348])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.2135, 7.2688, 7.2832])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.5239, 7.5673, 7.5782])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.5444, 7.5827, 7.5931])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -1737,7 +1738,7 @@ x_f_central.append([7.2915, 7.327, 7.3391, 7.3468, 7.3504, 7.3032, 6.6634])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16088.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -1746,35 +1747,35 @@ analysis_time.append(16088.0)
 pred_f_central.append([7.2915, 7.327, 7.3391])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.306736,7.219444,7.205])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.5253, 7.5634, 7.5764])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.2118, 7.245, 7.2554])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.4457, 7.4798, 7.4928])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.4459, 7.4874, 7.5004])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -1846,7 +1847,7 @@ x_f_central.append([7.2661, 7.2927, 7.303, 7.3092, 7.3117, 7.2823, 6.6638])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16089.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -1855,35 +1856,35 @@ analysis_time.append(16089.0)
 pred_f_central.append([7.2661, 7.2927, 7.303])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.228403,7.215278,7.2])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.4745, 7.5033, 7.5158])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.1674, 7.1964, 7.2079])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.439, 7.4713, 7.471])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.3877, 7.4151, 7.4265])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -1955,7 +1956,7 @@ x_f_central.append([7.2509, 7.2685, 7.2757, 7.2807, 7.2837, 7.2653, 6.6642])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16090.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -1964,35 +1965,35 @@ analysis_time.append(16090.0)
 pred_f_central.append([7.2509, 7.2685, 7.2757])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.213819,7.197986,7.177708])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.4465, 7.471, 7.4784])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.1485, 7.1705, 7.1782])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.4366, 7.4552, 7.4581])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.3635, 7.3906, 7.398])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -2064,7 +2065,7 @@ x_f_central.append([7.2307, 7.2504, 7.2571, 7.2614, 7.2637, 7.248, 6.6647])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16091.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -2073,35 +2074,35 @@ analysis_time.append(16091.0)
 pred_f_central.append([7.2307, 7.2504, 7.2571])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.34625,7.230069,7.180278])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.4364, 7.4562, 7.463])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.1161, 7.1415, 7.1491])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.4794, 7.4961, 7.4489])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.3271, 7.3546, 7.3617])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -2173,7 +2174,7 @@ x_f_central.append([7.2261, 7.2555, 7.2456, 7.2457, 7.2458, 7.2331, 6.6651])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16092.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -2182,35 +2183,35 @@ analysis_time.append(16092.0)
 pred_f_central.append([7.2261, 7.2555, 7.2456])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.313403,7.242361,7.184583])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.4974, 7.4791, 7.4491])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.0715, 7.0997, 7.1105])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.5546, 7.5078, 7.459])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.395, 7.3757, 7.3475])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -2282,7 +2283,7 @@ x_f_central.append([7.2021, 7.2204, 7.227, 7.2315, 7.2341, 7.2232, 6.6655])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16093.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -2291,35 +2292,35 @@ analysis_time.append(16093.0)
 pred_f_central.append([7.2021, 7.2204, 7.227])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.257569,7.228403,7.203333])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.4046, 7.431, 7.4384])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.0616, 7.0875, 7.0939])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.5349, 7.5309, 7.464])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.3, 7.3187, 7.3275])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -2391,7 +2392,7 @@ x_f_central.append([7.1859, 7.2159, 7.2168, 7.217, 7.2172, 7.2082, 6.666])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16094.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -2400,35 +2401,35 @@ analysis_time.append(16094.0)
 pred_f_central.append([7.1859, 7.2159, 7.2168])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.274375,7.185486,7.170208])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.4954, 7.4974, 7.4251])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.0365, 7.0685, 7.0777])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.418, 7.4549, 7.4633])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.3472, 7.3731, 7.3217])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -2500,7 +2501,7 @@ x_f_central.append([7.1807, 7.2046, 7.199, 7.1992, 7.1993, 7.1924, 6.6665])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16095.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -2509,35 +2510,35 @@ analysis_time.append(16095.0)
 pred_f_central.append([7.1807, 7.2046, 7.199])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.200694,7.182708,7.164931])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.5033, 7.5191, 7.4366])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.2083, 7.2071, 7.0715])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.3564, 7.396, 7.4055])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.3643, 7.3861, 7.3312])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -2609,7 +2610,7 @@ x_f_central.append([7.1641, 7.1789, 7.1846, 7.1883, 7.1905, 7.1844, 6.667])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16096.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -2618,35 +2619,35 @@ analysis_time.append(16096.0)
 pred_f_central.append([7.1641, 7.1789, 7.1846])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.282778,7.230625,7.179375])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.4525, 7.476, 7.455])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.5532, 7.223, 7.092])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.5701, 7.4346, 7.3992])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.3087, 7.3318, 7.3359])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -2718,7 +2719,7 @@ x_f_central.append([7.1638, 7.1842, 7.176, 7.1762, 7.1763, 7.1709, 6.6676])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16097.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -2727,35 +2728,35 @@ analysis_time.append(16097.0)
 pred_f_central.append([7.1638, 7.1842, 7.176])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.262917,7.219583,7.182153])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.4467, 7.4639, 7.4386])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.5024, 7.3519, 7.1082])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.5279, 7.5281, 7.4046])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.316, 7.3318, 7.3182])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -2827,7 +2828,7 @@ x_f_central.append([7.1386, 7.1579, 7.1634, 7.1673, 7.1696, 7.1652, 6.6682])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16098.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -2836,35 +2837,35 @@ analysis_time.append(16098.0)
 pred_f_central.append([7.1386, 7.1579, 7.1634])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.157222,7.157917,7.134792])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.4275, 7.4495, 7.4475])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.3603, 7.3656, 7.1444])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.4982, 7.5097, 7.4095])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.2806, 7.3019, 7.3076])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -2936,7 +2937,7 @@ x_f_central.append([7.1104, 7.1399, 7.1475, 7.1523, 7.1548, 7.1496, 6.6688])
 # 
 #  resultItem id: analysis_time, outputLevel: Normal, context: analysis step
 analysis_time.append(16099.0)
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work0/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work0/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
@@ -2945,35 +2946,35 @@ analysis_time.append(16099.0)
 pred_f_central.append([7.1104, 7.1399, 7.1475])
 #  resultItem id: obs, outputLevel: Essential, context: analysis step
 obs.append([7.169236,7.141389,7.116667])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work1/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work1/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_0, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_0.append([7.3797, 7.4046, 7.4122])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work2/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work2/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_1, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_1.append([7.4741, 7.424, 7.1769])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work3/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work3/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_2, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_2.append([7.42, 7.4472, 7.432])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work4/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work4/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
 #  resultItem id: pred_f_3, outputLevel: Verbose, context: analysis step
 #  predictions: T_0m, T_10m, T_20m
 pred_f_3.append([7.2766, 7.2976, 7.3016])
-# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/././stochModel/./../work/work5/timeSeriesFormatter.xml
+# opening :/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/./././stochModel/./../work/work5/timeSeriesFormatter.xml
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_0m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_10m'.
 # Getting model values at observed coordinates for scalar observation exchangeItem with id 'T_20m'.
