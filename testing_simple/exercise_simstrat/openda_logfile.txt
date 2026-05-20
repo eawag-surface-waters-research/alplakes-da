@@ -19,17 +19,17 @@ Algorithm initialized
 Algorithm starting next step
 ========================================================================
 
- Forecast from 190211180000UTC  to 190211250000UTC  (16071.0-->16078.0) 
+ Forecast from 190211180000UTC  to 190211200000UTC  (16071.0-->16073.0) 
 
 ========================================================================
 
-Start Instance computation, targetTime=16078.0
+Start Instance computation, targetTime=16073.0
 command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
 workingDir=././stochModel/./../work/work0
 <OUTPUT>
 </OUTPUT>
 <ERROR>
-INFO     Time window: 16071.0000 -> 16078.0000 (dt=7.0000 days)
+INFO     Time window: 16071.0000 -> 16073.0000 (dt=7.0000 days)
 INFO     state temperatures: [6.7809, 6.8214, 6.7989, 6.3934, 5.7641, 5.1901, 4.7575]
 INFO     InitialConditions.dat written from state file
 INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
@@ -91,6 +91,651 @@ INFO     Settings.par written:
     "Simulation": {
         "Timestep s": 300,
         "Start d": 16071.0,
+        "End d": 16073.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (16 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (16 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (16 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190211200000UTC (16073.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190211200000UTC  to 190211210000UTC  (16073.0-->16074.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16074.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16073.0000 -> 16074.0000 (dt=7.0000 days)
+INFO     state temperatures: [6.683, 6.7148, 6.7067, 6.3559, 5.7767, 5.2261, 4.7907]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16073.0,
+        "End d": 16074.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (24 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (24 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (24 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190211210000UTC (16074.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190211210000UTC  to 190211220000UTC  (16074.0-->16075.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16075.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16074.0000 -> 16075.0000 (dt=7.0000 days)
+INFO     state temperatures: [6.581, 6.6457, 6.6562, 6.3391, 5.7805, 5.2408, 4.8066]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16074.0,
+        "End d": 16075.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (32 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (32 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (32 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190211220000UTC (16075.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190211220000UTC  to 190211230000UTC  (16075.0-->16076.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16076.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16075.0000 -> 16076.0000 (dt=7.0000 days)
+INFO     state temperatures: [6.5226, 6.5527, 6.5628, 6.3264, 5.7834, 5.255, 4.8227]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16075.0,
+        "End d": 16076.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (40 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (40 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (40 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190211230000UTC (16076.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190211230000UTC  to 190211240000UTC  (16076.0-->16077.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16077.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16076.0000 -> 16077.0000 (dt=7.0000 days)
+INFO     state temperatures: [6.4683, 6.4947, 6.5014, 6.3143, 5.7856, 5.2674, 4.8383]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16076.0,
+        "End d": 16077.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (48 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (48 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (48 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190211240000UTC (16077.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190211240000UTC  to 190211250000UTC  (16077.0-->16078.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16078.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16077.0000 -> 16078.0000 (dt=7.0000 days)
+INFO     state temperatures: [6.4202, 6.4456, 6.452, 6.2947, 5.7876, 5.2782, 4.8532]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16077.0,
         "End d": 16078.0,
         "DisplaySimulation": 0,
         "Continue from last snapshot": true,
@@ -148,17 +793,17 @@ Instance computation done
 Algorithm starting next step
 ========================================================================
 
- Forecast from 190211250000UTC  to 190212020000UTC  (16078.0-->16085.0) 
+ Forecast from 190211250000UTC  to 190211260000UTC  (16078.0-->16079.0) 
 
 ========================================================================
 
-Start Instance computation, targetTime=16085.0
+Start Instance computation, targetTime=16079.0
 command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
 workingDir=././stochModel/./../work/work0
 <OUTPUT>
 </OUTPUT>
 <ERROR>
-INFO     Time window: 16078.0000 -> 16085.0000 (dt=7.0000 days)
+INFO     Time window: 16078.0000 -> 16079.0000 (dt=7.0000 days)
 INFO     state temperatures: [6.3733, 6.4106, 6.4186, 6.2748, 5.7893, 5.2877, 4.8672]
 INFO     InitialConditions.dat written from state file
 INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
@@ -220,6 +865,780 @@ INFO     Settings.par written:
     "Simulation": {
         "Timestep s": 300,
         "Start d": 16078.0,
+        "End d": 16079.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (64 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (64 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (64 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190211260000UTC (16079.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190211260000UTC  to 190211270000UTC  (16079.0-->16080.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16080.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16079.0000 -> 16080.0000 (dt=7.0000 days)
+INFO     state temperatures: [6.3439, 6.3652, 6.3712, 6.2515, 5.7902, 5.2967, 4.8807]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16079.0,
+        "End d": 16080.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (72 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (72 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (72 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190211270000UTC (16080.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190211270000UTC  to 190211280000UTC  (16080.0-->16081.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16081.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16080.0000 -> 16081.0000 (dt=7.0000 days)
+INFO     state temperatures: [6.3146, 6.3419, 6.3477, 6.2323, 5.7902, 5.3046, 4.8935]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16080.0,
+        "End d": 16081.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (80 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (80 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (80 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190211280000UTC (16081.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190211280000UTC  to 190211290000UTC  (16081.0-->16082.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16082.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16081.0000 -> 16082.0000 (dt=7.0000 days)
+INFO     state temperatures: [6.2685, 6.2991, 6.307, 6.2141, 5.7891, 5.3162, 4.9077]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16081.0,
+        "End d": 16082.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (88 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (88 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (88 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190211290000UTC (16082.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190211290000UTC  to 190211300000UTC  (16082.0-->16083.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16083.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16082.0000 -> 16083.0000 (dt=7.0000 days)
+INFO     state temperatures: [6.1902, 6.2475, 6.2611, 6.1921, 5.7875, 5.3266, 4.9229]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16082.0,
+        "End d": 16083.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (96 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (96 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (96 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190211300000UTC (16083.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190211300000UTC  to 190212010000UTC  (16083.0-->16084.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16084.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16083.0000 -> 16084.0000 (dt=7.0000 days)
+INFO     state temperatures: [6.1382, 6.1856, 6.2015, 6.1573, 5.7875, 5.3367, 4.9382]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16083.0,
+        "End d": 16084.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (104 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (104 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (104 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190212010000UTC (16084.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190212010000UTC  to 190212020000UTC  (16084.0-->16085.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16085.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16084.0000 -> 16085.0000 (dt=7.0000 days)
+INFO     state temperatures: [6.0682, 6.116, 6.134, 6.1114, 5.7892, 5.3467, 4.9536]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16084.0,
         "End d": 16085.0,
         "DisplaySimulation": 0,
         "Continue from last snapshot": true,
@@ -277,17 +1696,17 @@ Instance computation done
 Algorithm starting next step
 ========================================================================
 
- Forecast from 190212020000UTC  to 190212160000UTC  (16085.0-->16099.0) 
+ Forecast from 190212020000UTC  to 190212030000UTC  (16085.0-->16086.0) 
 
 ========================================================================
 
-Start Instance computation, targetTime=16099.0
+Start Instance computation, targetTime=16086.0
 command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
 workingDir=././stochModel/./../work/work0
 <OUTPUT>
 </OUTPUT>
 <ERROR>
-INFO     Time window: 16085.0000 -> 16099.0000 (dt=7.0000 days)
+INFO     Time window: 16085.0000 -> 16086.0000 (dt=7.0000 days)
 INFO     state temperatures: [5.9906, 6.0509, 6.0675, 6.0615, 5.792, 5.357, 4.9696]
 INFO     InitialConditions.dat written from state file
 INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
@@ -349,6 +1768,1683 @@ INFO     Settings.par written:
     "Simulation": {
         "Timestep s": 300,
         "Start d": 16085.0,
+        "End d": 16086.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (120 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (120 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (120 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190212030000UTC (16086.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190212030000UTC  to 190212040000UTC  (16086.0-->16087.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16087.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16086.0000 -> 16087.0000 (dt=7.0000 days)
+INFO     state temperatures: [5.9268, 5.9927, 6.0097, 6.0065, 5.7859, 5.3676, 4.9854]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16086.0,
+        "End d": 16087.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (128 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (128 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (128 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190212040000UTC (16087.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190212040000UTC  to 190212050000UTC  (16087.0-->16088.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16088.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16087.0000 -> 16088.0000 (dt=7.0000 days)
+INFO     state temperatures: [5.8929, 5.9441, 5.9579, 5.9555, 5.7821, 5.3781, 5.0012]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16087.0,
+        "End d": 16088.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (136 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (136 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (136 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190212050000UTC (16088.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190212050000UTC  to 190212060000UTC  (16088.0-->16089.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16089.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16088.0000 -> 16089.0000 (dt=7.0000 days)
+INFO     state temperatures: [5.8519, 5.9026, 5.9161, 5.9157, 5.7627, 5.3885, 5.0168]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16088.0,
+        "End d": 16089.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (144 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (144 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (144 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190212060000UTC (16089.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190212060000UTC  to 190212070000UTC  (16089.0-->16090.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16090.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16089.0000 -> 16090.0000 (dt=7.0000 days)
+INFO     state temperatures: [5.8226, 5.8665, 5.8754, 5.8743, 5.7486, 5.3975, 5.0322]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16089.0,
+        "End d": 16090.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (152 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (152 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (152 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190212070000UTC (16090.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190212070000UTC  to 190212080000UTC  (16090.0-->16091.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16091.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16090.0000 -> 16091.0000 (dt=7.0000 days)
+INFO     state temperatures: [5.816, 5.8392, 5.8474, 5.851, 5.7283, 5.4049, 5.0474]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16090.0,
+        "End d": 16091.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (160 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (160 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (160 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190212080000UTC (16091.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190212080000UTC  to 190212090000UTC  (16091.0-->16092.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16092.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16091.0000 -> 16092.0000 (dt=7.0000 days)
+INFO     state temperatures: [5.7958, 5.8233, 5.8303, 5.8304, 5.7119, 5.4104, 5.0618]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16091.0,
+        "End d": 16092.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (168 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (168 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (168 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190212090000UTC (16092.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190212090000UTC  to 190212100000UTC  (16092.0-->16093.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16093.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16092.0000 -> 16093.0000 (dt=7.0000 days)
+INFO     state temperatures: [5.8106, 5.8306, 5.8125, 5.8113, 5.6989, 5.4139, 5.075]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16092.0,
+        "End d": 16093.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (176 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (176 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (176 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190212100000UTC (16093.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190212100000UTC  to 190212110000UTC  (16093.0-->16094.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16094.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16093.0000 -> 16094.0000 (dt=7.0000 days)
+INFO     state temperatures: [5.7765, 5.8007, 5.8071, 5.8046, 5.6859, 5.4168, 5.088]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16093.0,
+        "End d": 16094.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (184 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (184 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (184 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190212110000UTC (16094.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190212110000UTC  to 190212120000UTC  (16094.0-->16095.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16095.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16094.0000 -> 16095.0000 (dt=7.0000 days)
+INFO     state temperatures: [5.7714, 5.8072, 5.7908, 5.7886, 5.6754, 5.4188, 5.1002]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16094.0,
+        "End d": 16095.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (192 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (192 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (192 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190212120000UTC (16095.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190212120000UTC  to 190212130000UTC  (16095.0-->16096.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16096.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16095.0000 -> 16096.0000 (dt=7.0000 days)
+INFO     state temperatures: [5.7743, 5.7871, 5.7753, 5.7738, 5.667, 5.4202, 5.1117]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16095.0,
+        "End d": 16096.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (200 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (200 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (200 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190212130000UTC (16096.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190212130000UTC  to 190212140000UTC  (16096.0-->16097.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16097.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16096.0000 -> 16097.0000 (dt=7.0000 days)
+INFO     state temperatures: [5.7491, 5.7687, 5.7736, 5.7679, 5.6583, 5.4218, 5.1232]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16096.0,
+        "End d": 16097.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (208 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (208 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (208 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190212140000UTC (16097.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190212140000UTC  to 190212150000UTC  (16097.0-->16098.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16098.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16097.0000 -> 16098.0000 (dt=7.0000 days)
+INFO     state temperatures: [5.7675, 5.7812, 5.7597, 5.7563, 5.6505, 5.4229, 5.134]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16097.0,
+        "End d": 16098.0,
+        "DisplaySimulation": 0,
+        "Continue from last snapshot": true,
+        "Reference year": 1981,
+        "Show progress bar": false,
+        "Save text restart": false,
+        "Use text restart": false
+    },
+    "ModelParameters": {
+        "lat": 45.958,
+        "p_air": 981.0,
+        "a_seiche": 0.0090982911,
+        "q_nn": 1.1,
+        "f_wind": 0.896815168,
+        "c10": 1.0,
+        "cd": 0.001,
+        "hgeo": 0.08,
+        "p_windf": 1.0,
+        "beta_sol": 0.35,
+        "freez_temp": 0.01,
+        "snow_temp": 2.0,
+        "a_seiche_w": 0.005,
+        "strat_sumr": 0,
+        "p_lw": 0.931614961,
+        "wat_albedo": 0.09,
+        "p_sw_water": 1.0,
+        "p_sw_ice": 1.0,
+        "seiche_ini": 0,
+        "b_ice_ini": 0,
+        "w_ice_ini": 0,
+        "snow_ini": 0,
+        "p_absorb": 1
+    }
+}
+INFO     Running: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_win_304.exe Settings.par
+INFO     Simstrat finished (exit 0)
+INFO     Written T_0m.csv (216 timesteps, depth -0.0 m)
+INFO     Written T_10m.csv (216 timesteps, depth -10.0 m)
+INFO     Written T_20m.csv (216 timesteps, depth -20.0 m)
+INFO     temperature_state.txt updated from end of run
+INFO     Simstrat wrapper completed successfully
+</ERROR>
+
+Exit value: 0
+Instance computation done
+- mainModel 
+
+  temperature_state.txt
+========================================================================
+
+ analysis at 190212150000UTC (16098.0) 
+
+========================================================================
+
+Algorithm starting next step
+========================================================================
+
+ Forecast from 190212150000UTC  to 190212160000UTC  (16098.0-->16099.0) 
+
+========================================================================
+
+Start Instance computation, targetTime=16099.0
+command=Start executable:/mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/stochModel/bin/simstrat_wrapper.py --config Settings.par --log_level INFO 
+workingDir=././stochModel/./../work/work0
+<OUTPUT>
+</OUTPUT>
+<ERROR>
+INFO     Time window: 16098.0000 -> 16099.0000 (dt=7.0000 days)
+INFO     state temperatures: [5.7359, 5.7566, 5.7609, 5.7496, 5.6439, 5.4241, 5.1447]
+INFO     InitialConditions.dat written from state file
+INFO     cwd: /mnt/c/Users/toschith/Documents/Work/alplakes-da/testing_simple/exercise_simstrat/work/work0
+INFO     snapshot_path: Results/simulation-snapshot.dat  exists=True  size=324496
+INFO     Settings.par written:
+{
+    "Input": {
+        "Initial conditions": "InitialConditions.dat",
+        "Grid": 190.0,
+        "Morphology": "Bathymetry.dat",
+        "Forcing": "Forcing.dat",
+        "Absorption": "Absorption.dat",
+        "Inflow": "Qin.dat",
+        "Outflow": "Qout.dat",
+        "Inflow temperature": "Tin.dat",
+        "Inflow salinity": "Sin.dat"
+    },
+    "Output": {
+        "Path": "Results",
+        "Depths": "z_out.dat",
+        "Times": "t_out.dat",
+        "OutputDepthReference": "surface",
+        "All": false,
+        "Variables": [
+            "T",
+            "S",
+            "nuh",
+            "NN",
+            "TotalIceH"
+        ]
+    },
+    "ModelConfig": {
+        "MaxLengthInputData": 1000,
+        "CoupleAED2": false,
+        "TurbulenceModel": 1,
+        "SplitSeicheParameter": true,
+        "StabilityFunction": 2,
+        "FluxCondition": 1,
+        "Forcing": 3,
+        "UserDefinedWaterAlbedo": false,
+        "UseFilteredWind": false,
+        "SeicheNormalization": 2,
+        "WindDragModel": 3,
+        "InflowMode": 2,
+        "IceModel": 1,
+        "SnowModel": 1,
+        "BottomFriction": false
+    },
+    "AED2Config": {
+        "AED2ConfigFile": "aed2.nml",
+        "PathAED2initial": "AED2_initcond/",
+        "PathAED2inflow": "AED2_inflow/",
+        "ParticleMobility": 0,
+        "BioshadeFeedback": 0,
+        "BackgroundExtinction": 0.2,
+        "BenthicMode": 1,
+        "OutputDiagnosticVars": true
+    },
+    "Simulation": {
+        "Timestep s": 300,
+        "Start d": 16098.0,
         "End d": 16099.0,
         "DisplaySimulation": 0,
         "Continue from last snapshot": true,
@@ -397,8 +3493,14 @@ Instance computation done
 - mainModel 
 
   temperature_state.txt
+========================================================================
+
+ analysis at 190212160000UTC (16099.0) 
+
+========================================================================
+
 Algorithm Done
 Start Instance finalization
 Application Done
-2026-05-20, 12:49:43
-DURATION, 29
+2026-05-20, 13:18:12
+DURATION, 210

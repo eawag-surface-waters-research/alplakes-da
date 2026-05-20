@@ -68,9 +68,9 @@ col_20m = nearest_depth_col(model_depths, -20.0)
 # Load observations from stochObserver CSVs
 # ---------------------------------------------------------------------------
 obs_dir = os.path.join(os.path.dirname(__file__), 'stochObserver')
-obs_t_0m,  obs_v_0m  = read_observer_csv(os.path.join(obs_dir, 'T_0m.csv'))
-obs_t_10m, obs_v_10m = read_observer_csv(os.path.join(obs_dir, 'T_10m.csv'))
-obs_t_20m, obs_v_20m = read_observer_csv(os.path.join(obs_dir, 'T_20m.csv'))
+obs_t_0m,  obs_v_0m  = read_observer_csv(os.path.join(obs_dir, 'T_0m_real.csv'))
+obs_t_10m, obs_v_10m = read_observer_csv(os.path.join(obs_dir, 'T_10m_real.csv'))
+obs_t_20m, obs_v_20m = read_observer_csv(os.path.join(obs_dir, 'T_20m_real.csv'))
 
 # ---------------------------------------------------------------------------
 # Plot
@@ -97,7 +97,7 @@ axes[2].xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
 fig.autofmt_xdate()
 
 plt.tight_layout()
-out_path = os.path.join(os.path.dirname(__file__), 'simulation_resultsV2.png')
+out_path = os.path.join(os.path.dirname(__file__), 'simulation_resultsV3.png')
 plt.savefig(out_path, dpi=150)
 print(f"Saved: {out_path}")
 plt.show()
