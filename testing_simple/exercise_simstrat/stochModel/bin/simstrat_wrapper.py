@@ -148,7 +148,8 @@ if __name__ == '__main__':
     # ------------------------------------------------------------------
     state_file = 'temperature_state.txt'
     temperatures = read_state_file(state_file)
-    logger.info("state temperatures: %s", temperatures)
+    logger.info("[RESTART-DIAG] temperature_state.txt (would be IC if text restart): %s",
+                [round(t, 4) for t in temperatures])
     write_initial_conditions('InitialConditions.dat', temperatures)
     logger.info("InitialConditions.dat written from state file")
 
@@ -162,10 +163,12 @@ if __name__ == '__main__':
     snapshot_path = os.path.join(output_dir, SNAPSHOT_FILENAME)
 
     logger.info("cwd: %s", os.getcwd())
-    logger.info("snapshot_path: %s  exists=%s  size=%s",
-                snapshot_path,
-                os.path.exists(snapshot_path),
-                os.path.getsize(snapshot_path) if os.path.exists(snapshot_path) else 'N/A')
+    snap_exists = os.path.exists(snapshot_path)
+    logger.info("[RESTART-DIAG] snapshot: %s  exists=%s  size=%s",
+                snapshot_path, snap_exists,
+                os.path.getsize(snapshot_path) if snap_exists else 'N/A')
+    logger.info("[RESTART-DIAG] restart source: %s",
+                "simulation-snapshot.dat (binary)" if snap_exists else "InitialConditions.dat (text)")
 
     settings['Simulation']['Start d'] = start_day
     settings['Simulation']['End d']   = end_day
@@ -216,6 +219,19 @@ if __name__ == '__main__':
     # ------------------------------------------------------------------
     t_out_file = os.path.join(output_dir, 'T_out.dat')
     times, depths, T_rows = read_t_out(t_out_file)
+
+    # First output row of the *current* window (times strictly after start_day)
+    current_idxs = [i for i, t in enumerate(times) if t > start_day + 1e-6]
+    if current_idxs:
+        first_new_row = T_rows[current_idxs[0]]
+        first_row_at_ic = interp_T_to_ic_depths(depths, first_new_row)
+        logger.info("[RESTART-DIAG] T_out.dat first output of current window (day %.4f) at IC depths: %s",
+                    times[current_idxs[0]], [round(t, 4) for t in first_row_at_ic])
+        diffs = [round(a - b, 4) for a, b in zip(first_row_at_ic, temperatures)]
+        logger.info("[RESTART-DIAG] diff (T_out[current_first] - temperature_state): %s  -> %s",
+                    diffs,
+                    "SNAPSHOT diverged from temperature_state (|diff|>0.05 degC — state correction would be ignored)" if any(abs(d) > 0.05 for d in diffs)
+                    else "consistent (<0.05 degC — interpolation noise only)")
 
     obs_specs = [
         ('T_0m.csv',  -0.0),
