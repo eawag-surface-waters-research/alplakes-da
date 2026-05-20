@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blackBoxWrapperConfig xmlns="http://www.openda.org"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.openda.org http://schemas.openda.org/blackBoxWrapperConfig.xsd">
+
+	<aliasDefinitions defaultKeyPrefix="%" defaultKeySuffix="%">
+		<alias key="binDir" />
+		<alias key="templateDir" />
+		<alias key="instanceDir" />
+		<alias key="configFile" />
+		<alias key="stateFile" />
+	</aliasDefinitions>
+
+	<run>
+		<initializeActionsUsingDirClone
+			instanceDir="%instanceDir%%instanceNumber%" templateDir="%templateDir%" />
+
+		<computeActions>
+			<!-- On Linux/Mac: python script via shebang; on Windows: bat wrapper -->
+			<action linuxExe="%binDir%/simstrat_wrapper.py" windowsExe="%binDir%/simstrat_wrapper.bat" workingDirectory="%instanceDir%">
+				<arg>--config</arg>
+				<arg>%configFile%</arg>
+				<arg>--log_level</arg>
+				<arg>INFO</arg>
+				<checkOutput file="T_0m.csv"/>
+				<checkOutput file="T_10m.csv"/>
+				<checkOutput file="T_20m.csv"/>
+			</action>
+		</computeActions>
+
+		<additionalComputeActions></additionalComputeActions>
+		<finalizeActions></finalizeActions>
+	</run>
+
+	<inputOutput>
+		<!-- time_control.yaml provides start/dt/end times that OpenDA reads/writes -->
+		<dataObject className="org.openda.exchange.dataobjects.AsciiKeywordDataObject">
+			<file>time_control.yaml</file>
+			<id>time_config</id>
+		</dataObject>
+
+		<!-- temperature_state.txt holds the temperature profile (IC depth levels) -->
+		<dataObject className="org.openda.exchange.dataobjects.AsciiVectorDataObject">
+			<file>%stateFile%</file>
+			<id>state_temperature</id>
+		</dataObject>
+
+		<!-- timeSeriesFormatter.xml maps output CSV files to predictor exchange items -->
+		<dataObject className="org.openda.exchange.dataobjects.TimeSeriesFormatterDataObject">
+			<file>timeSeriesFormatter.xml</file>
+			<id>output</id>
+		</dataObject>
+	</inputOutput>
+
+</blackBoxWrapperConfig>
