@@ -1,0 +1,151 @@
+# exercise_simstrat
+
+OpenDA black-box sequential simulation exercise for Simstrat, with optional ensemble spread driven by pre-generated perturbed forcings.
+
+---
+
+## Overview
+
+Two experiment modes are available:
+
+| Mode | ODA file | Description |
+|---|---|---|
+| Single run | `SequentialSimulation.oda` | One Simstrat instance, no ensemble |
+| Ensemble | `SequentialEnsembleSimulation.oda` | 1 control + N perturbed members, run in parallel |
+
+Simstrat is called via Docker (image `eawag/simstrat:3.0.4`) — no local binary required beyond the wrapper scripts.
+
+---
+
+## Directory structure
+
+```
+exercise_simstrat/
+├── stochModel/
+│   ├── template/           # Base model files cloned into each work instance
+│   │   ├── Settings.par
+│   │   ├── Forcing.dat
+│   │   ├── Results/
+│   │   │   └── simulation-snapshot.dat   # warmup snapshot (2024-12-31)
+│   │   └── temperature_state.txt
+│   ├── simstratModel.xml
+│   ├── simstratStochModel.xml
+│   ├── simstratWrapper.xml
+│   └── bin/
+│       └── simstrat_wrapper.py   # called by OpenDA for each time step
+├── stochObserver/
+│   ├── T_0m_real.csv             # real observations at 0, 10, 20 m
+│   ├── T_10m_real.csv
+│   ├── T_20m_real.csv
+│   └── timeSeriesFormatter.xml
+├── algorithms/
+│   ├── SequentialSimulation.xml
+│   └── SequentialEnsembleSimulation.xml
+├── forcings/                     # pre-generated perturbed Forcing.dat files
+│   ├── Forcing_0.dat             # unperturbed control
+│   └── Forcing_1..N.dat          # perturbed ensemble members
+├── work/                         # created/populated by OpenDA at runtime
+│   ├── work0/                    # control instance
+│   └── work1..N/                 # ensemble instances
+├── SequentialSimulation.oda
+├── SequentialEnsembleSimulation.oda
+├── parallel.xml                  # ThreadStochModelFactory config (maxThreads)
+├── generate_warmup_snapshot.py
+├── generate_ensemble_forcings.py
+├── prepare_real_obs.py
+├── check_initial_snapshot.py
+├── plot_results.py
+└── plot_ensemble_results.py
+```
+
+---
+
+## Step-by-step workflow
+
+### 1. Prepare the warmup snapshot
+
+Runs Simstrat in `work/work0` for 2024-01-01 → 2024-12-31 from `InitialConditions.dat`, then copies the resulting snapshot and `temperature_state.txt` back into `stochModel/template/`.
+
+```bash
+python3 generate_warmup_snapshot.py
+```
+
+Only needed once, or when resetting to a clean initial state.
+
+### 2. Prepare observations
+
+Converts raw Castagnola CSV into the per-depth files expected by the stochObserver.
+
+```bash
+python3 prepare_real_obs.py
+```
+
+### 3a. Run single sequential simulation
+
+```bash
+export ROOT="$(pwd)"  # from project root
+export OPENDADIR="$ROOT/openda_3.4.0/bin"
+export PATH="$ROOT/openda_3.4.0/jre/bin:$OPENDADIR:$PATH"
+export OPENDA_NATIVE=linux64_gnu
+export OPENDALIB="$OPENDADIR/$OPENDA_NATIVE"
+export LD_LIBRARY_PATH="$OPENDALIB/lib:$LD_LIBRARY_PATH"
+
+cd testing_simple/exercise_simstrat
+oda_run.sh SequentialSimulation.oda
+```
+
+Results written to `sequentialSimulation_results.py`. Plot with:
+
+```bash
+python3 plot_results.py
+```
+
+### 3b. Run ensemble simulation
+
+First generate the perturbed forcing files (AR(1) noise on wind and solar radiation):
+
+```bash
+python3 generate_ensemble_forcings.py
+```
+
+Then run OpenDA (same environment variables as above):
+
+```bash
+cd testing_simple/exercise_simstrat
+oda_run.sh SequentialEnsembleSimulation.oda
+```
+
+OpenDA clones the template into `work/work0`…`work/workN`. The wrapper automatically injects `forcings/Forcing_i.dat` into each ensemble instance before calling Docker.
+
+Plot results:
+
+```bash
+python3 plot_ensemble_results.py
+```
+
+---
+
+## Ensemble noise model
+
+`generate_ensemble_forcings.py` fits an AR(1) model to the sub-daily variability of each forcing variable (residuals from a 24-step rolling mean) and generates `N_MEMBERS` perturbed `Forcing.dat` files. Perturbed variables: `u` (wind E-W), `v` (wind N-S), `sol` (solar radiation). Air temperature is left unperturbed. Solar radiation is clipped to ≥ 0.
+
+Key constants (edit in `generate_ensemble_forcings.py`):
+
+| Constant | Default | Description |
+|---|---|---|
+| `N_MEMBERS` | 5 | Number of ensemble members |
+| `RNG_SEED` | 42 | Random seed for reproducibility |
+
+`N_MEMBERS` must match `<ensembleSize>` in `algorithms/SequentialEnsembleSimulation.xml` and `<maxThreads>` in `parallel.xml`.
+
+---
+
+## Checking the initial snapshot
+
+To verify the warmup snapshot temperature profile against observations on 2024-12-31:
+
+```bash
+python3 check_initial_snapshot.py
+```
+
+Saves `initial_snapshot_check.png`.
