@@ -14,9 +14,21 @@
 		</state>
 		<!-- Predictors: model output at observation depths, matched against stochObserver -->
 		<predictor>
-			<vector id="T_0m" />
-			<vector id="T_10m" />
-			<vector id="T_20m" />
+			<vector id="T_1m" />
+			<vector id="T_3m" />
+			<vector id="T_5m" />
+			<vector id="T_7m" />
+			<vector id="T_9m" />
+			<vector id="T_11m" />
+			<vector id="T_13m" />
+			<vector id="T_15m" />
+			<vector id="T_17m" />
+			<vector id="T_19m" />
+			<vector id="T_21m" />
+			<vector id="T_25m" />
+			<vector id="T_30m" />
+			<vector id="T_35m" />
+			<vector id="T_40m" />
 		</predictor>
 	</vectorSpecification>
 

@@ -18,7 +18,7 @@ SCRIPT_DIR   = os.path.dirname(os.path.abspath(__file__))
 FORCING_IN   = os.path.join(SCRIPT_DIR, "stochModel", "template", "Forcing.dat")
 FORCINGS_DIR = os.path.join(SCRIPT_DIR, "forcings")
 
-N_MEMBERS = 5
+N_MEMBERS = 20
 RNG_SEED  = 42
 
 HEADER = "  Time [d]    u [m/s]    v [m/s]  Tair [°C] sol [W/m2] vap [mbar]  cloud [-] rain [m/hr]"

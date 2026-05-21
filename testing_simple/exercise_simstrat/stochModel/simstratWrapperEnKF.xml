@@ -21,9 +21,21 @@
 				<arg>%configFile%</arg>
 				<arg>--log_level</arg>
 				<arg>INFO</arg>
-				<checkOutput file="T_0m.csv"/>
-				<checkOutput file="T_10m.csv"/>
-				<checkOutput file="T_20m.csv"/>
+				<checkOutput file="T_1m.csv"/>
+				<checkOutput file="T_3m.csv"/>
+				<checkOutput file="T_5m.csv"/>
+				<checkOutput file="T_7m.csv"/>
+				<checkOutput file="T_9m.csv"/>
+				<checkOutput file="T_11m.csv"/>
+				<checkOutput file="T_13m.csv"/>
+				<checkOutput file="T_15m.csv"/>
+				<checkOutput file="T_17m.csv"/>
+				<checkOutput file="T_19m.csv"/>
+				<checkOutput file="T_21m.csv"/>
+				<checkOutput file="T_25m.csv"/>
+				<checkOutput file="T_30m.csv"/>
+				<checkOutput file="T_35m.csv"/>
+				<checkOutput file="T_40m.csv"/>
 			</action>
 		</computeActions>
 

@@ -26,6 +26,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 
 # ---------------------------------------------------------------------------
 # Locate snapshot_io from the project root (alplakes-da/snapshot/).
@@ -123,6 +124,8 @@ if __name__ == '__main__':
     logging.getLogger().addHandler(console)
     logger = logging.getLogger(__name__)
 
+    _t0 = time.perf_counter()
+
     # ------------------------------------------------------------------
     # 1. Read time control written by OpenDA
     # ------------------------------------------------------------------
@@ -217,11 +220,8 @@ if __name__ == '__main__':
     t_out_file = os.path.join(output_dir, 'T_out.dat')
     times, depths, T_rows = read_t_out(t_out_file)
 
-    obs_specs = [
-        ('T_0m.csv',  -0.0),
-        ('T_10m.csv', -10.0),
-        ('T_20m.csv', -20.0),
-    ]
+    obs_depths = [1.0, 3.0, 5.0, 7.0, 9.0, 11.0, 13.0, 15.0, 17.0, 19.0, 21.0, 25.0, 30.0, 35.0, 40.0]
+    obs_specs = [(f"T_{d:g}m.csv", -d) for d in obs_depths]
     for csv_name, target_depth in obs_specs:
         col = find_depth_col(depths, target_depth)
         values = [row[col] for row in T_rows]
@@ -236,4 +236,7 @@ if __name__ == '__main__':
     write_state_file(state_file, new_T)
     logger.info("temperature_state.txt updated (%d cells) from snapshot", len(new_T))
 
+    elapsed = time.perf_counter() - _t0
+    instance_label = os.path.basename(os.path.abspath(os.getcwd()))
+    logger.info("[TIMING] %s | day %.4f->%.4f | %.1f s", instance_label, start_day, end_day, elapsed)
     logger.info("Simstrat EnKF wrapper completed successfully")

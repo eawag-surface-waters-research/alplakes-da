@@ -9,9 +9,9 @@
 	<mainModel stochParameter="false" stochForcing="false" stochInit="false" />
 
 	<!-- ensemble size: must match N_MEMBERS in generate_ensemble_forcings.py -->
-	<ensembleSize>5</ensembleSize>
+	<ensembleSize>20</ensembleSize>
 
-	<!-- ensemble members: forcing noise pre-baked in Forcing_1..5.dat -->
+	<!-- ensemble members: forcing noise pre-baked in Forcing_1..20.dat -->
 	<ensembleModel stochParameter="false" stochForcing="false" stochInit="false" />
 
 </EnKFConfig>
