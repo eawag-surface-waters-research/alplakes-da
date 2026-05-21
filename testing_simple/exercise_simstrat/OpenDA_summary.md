@@ -177,3 +177,93 @@ The course shows that moving from `SequentialEnsembleSimulation` to `EnKF` requi
 The EnKF would then compute a Kalman gain from the ensemble covariance and update `temperature.state` in each member at every analysis time — closing the loop from open-loop ensemble simulation to full data assimilation.
 
 **Fixing the restart mechanism for EnKF** — since the model currently restarts from the binary snapshot, OpenDA's corrections to `temperature.state` would be ignored. The preferred fix is to have the wrapper inject the corrected temperatures directly into the binary snapshot after the EnKF update step, using the `snapshot_io` module already available in the project (`snapshot/snapshot_io.py`). This preserves the full Simstrat internal state (turbulence, mixing) while applying the temperature correction.
+
+---
+
+## 10. Ensemble Kalman Filter (EnKF)
+
+### 10.1 Algorithm
+
+The EnKF approximates the Kalman filter by representing the error covariance with an ensemble of N model runs. At each analysis time the algorithm follows three stages:
+
+**Forecast step** — each ensemble member `i` is advanced from `t_{k-1}` to `t_k` independently:
+
+```
+x_f^i = M(x_a^i)     (i = 1 … N)
+```
+
+The ensemble mean and spread estimate the prior state and its uncertainty:
+
+```
+x_f = (1/N) Σ x_f^i
+P_f ≈ (1/(N-1)) Σ (x_f^i - x_f)(x_f^i - x_f)^T
+```
+
+**Analysis step** — observations `y` are assimilated via the Kalman update:
+
+```
+K   = P_f H^T (H P_f H^T + R)^{-1}     (Kalman gain)
+x_a^i = x_f^i + K (y^i - H x_f^i)     (member update)
+```
+
+where `H` maps the state to observation space, `R` is the observation error covariance, and `y^i = y + ε^i` are perturbed observations (ε^i ~ N(0, R)) added to keep the ensemble spread consistent.
+
+**Key property** — the Kalman gain weights the correction:
+- If `H P_f H^T >> R` (model uncertain, obs precise): `K ≈ H^{-1}`, analysis is pulled strongly toward obs.
+- If `H P_f H^T << R` (model confident, obs noisy): `K ≈ 0`, state barely changes.
+- If spread is zero everywhere: `K = 0`, no correction is ever applied.
+
+### 10.2 Configuration in this exercise
+
+| File | Role |
+|---|---|
+| `EnKF.oda` / `parallel_enkf.xml` | Top-level experiment, points to EnKF algorithm |
+| `algorithms/EnKF.xml` | Algorithm class `org.openda.algorithms.kalmanFilter.EnKF`, ensemble size 5, analysis times from observations |
+| `stochModel/simstratModelEnKF.xml` | Deterministic model config (same wrapper as ensemble simulation) |
+| `stochModel/simstratStochModelEnKF.xml` | Stochastic model — state vector `temperature.state`, predictors `T_0m/10m/20m` |
+| `stochModel/simstratWrapperEnKF.xml` | Black-box wrapper, clones template into `work_enkf/work<N>/` |
+| `work_enkf/work0/` | Main (central) model — unperturbed control |
+| `work_enkf/work1/`–`work5/` | Ensemble members — each uses a different pre-perturbed `Forcing.dat` |
+
+The stochastic flags in `EnKF.xml`:
+```xml
+<mainModel   stochParameter="false" stochForcing="false" stochInit="false" />
+<ensembleModel stochParameter="false" stochForcing="false" stochInit="false" />
+```
+
+These are `false` because forcing uncertainty is pre-baked in `Forcing_1.dat`…`Forcing_5.dat`, not injected by OpenDA at runtime. The ensemble spread therefore comes entirely from meteorological forcing differences between members.
+
+### 10.3 Ensemble spread and Kalman gain in our run
+
+Reading `std_x_f` from `enkf_results.py` (standard deviation of ensemble at forecast step):
+
+- **Deep layers (z ≈ −287 m)**: std ≈ 0 — the 5 members have identical deep temperatures because the initial conditions are the same.
+- **Intermediate depths**: std increases gradually as diverging surface forcing propagates downward.
+- **Surface layers (z ≈ 0 m)**: std ≈ 0.15 °C — largest spread, driven directly by different wind/air-temperature forcings.
+
+At the observation depths (0 m, 10 m, 20 m) the spread is large enough that the Kalman gain is non-negligible. The analysis correction `x_a − x_f` reaches **~0.11 °C** at the surface.
+
+### 10.4 A subtlety in OpenDA's Python output
+
+Inspecting `enkf_results.py` reveals an important output convention:
+
+| Variable | What it actually contains |
+|---|---|
+| `pred_f_central` | `H · x_f` — forecast prediction at obs locations (correct) |
+| `pred_a_central` | `H · x_f` — **same as forecast**, computed before the Kalman update |
+| `x_f_central` | Full state vector before update (correct) |
+| `x_a_central` | Full state vector **after** Kalman update (correct) |
+
+`pred_a_central` is NOT `H · x_a`. OpenDA computes it at the analysis step for the purpose of logging the innovation (`y − pred_f`), before the state is updated. This means:
+
+- **Depth profiles** (plotting `x_f_central` vs `x_a_central` directly) correctly show the EnKF correction along the full water column.
+- **Time series** using `pred_a_central` would show zero correction everywhere — misleading.
+
+The fix is to extract the analysis state at observation depths directly from `x_a_central`:
+
+```python
+_obs_cols = [int(np.argmin(np.abs(lake_lev - z_vol - d))) for d in OBS_DEPTHS]
+x_a_at_obs = np.column_stack([x_a_central[:, c] for c in _obs_cols])  # (n_steps, 3)
+```
+
+This gives the true post-analysis temperature at 0 m, 10 m, 20 m for plotting against observations.
