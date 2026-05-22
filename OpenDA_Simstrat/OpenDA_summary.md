@@ -140,12 +140,12 @@ The course recommendation is to set `maxThreads` to the number of available CPU 
 
 The course explains that the `StochObserver` provides both observation values and their uncertainty (standard deviation). In our setup:
 
-- **Source**: `stochObserver/T_0m_real.csv`, `T_10m_real.csv`, `T_20m_real.csv` — daily temperature observations at 0, 10, 20 m from Castagnola.
+- **Source**: `stochObserver/T_1m_real.csv` … `T_40m_real.csv` — 15 files, daily temperature observations at 1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 25, 30, 35, 40 m from Castagnola.
 - **Format**: `time,value` CSV with Simstrat days since 1981-01-01.
 - **Class**: `org.openda.observers.TimeSeriesFormatterStochObserver`, configured by `stochObserver/timeSeriesFormatter.xml`.
-- **Observation uncertainty**: defined in `timeSeriesFormatter.xml` — determines how much weight the filter places on observations vs model in an EnKF step.
+- **Observation uncertainty**: `standardDeviation="0.5"` °C uniformly across all depths in `timeSeriesFormatter.xml`.
 
-These observations currently drive the analysis time schedule (one step per obs time). They are compared against predictors `T_0m`, `T_10m`, `T_20m` during the analysis step.
+These observations drive the analysis time schedule (one step per obs time). They are compared against predictors `T_1m`…`T_40m` during the analysis step.
 
 ---
 
@@ -166,17 +166,39 @@ For the ensemble, our `plot_ensemble_results.py` bypasses the results file entir
 
 ---
 
-## 9. Towards EnKF (next step)
+## 9. The Simstrat-specific state update mechanism
 
-The course shows that moving from `SequentialEnsembleSimulation` to `EnKF` requires:
+This is the central design challenge of the OpenDA–Simstrat EnKF and the reason a dedicated EnKF wrapper (`simstrat_wrapper_enkf.py`) exists.
 
-1. Switching `className` in the `.oda` to `org.openda.algorithms.kalmanFilter.EnKF`.
-2. Adding a noise model in `simstratStochModel.xml` — either `stochInit=true` (perturb initial state) or `stochForcing=true` (perturb forcing). In our case, forcing perturbations are pre-baked, so `stochInit=true` on `temperature.state` is the natural choice for additional spread.
-3. Setting observation uncertainty correctly in `timeSeriesFormatter.xml` — the balance between obs error and ensemble spread determines how aggressively the filter corrects the model.
+### Why a naive coupling fails
 
-The EnKF would then compute a Kalman gain from the ensemble covariance and update `temperature.state` in each member at every analysis time — closing the loop from open-loop ensemble simulation to full data assimilation.
+Simstrat restarts from a binary snapshot (`simulation-snapshot.dat`) rather than from `InitialConditions.dat`. If OpenDA writes a corrected temperature profile to `temperature_state.txt` after the Kalman update, Simstrat would simply ignore it at the next call — it reads the snapshot, which was written at the end of the previous run and carries the *uncorrected* state.
 
-**Fixing the restart mechanism for EnKF** — since the model currently restarts from the binary snapshot, OpenDA's corrections to `temperature.state` would be ignored. The preferred fix is to have the wrapper inject the corrected temperatures directly into the binary snapshot after the EnKF update step, using the `snapshot_io` module already available in the project (`snapshot/snapshot_io.py`). This preserves the full Simstrat internal state (turbulence, mixing) while applying the temperature correction.
+### The solution: full-grid state injection via snapshot_io
+
+The EnKF wrapper closes the loop by using `snapshot_io` (from `snapshot/snapshot_io.py`) to directly overwrite the temperature array inside the binary snapshot before each Simstrat call. The full cycle per analysis step is:
+
+**End of call `t` (post-run):**
+1. Simstrat finishes, writes `Results/simulation-snapshot.dat` and `Results/T_out.dat`.
+2. Wrapper reads the full T profile (all N grid cells, e.g. 576) from the snapshot via `read_snapshot`.
+3. Wrapper writes those N values to `temperature_state.txt`.
+
+**OpenDA analysis step (between calls):**
+4. OpenDA reads `temperature.state` (= `temperature_state.txt`, N values).
+5. OpenDA computes the Kalman gain and writes the corrected profile back to `temperature_state.txt`.
+
+**Start of call `t+1` (pre-run):**
+6. Wrapper reads `temperature_state.txt` (now N corrected values).
+7. Wrapper calls `read_snapshot` on the existing snapshot, overwrites `snap.model['T']` with the corrected values, and calls `write_snapshot` — all other state (turbulence, mixing, velocities) is preserved.
+8. Simstrat runs with `Continue from last snapshot = True` and picks up the corrected temperature field.
+
+### First-run bootstrap
+
+On the very first call, `temperature_state.txt` contains only 7 values (the IC depth levels from the template). The wrapper detects this via a size guard (`len(T_state) > len(IC_DEPTHS)`), skips the injection, and lets Simstrat start from the warmup snapshot as-is. After that first run the state file is upgraded to the full N-cell profile, and injection is active for every subsequent call.
+
+### Why this preserves physical consistency
+
+Injecting only the T field into the snapshot — while leaving turbulent kinetic energy, dissipation rate, and velocities unchanged — is a deliberate choice. It avoids reinitialising the turbulence closure at every analysis step, which would cause unphysical transients. The EnKF correction is applied purely to temperature, consistent with what the observation operator and Kalman gain operate on.
 
 ---
 
@@ -218,12 +240,12 @@ where `H` maps the state to observation space, `R` is the observation error cova
 | File | Role |
 |---|---|
 | `EnKF.oda` / `parallel_enkf.xml` | Top-level experiment, points to EnKF algorithm |
-| `algorithms/EnKF.xml` | Algorithm class `org.openda.algorithms.kalmanFilter.EnKF`, ensemble size 5, analysis times from observations |
+| `algorithms/EnKF.xml` | Algorithm class `org.openda.algorithms.kalmanFilter.EnKF`, ensemble size 20, analysis times from observations |
 | `stochModel/simstratModelEnKF.xml` | Deterministic model config (same wrapper as ensemble simulation) |
-| `stochModel/simstratStochModelEnKF.xml` | Stochastic model — state vector `temperature.state`, predictors `T_0m/10m/20m` |
+| `stochModel/simstratStochModelEnKF.xml` | Stochastic model — state vector `temperature.state`, predictors `T_1m`…`T_40m` (15 depths) |
 | `stochModel/simstratWrapperEnKF.xml` | Black-box wrapper, clones template into `work_enkf/work<N>/` |
 | `work_enkf/work0/` | Main (central) model — unperturbed control |
-| `work_enkf/work1/`–`work5/` | Ensemble members — each uses a different pre-perturbed `Forcing.dat` |
+| `work_enkf/work1/`–`work_enkf/work20/` | Ensemble members — each uses a different pre-perturbed `Forcing.dat` |
 
 The stochastic flags in `EnKF.xml`:
 ```xml
@@ -231,17 +253,17 @@ The stochastic flags in `EnKF.xml`:
 <ensembleModel stochParameter="false" stochForcing="false" stochInit="false" />
 ```
 
-These are `false` because forcing uncertainty is pre-baked in `Forcing_1.dat`…`Forcing_5.dat`, not injected by OpenDA at runtime. The ensemble spread therefore comes entirely from meteorological forcing differences between members.
+These are `false` because forcing uncertainty is pre-baked in `Forcing_1.dat`…`Forcing_20.dat`, not injected by OpenDA at runtime. The ensemble spread therefore comes entirely from meteorological forcing differences between members.
 
 ### 10.3 Ensemble spread and Kalman gain in our run
 
 Reading `std_x_f` from `enkf_results.py` (standard deviation of ensemble at forecast step):
 
-- **Deep layers (z ≈ −287 m)**: std ≈ 0 — the 5 members have identical deep temperatures because the initial conditions are the same.
+- **Deep layers (z ≈ −287 m)**: std ≈ 0 — the 20 members have identical deep temperatures because the initial conditions are the same.
 - **Intermediate depths**: std increases gradually as diverging surface forcing propagates downward.
-- **Surface layers (z ≈ 0 m)**: std ≈ 0.15 °C — largest spread, driven directly by different wind/air-temperature forcings.
+- **Surface layers (z ≈ 0 m)**: std ≈ 0.15 °C — largest spread, driven directly by different wind/solar forcings.
 
-At the observation depths (0 m, 10 m, 20 m) the spread is large enough that the Kalman gain is non-negligible. The analysis correction `x_a − x_f` reaches **~0.11 °C** at the surface.
+At the observation depths (1–40 m, 15 levels) the spread is large enough that the Kalman gain is non-negligible. The analysis correction `x_a − x_f` is largest near the surface where ensemble spread is greatest.
 
 ### 10.4 A subtlety in OpenDA's Python output
 
@@ -263,7 +285,7 @@ The fix is to extract the analysis state at observation depths directly from `x_
 
 ```python
 _obs_cols = [int(np.argmin(np.abs(lake_lev - z_vol - d))) for d in OBS_DEPTHS]
-x_a_at_obs = np.column_stack([x_a_central[:, c] for c in _obs_cols])  # (n_steps, 3)
+x_a_at_obs = np.column_stack([x_a_central[:, c] for c in _obs_cols])  # (n_steps, n_obs)
 ```
 
-This gives the true post-analysis temperature at 0 m, 10 m, 20 m for plotting against observations.
+This gives the true post-analysis temperature at the 15 observation depths (1–40 m) for plotting against observations.
