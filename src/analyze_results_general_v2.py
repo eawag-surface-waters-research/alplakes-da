@@ -21,6 +21,8 @@ LAKE_CONFIGS = {
         "ref_date":      pd.Timestamp("1981-01-01", tz="UTC"),
         "n_members":     20,
         "pf_mean_subdir": "results_daily_update",
+        "openda_enkf_dir":    os.path.join(ROOT, "OpenDA_Simstrat", "work_enkf"),
+        "n_openda_members":   20,
     },
     "murten": {
         "label":         "Murten",
@@ -52,8 +54,10 @@ OBS_PATH      = cfg["obs_path"]
 OBS2_PATH     = cfg["obs2_path"]
 OBS2_LABEL    = cfg["obs2_label"]
 REF_DATE      = cfg["ref_date"]
-N_MEMBERS     = cfg["n_members"]
+N_MEMBERS      = cfg["n_members"]
 PF_MEAN_SUBDIR = cfg["pf_mean_subdir"]
+OPENDA_DIR     = cfg.get("openda_enkf_dir")
+N_OPENDA       = cfg.get("n_openda_members", 20)
 
 
 # ── Loaders ───────────────────────────────────────────────────────────────────
@@ -118,6 +122,32 @@ def member_minmax(members, target_depth):
     return idx, stacked.min(axis=1), stacked.max(axis=1)
 
 
+def load_openda_members(work_dir, n):
+    members = []
+    for i in range(1, n + 1):
+        path = os.path.join(work_dir, f"work{i}", "Results", "T_out.dat")
+        t = load_traj(path)
+        if t is not None:
+            members.append(t)
+    return members
+
+
+def openda_ensemble_stats(members):
+    """Return (mean_df, min_df, max_df) on the common time index across all members."""
+    if not members:
+        return None, None, None
+    idx = members[0].index
+    for m in members[1:]:
+        idx = idx.intersection(m.index)
+    cols = members[0].columns
+    stacked = np.stack([m.loc[idx].values for m in members], axis=0)  # (N, T, D)
+    return (
+        pd.DataFrame(stacked.mean(axis=0), index=idx, columns=cols),
+        pd.DataFrame(stacked.min(axis=0),  index=idx, columns=cols),
+        pd.DataFrame(stacked.max(axis=0),  index=idx, columns=cols),
+    )
+
+
 def nearest_col(df, target):
     return df.columns[np.argmin(np.abs(df.columns - target))]
 
@@ -160,12 +190,16 @@ print(f"EnKF filt mean:    {'OK' if enkf_filt_mean_traj  is not None else 'MISSI
 print(f"PF mean:           {'OK' if pf_mean_traj         is not None else 'MISSING'}")
 print(f"PF filt mean:      {'OK' if pf_filt_mean_traj    is not None else 'MISSING'}")
 
+openda_members = load_openda_members(OPENDA_DIR, N_OPENDA) if OPENDA_DIR else []
+openda_mean_traj, openda_min_traj, openda_max_traj = openda_ensemble_stats(openda_members)
+print(f"OpenDA EnKF members: {len(openda_members)}   mean: {'OK' if openda_mean_traj is not None else 'MISSING'}")
+
 enkf_members      = load_members(N_MEMBERS, os.path.join("Results_EnKF",          "T_out_full.dat"))
 enkf_filt_members = load_members(N_MEMBERS, os.path.join("Results_EnKF_filtered", "T_out_full.dat"))
 pf_members        = load_members(N_MEMBERS, os.path.join("Results_PF",            "T_out_full.dat"))
 print(f"EnKF members: {len(enkf_members)}   EnKF filt members: {len(enkf_filt_members)}   PF members: {len(pf_members)}")
 
-_ref_traj = next((t for t in [e0_traj, enkf_mean_traj, enkf_filt_mean_traj, pf_mean_traj, pf_filt_mean_traj] if t is not None), None)
+_ref_traj = next((t for t in [e0_traj, enkf_mean_traj, enkf_filt_mean_traj, pf_mean_traj, pf_filt_mean_traj, openda_mean_traj] if t is not None), None)
 if _ref_traj is None:
     raise RuntimeError("No trajectory files found.")
 
@@ -227,6 +261,14 @@ for ax, target_depth in zip(axes, _plot_depths):
         s = pf_filt_mean_traj[col].loc[~pf_filt_mean_traj[col].index.duplicated(keep="first")]
         ax.plot(s.index, s.values, color="teal", lw=1.5, zorder=7, label="PF filt mean")
 
+    if openda_mean_traj is not None:
+        col = nearest_col(openda_min_traj, target_depth)
+        ax.fill_between(openda_min_traj.index, openda_min_traj[col], openda_max_traj[col],
+                        color="darkorange", alpha=0.15, zorder=2, label="OpenDA EnKF min–max")
+        col = nearest_col(openda_mean_traj, target_depth)
+        s = openda_mean_traj[col].loc[~openda_mean_traj[col].index.duplicated(keep="first")]
+        ax.plot(s.index, s.values, color="darkorange", lw=1.5, zorder=7, label="OpenDA EnKF mean")
+
     ax.set_ylabel("T (°C)")
     ax.set_title(f"T at {actual_depth:.0f} m depth")
     ax.legend(fontsize=8, loc="upper left", bbox_to_anchor=(1.01, 1), borderaxespad=0)
@@ -265,7 +307,7 @@ def compute_rmse_by_depth(traj, obs_df, depths_arr):
     return rmses
 
 
-_active = [t for t in [e0_traj, enkf_mean_traj, enkf_filt_mean_traj, pf_mean_traj, pf_filt_mean_traj] if t is not None]
+_active = [t for t in [e0_traj, enkf_mean_traj, enkf_filt_mean_traj, pf_mean_traj, pf_filt_mean_traj, openda_mean_traj] if t is not None]
 common_obs_depths = _common_depths(obs_depths, _active[0])
 for _ref in _active[1:]:
     common_obs_depths = np.intersect1d(common_obs_depths, _common_depths(obs_depths, _ref))
@@ -275,6 +317,7 @@ enkf_rmses           = compute_rmse_by_depth(enkf_mean_traj,     obs, common_obs
 enkf_filt_rmses      = compute_rmse_by_depth(enkf_filt_mean_traj, obs, common_obs_depths) if enkf_filt_mean_traj is not None else None
 pf_rmses             = compute_rmse_by_depth(pf_mean_traj,       obs, common_obs_depths) if pf_mean_traj       is not None else None
 pf_filt_rmses        = compute_rmse_by_depth(pf_filt_mean_traj,  obs, common_obs_depths) if pf_filt_mean_traj  is not None else None
+openda_rmses         = compute_rmse_by_depth(openda_mean_traj,   obs, common_obs_depths) if openda_mean_traj   is not None else None
 
 # ── Print RMSE table ──────────────────────────────────────────────────────────
 
@@ -283,7 +326,8 @@ header = f"{'depth':>8}" + (f"{'e0':>10}"               if e0_rmses             
                          + (f"{'EnKF mean':>12}"         if enkf_rmses           else "") \
                          + (f"{'EnKF filt mean':>16}"    if enkf_filt_rmses      else "") \
                          + (f"{'PF mean':>10}"           if pf_rmses             else "") \
-                         + (f"{'PF filt mean':>14}"      if pf_filt_rmses        else "")
+                         + (f"{'PF filt mean':>14}"      if pf_filt_rmses        else "") \
+                         + (f"{'OpenDA EnKF':>14}"       if openda_rmses         else "")
 print(header)
 for i, d in enumerate(common_obs_depths):
     row = f"{d:>8.1f} m"
@@ -292,6 +336,7 @@ for i, d in enumerate(common_obs_depths):
     if enkf_filt_rmses:    row += f"  {enkf_filt_rmses[i]:>14.4f}"
     if pf_rmses:           row += f"  {pf_rmses[i]:>8.4f}"
     if pf_filt_rmses:      row += f"  {pf_filt_rmses[i]:>12.4f}"
+    if openda_rmses:       row += f"  {openda_rmses[i]:>12.4f}"
     print(row)
 totals_row = f"{'total':>10}"
 if e0_rmses:           totals_row += f"  {np.nansum(e0_rmses):>8.4f}"
@@ -299,6 +344,7 @@ if enkf_rmses:         totals_row += f"  {np.nansum(enkf_rmses):>10.4f}"
 if enkf_filt_rmses:    totals_row += f"  {np.nansum(enkf_filt_rmses):>14.4f}"
 if pf_rmses:           totals_row += f"  {np.nansum(pf_rmses):>8.4f}"
 if pf_filt_rmses:      totals_row += f"  {np.nansum(pf_filt_rmses):>12.4f}"
+if openda_rmses:       totals_row += f"  {np.nansum(openda_rmses):>12.4f}"
 print(totals_row)
 
 # ── Plot 2 — RMSE bar chart ───────────────────────────────────────────────────
@@ -309,6 +355,7 @@ if enkf_rmses          is not None: comp_entries.append(("EnKF\nmean",        en
 if enkf_filt_rmses     is not None: comp_entries.append(("EnKF filt\nmean",   enkf_filt_rmses,    np.nansum(enkf_filt_rmses),    "darkorchid"))
 if pf_rmses            is not None: comp_entries.append(("PF\nmean",          pf_rmses,           np.nansum(pf_rmses),           "steelblue"))
 if pf_filt_rmses       is not None: comp_entries.append(("PF filt\nmean",     pf_filt_rmses,      np.nansum(pf_filt_rmses),      "teal"))
+if openda_rmses        is not None: comp_entries.append(("OpenDA\nEnKF",      openda_rmses,       np.nansum(openda_rmses),       "darkorange"))
 comp_entries.sort(key=lambda e: e[2], reverse=True)
 
 ref_total  = np.nansum(e0_rmses) if e0_rmses is not None else comp_entries[0][2]
