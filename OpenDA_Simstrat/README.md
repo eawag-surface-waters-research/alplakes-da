@@ -144,7 +144,7 @@ python3 plot_ensemble_results.py
 
 ## Ensemble noise model
 
-`generate_ensemble_forcings.py` fits an AR(1) model to the sub-daily variability of each forcing variable (residuals from a 24-step rolling mean) and generates `N_MEMBERS` perturbed `Forcing.dat` files. Perturbed variables: `u` (wind E-W), `v` (wind N-S), `sol` (solar radiation). Air temperature is left unperturbed. Solar radiation is clipped to ≥ 0.
+`generate_ensemble_forcings.py` fits an AR(1) model to the residuals between ICON reanalysis (`data/lake_mean_lugano_2025.csv`) and the base `Forcing.dat` (reanalysis − Forcing) and generates `N_MEMBERS` perturbed `Forcing.dat` files. This matches the approach in `src/ensembles_fromstandard.py`. Perturbed variables: `u` (wind E-W), `v` (wind N-S), `sol` (solar radiation). Air temperature is left unperturbed. Solar radiation is clipped to ≥ 0.
 
 Key constants (edit in `generate_ensemble_forcings.py`):
 
