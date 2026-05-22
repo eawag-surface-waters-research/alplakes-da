@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SequentialEnsembleSimulationConfig xmlns="http://www.openda.org"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.openda.org http://schemas.openda.org/algorithm/sequentialEnsembleSimulation.xsd">
+
+	<analysisTimes type="fromObservationTimes" />
+
+	<!-- main model: unperturbed control (work0) -->
+	<mainModel stochParameter="false" stochForcing="false" stochInit="false" />
+
+	<!-- ensemble size: must match N_MEMBERS in generate_ensemble_forcings.py -->
+	<ensembleSize>5</ensembleSize>
+
+	<!-- ensemble members: noise is pre-baked in Forcing_1..N.dat, not added by OpenDA -->
+	<ensembleModel stochParameter="false" stochForcing="false" stochInit="false" />
+
+</SequentialEnsembleSimulationConfig>
