@@ -289,3 +289,88 @@ x_a_at_obs = np.column_stack([x_a_central[:, c] for c in _obs_cols])  # (n_steps
 ```
 
 This gives the true post-analysis temperature at the 15 observation depths (1–40 m) for plotting against observations.
+
+---
+
+## 11. Extending the setup to compare multiple assimilation algorithms
+
+### 11.1 Why the architecture makes this mostly cheap
+
+Every OpenDA experiment is defined by a `.oda` file that wires together four independent components (stochObserver, stochModelFactory, algorithm, resultWriter). The stochModel coupling — including the `simstrat_wrapper_enkf.py` state injection via `snapshot_io` — is algorithm-agnostic: OpenDA writes a corrected `temperature_state.txt` per member, and the wrapper injects it into the binary snapshot before the next call regardless of how the correction was computed. Swapping algorithms therefore only requires:
+
+1. A new `.oda` file with a different `<algorithm className="...">`.
+2. A new algorithm config XML in `algorithms/`.
+3. A distinct `resultWriter` output filename to avoid collisions.
+
+The stochObserver, parallel model factory (`parallel_enkf.xml`), stochModel XML stack, and wrapper scripts are shared verbatim across all experiments.
+
+### 11.2 Algorithms available in OpenDA 3.4.0
+
+The following sequential ensemble algorithms exist in `openda_3.4.0/xmlSchemas/algorithm/` and are bundled in `algorithms.jar`:
+
+| Algorithm | OpenDA class | XSD schema | Config effort |
+|---|---|---|---|
+| **EnKF** | `kalmanFilter.EnKF` | `enkf.xsd` | Already implemented |
+| **EnSR** (Ensemble Square Root) | `kalmanFilter.EnSR` | `ensr.xsd` | Rename `EnKFConfig` → `EnsrConfig`, update className — same fields |
+| **EWPF** (Ensemble Weighted Particle Filter) | `kalmanFilter.EWPF` | `ewpf.xsd` | Rename `EnKFConfig` → `EWPFConfig`, update className — same fields |
+| **Particle Filter** | `particleFilter.ParticleFilter` | `particleFilter.xsd` | Same fields + optional `<samplingMethod>` — see §11.4 |
+| **Steady State Filter** | `kalmanFilter.SteadyStateKalmanFilter` | `steadyStateFilter.xsd` | Requires a pre-computed Kalman gain from a prior EnKF run |
+
+### 11.3 Minimal-effort additions: EnSR and EWPF
+
+EnSR and EWPF share the `SequentialEnsembleAlgorithmConfigType` with EnKF — identical elements (`analysisTimes`, `mainModel`, `ensembleSize`, `ensembleModel`). Adding either is a pure XML operation:
+
+**`algorithms/EnSR.xml`**:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<EnsrConfig xmlns="http://www.openda.org"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.openda.org http://schemas.openda.org/algorithm/ensr.xsd">
+
+    <analysisTimes type="fromObservationTimes" />
+    <mainModel   stochParameter="false" stochForcing="false" stochInit="false" />
+    <ensembleSize>20</ensembleSize>
+    <ensembleModel stochParameter="false" stochForcing="false" stochInit="false" />
+</EnsrConfig>
+```
+
+**`EnSR.oda`** — copy `EnKF.oda`, change:
+```xml
+<algorithm className="org.openda.algorithms.kalmanFilter.EnSR">
+    <workingDirectory>./algorithms</workingDirectory>
+    <configString>EnSR.xml</configString>
+</algorithm>
+...
+<configFile>ensr_results.py</configFile>
+```
+
+The `work_enkf/` directory, both stochModel XML stacks, and `simstrat_wrapper_enkf.py` are unchanged. EWPF follows the identical pattern with `EWPFConfig` / `EWPF` / `ewpf_results.py`.
+
+### 11.4 The Particle Filter — what needs care
+
+The Particle Filter does not compute a linear Kalman update. Instead it:
+1. Weights each ensemble member by its likelihood given the observations.
+2. Resamples: clones high-weight members, drops low-weight ones.
+
+The `simstrat_wrapper_enkf.py` state injection (read `temperature_state.txt` → overwrite snapshot T field) survives resampling unchanged — OpenDA still writes each member's state to its own instance directory, and the wrapper reads it before the next model call.
+
+**The real problem is the pre-baked forcing.** After resampling, two members may share the same corrected snapshot state but continue advancing with *different* `Forcing.dat` files (because forcing files are tied to directory index `work_enkf/work{i}/`). The forcing diversity is no longer aligned with the resampled state diversity. For a rigorous PF experiment, one of two approaches is needed:
+
+- **Option A — live resampling of forcing**: When the wrapper detects it has been cloned (e.g., by comparing snapshot state with the prior step's unperturbed state), it resamples a new forcing perturbation on the fly. Requires some bookkeeping.
+- **Option B — accept the mismatch as a known limitation**: The forcing perturbations are small (~AR(1) residuals) and the resampling step is rare enough that the mismatch has limited impact over a short experiment window. Document it explicitly.
+
+For an initial comparison this limitation can be accepted; for publication-quality results Option A is needed.
+
+### 11.5 Suggested comparison setup
+
+Run three `.oda` files sequentially (or in separate directories) against the same observation dataset:
+
+```
+EnKF.oda          → enkf_results.py       (already working)
+EnSR.oda          → ensr_results.py       (one new .oda + one algorithm XML)
+EWPF.oda          → ewpf_results.py       (one new .oda + one algorithm XML)
+```
+
+Each run populates its own result file. A single comparison script loads all three via `exec()` and overlays RMSE, bias, and ensemble spread at the 15 observation depths.
+
+Note: each run needs its own `work_enkf/` directory tree (or the directory must be cleaned between runs), because the binary snapshots from one run's analysis step must not contaminate the next.
