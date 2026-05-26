@@ -208,32 +208,28 @@ Injecting only the T field into the snapshot — while leaving turbulent kinetic
 
 The EnKF approximates the Kalman filter by representing the error covariance with an ensemble of N model runs. At each analysis time the algorithm follows three stages:
 
-**Forecast step** — each ensemble member `i` is advanced from `t_{k-1}` to `t_k` independently:
+**Forecast step** — each ensemble member $i$ is advanced from $t_{k-1}$ to $t_k$ independently:
 
-```
-x_f^i = M(x_a^i)     (i = 1 … N)
-```
+$$x_f^i = M(x_a^i), \quad i = 1, \ldots, N$$
 
 The ensemble mean and spread estimate the prior state and its uncertainty:
 
-```
-x_f = (1/N) Σ x_f^i
-P_f ≈ (1/(N-1)) Σ (x_f^i - x_f)(x_f^i - x_f)^T
-```
+$$x_f = \frac{1}{N} \sum_{i=1}^{N} x_f^i$$
 
-**Analysis step** — observations `y` are assimilated via the Kalman update:
+$$P_f \approx \frac{1}{N-1} \sum_{i=1}^{N} (x_f^i - x_f)(x_f^i - x_f)^\top$$
 
-```
-K   = P_f H^T (H P_f H^T + R)^{-1}     (Kalman gain)
-x_a^i = x_f^i + K (y^i - H x_f^i)     (member update)
-```
+**Analysis step** — observations $y$ are assimilated via the Kalman update:
 
-where `H` maps the state to observation space, `R` is the observation error covariance, and `y^i = y + ε^i` are perturbed observations (ε^i ~ N(0, R)) added to keep the ensemble spread consistent.
+$$K = P_f H^\top (H P_f H^\top + R)^{-1} \quad \text{(Kalman gain)}$$
+
+$$x_a^i = x_f^i + K(y^i - H x_f^i) \quad \text{(member update)}$$
+
+where $H$ maps the state to observation space, $R$ is the observation error covariance, and $y^i = y + \varepsilon^i$ are perturbed observations ($\varepsilon^i \sim \mathcal{N}(0, R)$) added to keep the ensemble spread consistent.
 
 **Key property** — the Kalman gain weights the correction:
-- If `H P_f H^T >> R` (model uncertain, obs precise): `K ≈ H^{-1}`, analysis is pulled strongly toward obs.
-- If `H P_f H^T << R` (model confident, obs noisy): `K ≈ 0`, state barely changes.
-- If spread is zero everywhere: `K = 0`, no correction is ever applied.
+- If $H P_f H^\top \gg R$ (model uncertain, obs precise): $K \approx H^{-1}$, analysis is pulled strongly toward obs.
+- If $H P_f H^\top \ll R$ (model confident, obs noisy): $K \approx 0$, state barely changes.
+- If spread is zero everywhere: $K = 0$, no correction is ever applied.
 
 ### 10.2 Configuration in this exercise
 
