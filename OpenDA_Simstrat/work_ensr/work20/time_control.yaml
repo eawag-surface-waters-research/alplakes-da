@@ -4,4 +4,4 @@
 # Time is in Simstrat days (days since Jan 1, 1981 = MJD - 44605)
 # Format: [start_day, dt_day, end_day]
 # OpenDA reads/writes this via the #oda:time_control marker
-time: [16081.5, 1.0, 16082.5]  #oda:time_control
+time: [16435.5, 1.0, 16436.0]  #oda:time_control

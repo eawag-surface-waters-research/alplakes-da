@@ -231,6 +231,25 @@ where $H$ maps the state to observation space, $R$ is the observation error cova
 - If $H P_f H^\top \ll R$ (model confident, obs noisy): $K \approx 0$, state barely changes.
 - If spread is zero everywhere: $K = 0$, no correction is ever applied.
 
+### 10.1.1 EnSR vs EnKF — what changes and why it matters
+
+The **Ensemble Square Root filter (EnSR)** keeps the same forecast step and the same mean correction as EnKF. The only difference is in how the ensemble *spread* is updated after assimilation.
+
+**The problem with EnKF:** to keep the ensemble spread statistically correct after the analysis, EnKF adds a small random noise sample $\varepsilon^i \sim \mathcal{N}(0, R)$ to each member's observation ($y^i = y + \varepsilon^i$). This trick works on average, but the random samples introduce extra noise — especially painful when the ensemble is small (N = 20 here). The result is that the post-analysis spread is slightly wrong for any given step, and this accumulates over time.
+
+**What EnSR does instead:** it updates the ensemble spread *deterministically*, using a matrix transformation computed from the Kalman gain. No random observation noise is added. Every member moves to exactly the right place around the new mean. The mathematics guarantees that the post-analysis spread is correct — not just on average, but exactly.
+
+In plain terms: think of the ensemble as 20 people standing in a circle (= spread around a mean). After each observation, you want to move them all to a new, tighter circle around a corrected center.
+- **EnKF** tells each person to move roughly in the right direction, with a random nudge — on average fine, but individual positions are noisy.
+- **EnSR** choreographs every move precisely — each person ends up at exactly the right spot with no extra scatter.
+
+**Trade-off:**
+- EnSR performs better than EnKF for small ensembles because it removes one source of sampling error.
+- It requires a singular value decomposition (SVD) at each analysis step, making the analysis slightly more expensive — negligible for our problem size (N = 20, 15 observations).
+- It is strictly exact only when the observation operator $H$ is linear (which it is here: $H$ simply picks specific depth columns from the state vector).
+
+In our setup (20 members, 15 observation depths, daily steps) **EnSR is the better choice** over EnKF for the same computational cost.
+
 ### 10.2 Configuration in this exercise
 
 | File | Role |
