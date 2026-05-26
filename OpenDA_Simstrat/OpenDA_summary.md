@@ -224,7 +224,7 @@ $$K = P_f H^\top (H P_f H^\top + R)^{-1} \quad \text{(Kalman gain)}$$
 
 $$x_a^i = x_f^i + K(y^i - H x_f^i) \quad \text{(member update)}$$
 
-where $H$ maps the state to observation space, $R$ is the observation error covariance, and $y^i = y + \varepsilon^i$ are perturbed observations ($\varepsilon^i \sim \mathcal{N}(0, R)$) added to keep the ensemble spread consistent.
+where $H$ maps the state to observation space, $R$ is the observation error covariance, and $y^i = y + \varepsilon^i$ are perturbed observations $(\varepsilon^i \sim \mathcal{N}(0, R))$ added to keep the ensemble spread consistent.
 
 **Key property** — the Kalman gain weights the correction:
 - If $H P_f H^\top \gg R$ (model uncertain, obs precise): $K \approx H^{-1}$, analysis is pulled strongly toward obs.
