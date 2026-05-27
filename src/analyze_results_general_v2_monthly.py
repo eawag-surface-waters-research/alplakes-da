@@ -4,6 +4,7 @@ import calendar
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -578,75 +579,297 @@ plt.tight_layout(rect=[0, 0, 0.85, 1])
 plt.show()
 
 
-# ── Plot 5 (optional) — Monthly time series ───────────────────────────────────
+# ── Plot 5 — Seasonal time series (1m, 9m, 21m, 40m × 4 seasons) ─────────────
+# Rows: depths; Columns: Winter (DJF), Spring (MAM), Summer (JJA), Autumn (SON)
+# Winter spans Dec(YEAR-1)–Feb(YEAR); other seasons are entirely within YEAR.
 
-if PLOT_TIMESERIES:
-    _plot_depths = -obs_depths
-    for m in range(1, 13):
-        fig_ts, axes_ts = plt.subplots(len(_plot_depths), 1,
-                                       figsize=(12, 3 * len(_plot_depths)),
-                                       sharex=True, squeeze=False)
-        axes_ts = axes_ts[:, 0]
-        fig_ts.suptitle(f"{MONTH_NAMES[m-1]} {YEAR} — {LABEL}", fontsize=11)
+_SEAS_DEPTHS = [1.0, 9.0, 21.0, 40.0]
+_SEASONS = [
+    ("Winter (DJF)", [12, 1, 2]),
+    ("Spring (MAM)", [3, 4, 5]),
+    ("Summer (JJA)", [6, 7, 8]),
+    ("Autumn (SON)", [9, 10, 11]),
+]
 
-        t_start = pd.Timestamp(f"{YEAR}-{m:02d}-01", tz="UTC")
-        t_end   = (t_start + pd.offsets.MonthEnd(1)).replace(hour=23, minute=59)
+# Reload obs without year filter so winter can draw from Dec(YEAR-1)
+_obs5 = pd.read_csv(OBS_PATH, parse_dates=["time"])
+_obs5["time"] = pd.to_datetime(_obs5["time"], utc=True)
+_obs5["depth"] = pd.to_numeric(_obs5["depth"])
+_obs5 = _obs5.groupby(["depth", pd.Grouper(key="time", freq="1h")])["value"].mean().reset_index()
+_obs5["depth"] = _obs5["depth"].replace(0.5, 0.0)
 
-        for ax, target_depth in zip(axes_ts, _plot_depths):
-            actual_depth = abs(nearest_col(_ref_traj, target_depth))
-            nearest_obs_depth = obs_depths[np.argmin(np.abs(obs_depths - actual_depth))]
-            obs_m = obs[(obs["depth"] == nearest_obs_depth) & (obs["time"].dt.month == m)]
-            ax.scatter(obs_m["time"], obs_m["value"], s=4, color="tomato",
-                       zorder=5, label=f"obs ({nearest_obs_depth:.1f} m)")
 
-            if enkf_filt_members:
-                _idx_sp, _mn_sp, _mx_sp = member_minmax(enkf_filt_members, target_depth)
-                _mask = _idx_sp.month == m
-                ax.fill_between(_idx_sp[_mask], _mn_sp[_mask], _mx_sp[_mask],
+def _seas_mask(dt_idx, months, year):
+    """Boolean numpy mask for a DatetimeIndex; DJF spans Dec(year-1)–Feb(year)."""
+    if 12 in months:
+        other = [m for m in months if m != 12]
+        return (((dt_idx.year == year - 1) & (dt_idx.month == 12)) |
+                ((dt_idx.year == year) & dt_idx.month.isin(other)))
+    return (dt_idx.year == year) & dt_idx.month.isin(months)
+
+
+fig5, axes5 = plt.subplots(len(_SEAS_DEPTHS), 4,
+                            figsize=(28, 4 * len(_SEAS_DEPTHS)),
+                            squeeze=False)
+# fig5.suptitle(f"Seasonal temperature time series — {LABEL} {YEAR}", fontsize=13)
+
+for _ri, _sd in enumerate(_SEAS_DEPTHS):
+    _neg_d    = -_sd
+    _actual_d = abs(nearest_col(_ref_traj, _neg_d))
+    _near_obs_d = obs_depths[np.argmin(np.abs(obs_depths - _actual_d))]
+
+    for _ci, (_sname, _smonths) in enumerate(_SEASONS):
+        ax = axes5[_ri][_ci]
+
+        # Observations
+        _osub  = _obs5[_obs5["depth"] == _near_obs_d].reset_index(drop=True)
+        _omask = _seas_mask(pd.DatetimeIndex(_osub["time"]), _smonths, YEAR)
+        _osel  = _osub[_omask]
+        ax.scatter(_osel["time"], _osel["value"], s=2, color="red",
+                   alpha=0.1, zorder=5, label=f"obs ({_near_obs_d:.1f} m)")
+
+        # Ensemble spreads
+        '''if enkf_filt_members:
+            _spidx, _spmin, _spmax = member_minmax(enkf_filt_members, _neg_d)
+            _spm = _seas_mask(_spidx, _smonths, YEAR)
+            if _spm.any():
+                ax.fill_between(_spidx[_spm], _spmin[_spm], _spmax[_spm],
                                 color="darkorchid", alpha=0.12, zorder=2,
-                                label="EnKF filt min–max")
+                                label="EnKF filt spread")'''
 
-            if openda_mean_traj is not None:
-                _col_sp = nearest_col(openda_min_traj, target_depth)
-                _omn = openda_min_traj[_col_sp]
-                _omx = openda_max_traj[_col_sp]
-                _mask = _omn.index.month == m
-                ax.fill_between(_omn.index[_mask], _omn.values[_mask], _omx.values[_mask],
+        if openda_mean_traj is not None:
+            _oc = nearest_col(openda_min_traj, _neg_d)
+            _omn_s, _omx_s = openda_min_traj[_oc], openda_max_traj[_oc]
+            _spm = _seas_mask(_omn_s.index, _smonths, YEAR)
+            if _spm.any():
+                ax.fill_between(_omn_s.index[_spm], _omn_s.values[_spm], _omx_s.values[_spm],
                                 color="darkorange", alpha=0.12, zorder=2,
-                                label="OpenDA EnKF min–max")
+                                label="OpenDA EnKF spread")
 
-            if openda_ensr_mean_traj is not None:
-                _col_sp = nearest_col(openda_ensr_min_traj, target_depth)
-                _emn = openda_ensr_min_traj[_col_sp]
-                _emx = openda_ensr_max_traj[_col_sp]
-                _mask = _emn.index.month == m
-                ax.fill_between(_emn.index[_mask], _emn.values[_mask], _emx.values[_mask],
+        if openda_ensr_mean_traj is not None:
+            _ec = nearest_col(openda_ensr_min_traj, _neg_d)
+            _emn_s, _emx_s = openda_ensr_min_traj[_ec], openda_ensr_max_traj[_ec]
+            _spm = _seas_mask(_emn_s.index, _smonths, YEAR)
+            if _spm.any():
+                ax.fill_between(_emn_s.index[_spm], _emn_s.values[_spm], _emx_s.values[_spm],
                                 color="forestgreen", alpha=0.12, zorder=2,
-                                label="OpenDA EnSR min–max")
+                                label="OpenDA EnSR spread")
 
-            for traj, color, lbl in [
-                (e0_traj,               "dimgrey",     "e0"),
-                (enkf_mean_traj,        "mediumpurple","EnKF mean"),
-                (enkf_filt_mean_traj,   "darkorchid",  "EnKF filt mean"),
-                (pf_mean_traj,          "steelblue",   "PF mean"),
-                (pf_filt_mean_traj,     "teal",        "PF filt mean"),
-                (openda_mean_traj,      "darkorange",  "OpenDA EnKF mean"),
-                (openda_ensr_mean_traj, "forestgreen", "OpenDA EnSR mean"),
-            ]:
-                if traj is not None:
-                    col = nearest_col(traj, target_depth)
-                    s = traj[col]
-                    s = s[s.index.month == m]
-                    ax.plot(s.index, s.values, color=color, lw=1.5, label=lbl)
+        # Mean trajectories
+        for _traj5, _c5, _l5 in [
+            (e0_traj,               "dimgrey",      "e0"),
+            #(enkf_mean_traj,        "mediumpurple", "EnKF mean"),
+            #(enkf_filt_mean_traj,   "darkorchid",   "EnKF filt mean"),
+            (pf_mean_traj,          "steelblue",    "PF mean"),
+            #(pf_filt_mean_traj,     "teal",         "PF filt mean"),
+            (openda_mean_traj,      "darkorange",   "OpenDA EnKF mean"),
+            (openda_ensr_mean_traj, "forestgreen",  "OpenDA EnSR mean"),
+        ]:
+            if _traj5 is not None:
+                _tc   = nearest_col(_traj5, _neg_d)
+                _ts   = _traj5[_tc]
+                _tsm  = _seas_mask(_ts.index, _smonths, YEAR)
+                _tsel = _ts[_tsm]
+                if len(_tsel):
+                    ax.plot(_tsel.index, _tsel.values, color=_c5, lw=1.5, label=_l5)
 
-            ax.set_ylabel("T (°C)")
-            ax.set_title(f"{actual_depth:.0f} m")
-            ax.set_xlim(t_start, t_end)
-            ax.legend(fontsize=7, loc="upper left", bbox_to_anchor=(1.01, 1),
-                      borderaxespad=0)
-            ax.grid(True, alpha=0.3)
+        # Formatting
+        if _ri == 0:
+            ax.set_title(_sname, fontsize=10, fontweight="bold")
+        ax.set_ylabel("T (°C)" if _ci == 0 else "")
+        ax.text(0.02, 0.97, f"{_actual_d:.0f} m",
+                transform=ax.transAxes, va="top", ha="left",
+                fontsize=9, fontweight="bold")
+        ax.grid(True, alpha=0.3)
+        ax.xaxis.set_major_locator(mdates.DayLocator(bymonthday=[1, 15]))
+        ax.xaxis.set_major_formatter(mdates.DateFormatter("%d %b"))
+        ax.tick_params(axis="x", labelsize=7)
 
-        axes_ts[-1].set_xlabel("Date")
-        fig_ts.autofmt_xdate()
-        plt.tight_layout(rect=[0, 0, 0.82, 1])
-        plt.show()
+        if _ri == 0 and _ci == 3:
+            ax.legend(fontsize=6, loc="upper left",
+                      bbox_to_anchor=(1.01, 1), borderaxespad=0)
+
+fig5.autofmt_xdate()
+plt.tight_layout(rect=[0, 0, 0.87, 1])
+plt.show()
+
+
+# ── Plot 6 — Daily RMSE timeseries with 25–75 depth percentile band ───────────
+
+def daily_rmse_ts(traj, obs_df, depths_arr):
+    """Daily RMSE per depth → (mean, Q25, Q75) across depths, indexed by date."""
+    if traj is None:
+        return None, None, None
+    obs_pivot = (obs_df[obs_df["depth"].isin(depths_arr)]
+                 .pivot_table(index="time", columns="depth", values="value", aggfunc="mean"))
+    depth_sq = {}
+    for d in depths_arr:
+        if d not in obs_pivot.columns:
+            continue
+        col = nearest_col(traj, -d)
+        depth_sq[d] = (traj[col].reindex(obs_pivot.index) - obs_pivot[d]) ** 2
+    if not depth_sq:
+        return None, None, None
+    daily = np.sqrt(pd.DataFrame(depth_sq).resample("D").mean())
+    return daily.mean(axis=1), daily.quantile(0.05, axis=1), daily.quantile(0.95, axis=1)
+
+
+fig6, ax6 = plt.subplots(figsize=(14, 5))
+for _lbl6, _traj6, _color6 in [
+    ("e0",          e0_traj,               "dimgrey"),
+    ("OpenDA EnSR", openda_ensr_mean_traj, "forestgreen"),
+]:
+    _mean6, _q25_6, _q75_6 = daily_rmse_ts(_traj6, obs, common_obs_depths)
+    if _mean6 is None:
+        continue
+    ax6.fill_between(_mean6.index, _q25_6, _q75_6, color=_color6, alpha=0.15)
+    ax6.plot(_mean6.index, _mean6.values, color=_color6, lw=2, label=_lbl6)
+
+ax6.set_ylabel("RMSE (°C)")
+#ax6.set_title(f"Daily RMSE over all depths — {LABEL} {YEAR}  (band = 5–95th percentile across depths)")
+ax6.legend(fontsize=9, loc="upper right")
+ax6.grid(True, alpha=0.3)
+if YEAR is not None:
+    ax6.set_xlim(pd.Timestamp(f"{YEAR}-01-01", tz="UTC"),
+                 pd.Timestamp(f"{YEAR}-12-31", tz="UTC"))
+fig6.autofmt_xdate()
+plt.tight_layout()
+plt.show()
+
+
+# ── Plot 7 — Relative RMSE improvement vs e0 (heatmap depth × month) ─────────
+# Blue = lower RMSE than e0 (improvement); Red = higher RMSE (degradation).
+
+if e0_mo is not None:
+    _e0_mat7 = to_matrix(e0_mo)
+    _impr_entries = [(lbl, mo, color) for lbl, mo, color in entries if lbl != "e0"]
+
+    _ncols7 = min(len(_impr_entries), 3)
+    _nrows7 = (len(_impr_entries) + _ncols7 - 1) // _ncols7
+    fig7, axes7 = plt.subplots(_nrows7, _ncols7,
+                                figsize=(5 * _ncols7, 4 * _nrows7),
+                                squeeze=False)
+    fig7.suptitle(f"Relative RMSE change vs e0 (%) — {LABEL} {YEAR}  [green = better]",
+                  fontsize=12)
+
+    # Compute all relative matrices first to get a shared colour scale
+    _all_rel7 = []
+    for _, _mo7, _ in _impr_entries:
+        _mat7 = to_matrix(_mo7)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            _r = np.where(_e0_mat7 != 0, (_mat7 - _e0_mat7) / _e0_mat7 * 100, np.nan)
+        _all_rel7.append(_r)
+    _vabs7 = np.nanpercentile(np.abs(np.concatenate([r[np.isfinite(r)] for r in _all_rel7])), 95)
+
+    for _idx7, (_lbl7, _mo7, _color7) in enumerate(_impr_entries):
+        ax7 = axes7[_idx7 // _ncols7][_idx7 % _ncols7]
+        _rel7 = _all_rel7[_idx7]
+        im7 = ax7.imshow(_rel7, aspect="auto", origin="upper",
+                         cmap="RdYlGn_r", vmin=-_vabs7, vmax=_vabs7,
+                         extent=[-0.5, 11.5, len(common_obs_depths) - 0.5, -0.5])
+        ax7.set_xticks(range(12))
+        ax7.set_xticklabels(MONTH_NAMES, fontsize=8)
+        ax7.set_yticks(range(len(common_obs_depths)))
+        ax7.set_yticklabels([f"{d:.0f} m" for d in common_obs_depths], fontsize=7)
+        ax7.set_title(_lbl7, color=_color7, fontweight="bold")
+        ax7.set_xlabel("Month")
+        ax7.set_ylabel("Depth")
+        for _i7 in range(len(common_obs_depths)):
+            for _j7 in range(12):
+                _v7 = _rel7[_i7, _j7]
+                if np.isfinite(_v7):
+                    ax7.text(_j7, _i7, f"{_v7:+.0f}%", ha="center", va="center",
+                             fontsize=5.5,
+                             color="black" if abs(_v7) < 0.6 * _vabs7 else "white")
+        plt.colorbar(im7, ax=ax7, label="ΔRMSE vs e0 (%)", fraction=0.03, pad=0.04)
+
+    for _idx7 in range(len(_impr_entries), _nrows7 * _ncols7):
+        axes7[_idx7 // _ncols7][_idx7 % _ncols7].set_visible(False)
+
+    plt.tight_layout()
+    plt.show()
+
+
+# ── Plot 8 — Relative RMSE improvement vs e0, obs = filtered_upperlugano ──────
+
+_obs8_path = os.path.join(ROOT, "data", "filtered_upperlugano.csv")
+_obs8 = pd.read_csv(_obs8_path, parse_dates=["time"])
+_obs8["time"] = pd.to_datetime(_obs8["time"], utc=True)
+_obs8["depth"] = pd.to_numeric(_obs8["depth"])
+_obs8 = _obs8.groupby(["depth", pd.Grouper(key="time", freq="1h")])["value"].mean().reset_index()
+_obs8["depth"] = _obs8["depth"].replace(0.5, 0.0)
+if YEAR is not None:
+    _obs8 = _obs8[_obs8["time"].dt.year == YEAR]
+_obs8_depths = np.sort(_obs8["depth"].unique())
+
+_active8 = [t for t in [e0_traj, enkf_mean_traj, enkf_filt_mean_traj,
+                         pf_mean_traj, pf_filt_mean_traj,
+                         openda_mean_traj, openda_ensr_mean_traj] if t is not None]
+_common8 = _common_depths(_obs8_depths, _active8[0])
+for _t8 in _active8[1:]:
+    _common8 = np.intersect1d(_common8, _common_depths(_obs8_depths, _t8))
+
+_e0_mo8        = monthly_rmse(e0_traj,               _obs8, _common8)
+_enkf_mo8      = monthly_rmse(enkf_mean_traj,        _obs8, _common8)
+_enkf_filt_mo8 = monthly_rmse(enkf_filt_mean_traj,   _obs8, _common8)
+_pf_mo8        = monthly_rmse(pf_mean_traj,          _obs8, _common8)
+_pf_filt_mo8   = monthly_rmse(pf_filt_mean_traj,     _obs8, _common8)
+_oda_mo8       = monthly_rmse(openda_mean_traj,      _obs8, _common8)
+_oda_ensr_mo8  = monthly_rmse(openda_ensr_mean_traj, _obs8, _common8)
+
+_entries8 = []
+if _e0_mo8        is not None: _entries8.append(("e0",             _e0_mo8,        "dimgrey"))
+if _enkf_mo8      is not None: _entries8.append(("EnKF mean",      _enkf_mo8,      "mediumpurple"))
+if _enkf_filt_mo8 is not None: _entries8.append(("EnKF filt mean", _enkf_filt_mo8, "darkorchid"))
+if _pf_mo8        is not None: _entries8.append(("PF mean",        _pf_mo8,        "steelblue"))
+if _pf_filt_mo8   is not None: _entries8.append(("PF filt mean",   _pf_filt_mo8,   "teal"))
+if _oda_mo8       is not None: _entries8.append(("OpenDA EnKF",    _oda_mo8,       "darkorange"))
+if _oda_ensr_mo8  is not None: _entries8.append(("OpenDA EnSR",    _oda_ensr_mo8,  "forestgreen"))
+
+if _e0_mo8 is not None:
+    _e0_mat8     = to_matrix(_e0_mo8)
+    _impr_ent8   = [(lbl, mo, color) for lbl, mo, color in _entries8 if lbl != "e0"]
+
+    _ncols8 = min(len(_impr_ent8), 3)
+    _nrows8 = (len(_impr_ent8) + _ncols8 - 1) // _ncols8
+    fig8, axes8 = plt.subplots(_nrows8, _ncols8,
+                                figsize=(5 * _ncols8, 4 * _nrows8),
+                                squeeze=False)
+    fig8.suptitle(f"Relative RMSE change vs e0 (%) — {LABEL} {YEAR}, obs=filtered_upperlugano  [green = better]",
+                  fontsize=11)
+
+    _all_rel8 = []
+    for _, _mo8, _ in _impr_ent8:
+        _mat8 = to_matrix(_mo8)
+        with np.errstate(divide="ignore", invalid="ignore"):
+            _r8 = np.where(_e0_mat8 != 0, (_mat8 - _e0_mat8) / _e0_mat8 * 100, np.nan)
+        _all_rel8.append(_r8)
+    _vabs8 = np.nanpercentile(np.abs(np.concatenate([r[np.isfinite(r)] for r in _all_rel8])), 95)
+
+    for _idx8, (_lbl8, _mo8, _color8) in enumerate(_impr_ent8):
+        ax8 = axes8[_idx8 // _ncols8][_idx8 % _ncols8]
+        _rel8 = _all_rel8[_idx8]
+        im8 = ax8.imshow(_rel8, aspect="auto", origin="upper",
+                         cmap="RdYlGn_r", vmin=-_vabs8, vmax=_vabs8,
+                         extent=[-0.5, 11.5, len(_common8) - 0.5, -0.5])
+        ax8.set_xticks(range(12))
+        ax8.set_xticklabels(MONTH_NAMES, fontsize=8)
+        ax8.set_yticks(range(len(_common8)))
+        ax8.set_yticklabels([f"{d:.0f} m" for d in _common8], fontsize=7)
+        ax8.set_title(_lbl8, color=_color8, fontweight="bold")
+        ax8.set_xlabel("Month")
+        ax8.set_ylabel("Depth")
+        for _i8 in range(len(_common8)):
+            for _j8 in range(12):
+                _v8 = _rel8[_i8, _j8]
+                if np.isfinite(_v8):
+                    ax8.text(_j8, _i8, f"{_v8:+.0f}%", ha="center", va="center",
+                             fontsize=5.5,
+                             color="black" if abs(_v8) < 0.6 * _vabs8 else "white")
+        plt.colorbar(im8, ax=ax8, label="ΔRMSE vs e0 (%)", fraction=0.03, pad=0.04)
+
+    for _idx8 in range(len(_impr_ent8), _nrows8 * _ncols8):
+        axes8[_idx8 // _ncols8][_idx8 % _ncols8].set_visible(False)
+
+    plt.tight_layout()
+    plt.show()
