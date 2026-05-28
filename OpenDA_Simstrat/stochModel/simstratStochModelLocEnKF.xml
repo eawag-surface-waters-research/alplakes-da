@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://www.openda.org http://schemas.openda.org/blackBoxStochModelConfig.xsd">
 
 	<modelConfig>
-		<file>./simstratModelEWPF.xml</file>
+		<file>./simstratModelLocEnKF.xml</file>
 	</modelConfig>
 
 	<vectorSpecification>

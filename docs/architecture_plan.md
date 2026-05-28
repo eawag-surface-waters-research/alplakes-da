@@ -44,12 +44,13 @@ long-term maintainability — before committing to one as the primary system.
 
 ---
 
-## 2. The five components every backend needs
+## 2. The six components every backend needs
 
-Every DA experiment, regardless of backend, requires exactly five things:
+Every DA experiment, regardless of backend, requires exactly six things:
 
 | Component | What it does |
 |---|---|
+| **0. Ensemble setup** | Generates N perturbed Forcing.dat files (AR(1) noise on wind and radiation); copies static inputs to each ensemble directory |
 | **1. Model runner** | Starts N Simstrat instances, runs each one for a time window, stops them |
 | **2. Observations** | Loads measured temperatures, specifies which depth, which time, how much to trust them |
 | **3. State exchange** | Reads model temperature state before the DA update; writes corrected state back |
@@ -60,16 +61,20 @@ The table below shows where each component currently lives for each backend:
 
 | Component | Backend A (Python EnKF) | Backend B (Python PF) | Backend C (OpenDA EnKF) |
 |---|---|---|---|
+| **0. Ensemble setup** | `src/ensembles.py` or `src/ensembles_fromstandard.py` → writes `assimilation/{lake}/ensembleN/Forcing.dat` | same scripts | `src/ensembles*.py` + manual copy to `OpenDA_Simstrat/forcings/Forcing_N.dat`; injected per step in `simstrat_wrapper_enkf.py:step 4` |
 | **1. Model runner** | `_start/stop_containers()` + `_run_one_window()` in `main_EnKF.py` | same functions copy-pasted in `main_PF_fast.py` | `parallel_enkf.xml` + `simstratWrapperEnKF.xml` + `simstrat_wrapper_enkf.py` |
 | **2. Observations** | `_load_obs()` in `main_EnKF.py` | `_load_obs()` in `main_PF_fast.py` (identical) | `stochObserver/timeSeriesFormatter.xml` + `T_*m_real.csv` files |
-| **3. State exchange** | `snapshot_io.py` (read + write) | file copy only (`shutil.copy2`) | `simstratStochModelEnKF.xml` declares state vector; `snapshot_io.py` (via wrapper) does the actual I/O |
-| **4. Algorithm config** | constants at top of `main_EnKF.py` (`SIGMA_OBS`, `INFLATION`, `N_MEMBERS`) | constants at top of `main_PF_fast.py` | `algorithms/EnKF.xml` (ensemble size, analysis times) + `timeSeriesFormatter.xml` (σ per depth) |
+| **3. State exchange** | `snapshot_io.py` (read + write snapshot binary) | file copy only (`shutil.copy2` of entire snapshot) | `simstratStochModelEnKF.xml` declares state vector; `snapshot_io.py` (via wrapper) reads/writes; intermediate `temperature_state.txt` per member |
+| **4. Algorithm config** | constants at top of `main_EnKF.py` (`SIGMA_OBS=0.4`, `INFLATION=1.05`, `N_MEMBERS`) | constants at top of `main_PF_fast.py` | `algorithms/EnKF.xml` (ensemble size, analysis times) + `timeSeriesFormatter.xml` (σ=0.5 per depth) |
 | **5. Output** | `T_out_enkf_filtered_mean.dat` + diagnostic CSVs in `assimilation/upperlugano/` | `T_out_ens_filtered.dat` in `assimilation/geneva/` | `enkf_results.py` in `Results_AssimilationExp/` + `T_out.dat` per member in `work_enkf/` |
 
-**The problem made visible:** Components 1 and 2 are copy-pasted between
-Backends A and B. Component 4 is scattered across the top of two Python files
-in one case, and across three XML files in another. There is no common entry
-point or shared config format.
+**The problems made visible:**
+
+- Components 0, 1, and 2 are copy-pasted between Backends A and B.
+- Component 0 has two near-identical scripts (`ensembles.py` and `ensembles_fromstandard.py`) differing only in base signal source; their AR(1) math functions are duplicated verbatim.
+- Component 4 has a silent inconsistency: Python uses `σ_obs = 0.4 °C`; OpenDA uses `standardDeviation="0.5"` per depth in XML. These are not the same parameter set.
+- Component 0 has a path split: Python backends write forcings to `assimilation/{lake}/ensembleN/Forcing.dat`; OpenDA reads from `OpenDA_Simstrat/forcings/Forcing_N.dat`. There is no automated link between the two locations.
+- There is no common entry point or shared config format.
 
 ---
 
@@ -170,7 +175,9 @@ Command-line `key=value` pairs override anything in the JSON — useful for quic
 The key design decision: **OpenDA files stay where they are.** The Python
 package does not absorb the XML stack. Instead, a thin bridge module
 (`backends/openda.py`) reads the JSON config and triggers the OpenDA run.
-The only file genuinely shared between both worlds is `io/snapshot_io.py`.
+Three things are genuinely shared between both worlds: `io/snapshot_io.py`,
+the observation CSV files, and the perturbed `Forcing.dat` files generated
+by `ensemble/forcing.py`.
 
 ```
 alplakes_da/                            ← Python package
@@ -195,6 +202,12 @@ alplakes_da/                            ← Python package
 │   ├── assimilation.py                ← EnsembleDA class: orchestrates one lake's DA run
 │   │                                     (mirrors operational-simstrat/model.py → Simstrat)
 │   │
+│   ├── ensemble/
+│   │   └── forcing.py                  ← Component 0 (shared by A, B, and C)
+│   │                                     fit_ar1 + simulate_ar1 + generate_ensemble()
+│   │                                     replaces ensembles.py + ensembles_fromstandard.py
+│   │                                     writes forcings to assimilation/ and OpenDA_Simstrat/forcings/
+│   │
 │   ├── model/
 │   │   └── runner.py                   ← Component 1 (shared by A and B)
 │   │                                     start/stop Docker containers, run one window
@@ -206,11 +219,16 @@ alplakes_da/                            ← Python package
 │   │                                     load CSV, hourly average
 │   │
 │   └── backends/
+│       ├── base.py                     ← BaseFilter ABC
+│       │                                 update(X_f, H, y_obs, R) → X_a
+│       │                                 Python-internal contract only; OpenDA does not implement it
 │       ├── enkf.py                     ← Component 4 for Backend A
 │       │                                 Kalman gain + state update (pure math)
+│       ├── denkf.py                    ← deterministic EnKF variant
+│       ├── locenkf.py                  ← EnKF with covariance localisation
 │       ├── particle_filter.py          ← Component 4 for Backend B
 │       │                                 RMSE scoring + best-member copy
-│       └── openda.py                   ← bridge to Backend C
+│       └── openda.py                   ← bridge to Backend C (not a BaseFilter subclass)
 │                                         checks XML consistency, calls oda_run.sh,
 │                                         collects results from Results_AssimilationExp/
 
@@ -285,15 +303,18 @@ in the target structure:
 
 | Component | Backend A (Python EnKF) | Backend B (Python PF) | Backend C (OpenDA) |
 |---|---|---|---|
+| **0. Ensemble setup** | `ensemble/forcing.py` | `ensemble/forcing.py` | `ensemble/forcing.py` → writes to `OpenDA_Simstrat/forcings/` as well |
 | **1. Model runner** | `model/runner.py` | `model/runner.py` | `parallel_enkf.xml` → `simstratWrapperEnKF.xml` → `simstrat_wrapper_enkf.py` |
 | **2. Observations** | `io/observations.py` | `io/observations.py` | `stochObserver/timeSeriesFormatter.xml` + CSV files |
-| **3. State exchange** | `io/snapshot_io.py` (read + write) | file copy only | `simstratStochModelEnKF.xml` + `io/snapshot_io.py` via wrapper |
+| **3. State exchange** | `io/snapshot_io.py` (read + write) | file copy only (`shutil.copy2`) | `simstratStochModelEnKF.xml` + `io/snapshot_io.py` via wrapper + `temperature_state.txt` per member |
 | **4. Algorithm config** | `args/enkf.json` + `static/lake_da.json` | `args/pf.json` + `static/lake_da.json` | `algorithms/EnKF.xml` + σ in `timeSeriesFormatter.xml` |
 | **5. Output** | `assimilation/upperlugano/T_out_enkf_*.dat` + diagnostic CSVs | `assimilation/geneva/T_out_ens_*.dat` | `Results_AssimilationExp/enkf_results.py` + `work_enkf/workN/Results/T_out.dat` |
 
-`io/snapshot_io.py` is the one file physically shared: imported by the Python
-EnKF backend directly, and imported by `simstrat_wrapper_enkf.py` in the OpenDA
-chain.
+Three files are physically shared between the Python package and OpenDA:
+`io/snapshot_io.py` (imported by both), the observation CSV files (read by
+both sides independently), and the `Forcing.dat` files generated by
+`ensemble/forcing.py` (Python reads them from `assimilation/`; OpenDA reads
+from `OpenDA_Simstrat/forcings/` — same generation logic, two output locations).
 
 ---
 
@@ -494,9 +515,180 @@ After step 9: the codebase contains only what is actively used.
 - **`main_PF_resampling.py`**: still used? If not, archive alongside old scripts.
 - **Multi-lake runs**: run once per lake (simple) or loop over lakes in one
   invocation? The YAML-per-lake approach supports both.
-- **`ensembles.py`**: generates perturbed forcings (data prep, not DA). Move to
-  `prep_reanalysis/` or a `setup/` folder.
+- **`ensembles.py` vs `ensembles_fromstandard.py`**: both do the same job with different base signal sources. Merge into `ensemble/forcing.py` (see section 11). The merged script also needs to write to `OpenDA_Simstrat/forcings/` so OpenDA gets the same perturbed inputs automatically.
 - **OpenDA on Windows**: `oda_run.sh` requires WSL. `backends/openda.py` should
   detect the platform and call `oda_run.sh` via WSL or `od.bat` on Windows CMD.
 - **`EnKFdiagnostics.py`**: post-processing, not part of the run loop. Belongs
   in an `analysis/` folder.
+- **`e0_runner.py`**: imports from `main_PF` (old script). Needs to be updated to import from the new `model/runner.py` once that exists.
+- **σ_obs alignment**: Python uses `SIGMA_OBS = 0.4` °C; OpenDA XML uses `standardDeviation="0.5"`. Decide the canonical value and store it in `static/lake_da.json`; `ensemble/forcing.py` generates both Python config and a tool to patch `timeSeriesFormatter.xml` before each OpenDA run.
+
+---
+
+## 11. Specific code considerations
+
+This section maps concrete current code to the target structure, function by
+function, so that each refactoring step has a clear starting point.
+
+### 11.1 Forcing perturbation — merge `ensembles.py` + `ensembles_fromstandard.py` → `ensemble/forcing.py`
+
+The two scripts are structurally identical. The only difference is where the
+base signal comes from:
+
+| Script | Base signal |
+|---|---|
+| `ensembles.py` | observation CSV (`T_obs`, `U_obs`, `V_obs`, `GLOB_obs`) |
+| `ensembles_fromstandard.py` | standard `Forcing.dat` (`U_std`, `V_std`, `GLOB_std`) |
+
+The AR(1) core is **verbatim copy-paste** in both files:
+
+- `fit_ar1()` — `ensembles.py:83–89` ≡ `ensembles_fromstandard.py:76–82`
+- `simulate_ar1()` — `ensembles.py:93–98` ≡ `ensembles_fromstandard.py:83–87`
+
+Target: a single `generate_ensemble(base_source, lake, n_members, rng_seed)` in
+`ensemble/forcing.py` where `base_source` is `"obs_csv"` or `"standard_dat"`.
+`fit_ar1` and `simulate_ar1` become module-level functions shared by both paths.
+
+The function must write to **two output locations**:
+1. `assimilation/{lake}/ensembleN/Forcing.dat` — consumed by Python backends
+2. `OpenDA_Simstrat/forcings/Forcing_N.dat` — consumed by `simstrat_wrapper_enkf.py:step 4`
+
+Currently the second location is filled manually. Automating it removes the
+silent divergence risk between Python and OpenDA ensemble inputs.
+
+### 11.2 Container management — extract to `model/runner.py`
+
+`_start_containers`, `_stop_containers`, and `_run_one_window` (with its helper
+`_run_window_parallel`) are **identical** in `main_EnKF.py` and `main_PF_fast.py`
+with only `CONTAINER_TAG`, `PAR_FILE`, and `RESULTS_DIR` differing:
+
+| Function | `main_EnKF.py` lines | `main_PF_fast.py` lines |
+|---|---|---|
+| `_container_name` | 88–89 | 93–94 |
+| `_start_containers` | 92–113 | 96–122 |
+| `_stop_containers` | 116–124 | 125–134 |
+| `_run_one_window` | 141–167 | — (similar, check lines ~155–185) |
+| `_run_window_parallel` | 170–181 | — |
+
+Target: `model/runner.py` with a `SimstratRunner` class or parameterised
+functions that accept `container_tag`, `par_file`, and `results_subdir`. Both
+`main_EnKF.py` and `main_PF_fast.py` are reduced to calling into this module.
+
+Note: `_init_enkf_par` (`main_EnKF.py:129–138`) and `_init_pf_par`
+(`main_PF_fast.py:139–150`) are also near-identical — both copy `Settings.par`,
+set `Output.Path`, and write a new file. Merge into a single
+`init_par(ensemble_dir, results_subdir, par_filename)` in `model/runner.py`.
+
+### 11.3 Observation loading — extract to `io/observations.py`
+
+`_load_obs` and `_window_obs_vector` in `main_EnKF.py` (lines 186–213) are
+either identical or functionally equivalent to their counterparts in
+`main_PF_fast.py`. Both read the same CSV format, hourly-average by depth, and
+window-filter by date.
+
+Target: `io/observations.py` with `load_obs(path)` and
+`window_obs_vector(obs_df, window_start, window_end, depth_map)`. The `depth_map`
+parameter replaces the module-level `OBS_TO_SIM_DEPTH` dict, which is a per-lake
+config value, not a constant.
+
+### 11.4 DA algorithm — extract to `backends/`
+
+The two Python backends have fundamentally different internal approaches:
+EnKF works on in-memory numpy arrays; the PF works on output files. A
+two-level class hierarchy handles this cleanly:
+
+```
+BaseFilter          ← interface seen by EnsembleDA (all Python filters)
+├── BaseKalmanFilter  ← shared snapshot read → math → write plumbing
+│   ├── EnKF          ← stochastic Kalman math  (current only implementation)
+│   └── DEnKF         ← deterministic variant   (example future extension)
+└── ParticleFilter    ← file-based scoring + snapshot copy (no array math)
+```
+
+`BaseKalmanFilter.update()` owns the I/O plumbing shared by all array-based
+filters — read snapshots → build H → call `_compute_analysis` → write snapshots.
+Only `_compute_analysis` is abstract, so adding DEnKF later means writing only
+the math, not re-implementing the snapshot read/write.
+
+`ParticleFilter` skips `BaseKalmanFilter` entirely and implements `BaseFilter`
+directly, because it never builds an `X_f` matrix.
+
+```python
+# backends/base.py
+class BaseFilter(ABC):
+    @abstractmethod
+    def update(self, ensemble_dirs, obs_window, config) -> dict:
+        """Update ensemble state in-place. Returns diagnostics."""
+        ...
+
+class BaseKalmanFilter(BaseFilter):
+    def update(self, ensemble_dirs, obs_window, config):
+        X_f, z_vol, lake_level = self._read_ensemble(ensemble_dirs)
+        H    = build_H(z_vol, lake_level, obs_window)
+        X_a, diags = self._compute_analysis(X_f, H, obs_window.to_array(), config)
+        self._write_ensemble(ensemble_dirs, X_a)
+        return diags
+
+    @abstractmethod
+    def _compute_analysis(self, X_f, H, y_obs, config) -> tuple[np.ndarray, dict]:
+        ...
+```
+
+**EnKF** (`main_EnKF.py:282–379`):
+
+- `_build_H(z_volume, lake_level, sim_depths)` (`main_EnKF.py:264–277`) —
+  maps obs depths to model grid indices. Belongs in `io/observations.py`
+  (observation-side logic) and is called from `BaseKalmanFilter.update()`.
+- `_enkf_update(X_f, y_obs, H, sigma_obs, inflation, rng)` — pure numpy.
+  Becomes `EnKF._compute_analysis()` in `backends/enkf.py`.
+- The diagnostics dict (`main_EnKF.py:551–591`) drives three CSV outputs
+  (innovation, Kalman gain by depth, summary stats). This should move into
+  `EnKF._compute_analysis()` return value or a companion helper, not stay
+  inline in the main loop.
+
+**Particle filter** (`main_PF_fast.py`):
+
+- RMSE scoring and best-member selection operate on `T_out.dat` files — the
+  PF never builds `X_f`. `class ParticleFilter(BaseFilter)` in
+  `backends/particle_filter.py` implements `update()` directly as:
+  score files → find best member → copy snapshot.
+
+**DEnKF** (example future extension, currently explored via OpenDA):
+
+- Differs from EnKF only in `_compute_analysis` (no observation perturbations).
+  Adding it means creating `backends/denkf.py` with `class DEnKF(BaseKalmanFilter)`
+  and implementing `_compute_analysis` — no other changes needed.
+
+### 11.5 Output accumulation — `_append_rows` + `_accumulate_mean`
+
+`_append_rows` (`main_EnKF.py:384–407`) and `_accumulate_mean`
+(`main_EnKF.py:410–437`) are output utilities that append per-window results
+to growing trajectory files. A parallel pattern exists in `main_PF_fast.py`.
+
+These do not belong in the filter backends (pure math) or in the runner
+(Docker management). They should live in `io/output.py` as standalone functions,
+called by `EnsembleDA.process()` after each window.
+
+### 11.6 OpenDA wrapper — `simstrat_wrapper_enkf.py` stays, three things change
+
+The OpenDA wrapper (`OpenDA_Simstrat/stochModel/bin/simstrat_wrapper_enkf.py`)
+does not move. But three things need attention:
+
+1. **Forcing injection path** (step 4, lines 186–195): currently reads from
+   `OpenDA_Simstrat/forcings/Forcing_N.dat`. Once `ensemble/forcing.py` writes
+   there automatically this step requires no change. If the path is hard-coded
+   relative to the exercise directory, verify it still resolves correctly when
+   `ensemble/forcing.py` writes the files.
+
+2. **`snapshot_io` import path** (lines 36–40): currently navigates up four
+   directory levels to find `snapshot/snapshot_io.py`. Once `snapshot_io.py`
+   moves to `io/snapshot_io.py` inside the package, this relative path must be
+   updated. The simplest fix is to add the package root to `sys.path` using an
+   environment variable set by `backends/openda.py` before launching the OpenDA
+   subprocess.
+
+3. **`temperature_state.txt` vs direct snapshot injection**: the wrapper uses
+   a text file as an intermediate state carrier between OpenDA analysis steps.
+   This is the OpenDA-side equivalent of `_write_T_to_snap()` in `main_EnKF.py`.
+   The mechanism is different by necessity (OpenDA manages the cycle, not Python)
+   and should remain as-is.

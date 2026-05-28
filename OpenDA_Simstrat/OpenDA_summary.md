@@ -12,10 +12,10 @@ Every OpenDA experiment is defined by a `.oda` file (the "main configuration fil
 |---|---|---|
 | `stochObserver` | Provides observations and their uncertainty | `stochObserver/timeSeriesFormatter.xml` |
 | `stochModelFactory` | Creates and manages model instances | `stochModel/simstratStochModel.xml` (or via `parallel.xml`) |
-| `algorithm` | Defines what to do at each analysis time | `algorithms/SequentialSimulation.xml` or `SequentialEnsembleSimulation.xml` |
-| `resultWriter` | Writes results to disk | `sequentialSimulation_results.py` / `sequentialEnsembleSimulation_results.py` |
+| `algorithm` | Defines what to do at each analysis time | e.g. `algorithms/SequentialSimulation.xml` or `SequentialEnsembleSimulation.xml` |
+| `resultWriter` | Writes results to disk | e.g. `sequentialSimulation_results.py` / `sequentialEnsembleSimulation_results.py` |
 
-Our two `.oda` files:
+The two most basic `.oda` files are:
 - `SequentialSimulation.oda` — single model run, no ensemble
 - `SequentialEnsembleSimulation.oda` — N+1 parallel ensemble runs
 
@@ -31,7 +31,7 @@ Specifies:
 - **`aliasDefinitions`**: named placeholders (`%templateDir%`, `%instanceDir%`, `%instanceNumber%`, `%binDir%`, `%configFile%`, `%stateFile%`) that make the config reusable across instances.
 - **`initializeActionsUsingDirClone`**: clones `stochModel/template/` into `work/work<N>/` for each instance before the first run.
 - **`computeActions`**: what to execute at each time step — our `simstrat_wrapper.py` (Linux) or `simstrat_wrapper.bat` (Windows), with `--config Settings.par`.
-- **`checkOutput`**: verifies that `T_0m.csv`, `T_10m.csv`, `T_20m.csv` exist after each run.
+- **`checkOutput`**: verifies that our obs e.g. `T_0m.csv`, `T_10m.csv`, `T_20m.csv` exist after each run. We have one file for each depth.
 - **`inputOutput`**: three data objects — `time_control.yaml` (AsciiKeywordDataObject), `temperature_state.txt` (AsciiVectorDataObject), `timeSeriesFormatter.xml` (TimeSeriesFormatterDataObject).
 
 ### 2.2 `simstratModel.xml` → *the deterministic model*
@@ -40,7 +40,7 @@ Specifies:
 - **`wrapperConfig`**: reference to `simstratWrapper.xml`.
 - **`aliasValues`**: concrete values for the aliases (`templateDir=template`, `instanceDir=../work/work`, `binDir=bin`, `configFile=Settings.par`, `stateFile=temperature_state.txt`).
 - **`timeInfoExchangeItems`**: maps `start_time`, `time_step`, `end_time` to entries in `time_control.yaml`. OpenDA writes these before each call; `simstrat_wrapper.py` reads them to set the Simstrat simulation window.
-- **`exchangeItems`**: all model variables OpenDA can read/write — `temperature.state`, `T_0m`, `T_10m`, `T_20m`.
+- **`exchangeItems`**: all model variables OpenDA can read/write — `temperature.state`, `T_0m`, `T_10m`, `T_20m` (or the defined depths used).
 
 ### 2.3 `simstratStochModel.xml` → *the stochastic model*
 
@@ -50,7 +50,7 @@ Specifies:
   - `<state>`: `temperature.state` — the vector OpenDA can perturb and update.
   - `<predictor>`: `T_0m`, `T_10m`, `T_20m` — model output at observation locations, compared against the stochObserver.
 
-No noise models are declared here because our ensemble spread comes from pre-generated perturbed `Forcing.dat` files, not from OpenDA's built-in stochastic perturbation.
+No noise models are declared here for now because our ensemble spread comes from pre-generated perturbed `Forcing.dat` files using a python script, not from OpenDA's built-in stochastic perturbation.
 
 ---
 
@@ -60,18 +60,18 @@ The course explains that exchange items come in three categories:
 
 | Category | Purpose | Our items |
 |---|---|---|
-| **State** | Vector manipulated by the filter | `temperature.state` (7 depth levels) |
-| **Predictor** | Model output at observation locations | `T_0m`, `T_10m`, `T_20m` |
-| **Parameters** | Model parameters (for calibration) | Not used in this experiment |
+| **State** | Vector manipulated by the filter | `temperature.state` (7 depth levels or all grids depending on experiment) |
+| **Predictor** | Model output at observation locations | `T_0m`, `T_10m`, `T_20m` (or all obs if wanted) |
+| **Parameters** | Model parameters (for calibration) | Not used in these experiments |
 
-The `temperature.state` vector holds temperatures at the 7 IC depth levels `[0, -10, -20, -30, -40, -50, -95 m]`. It is declared as the state vector and maintained by `simstrat_wrapper.py` (read at the start of each window, updated from `T_out.dat` at the end), but it is **not the actual restart mechanism**.
+The `temperature.state` vector holds temperatures at the defined depth levels e.g. `[0, -10, -20, -30, -40, -50, -95 m]`. It is declared as the state vector and maintained by `simstrat_wrapper.py` (read at the start of each window, updated from `T_out.dat` at the end), but it is **not the actual restart mechanism** for Simstrat with the used `Settings.par` configuration.
 
-The real restart is driven by the binary `simulation-snapshot.dat` because the wrapper always sets `Continue from last snapshot = True` in `Settings.par`. Simstrat therefore ignores `InitialConditions.dat` (which is rebuilt from `temperature_state.txt`) and restarts from the snapshot. The `temperature_state.txt` round-trip is effectively a no-op in the current setup.
+The real restart is driven by the binary `simulation-snapshot.dat` because the wrapper always sets `Continue from last snapshot = True` in `Settings.par`. Simstrat therefore effectively ignores `InitialConditions.dat` (which is rebuilt from `temperature_state.txt`) and restarts from the snapshot. The `temperature_state.txt` round-trip is effectively a no-op in the current setup.
 
 This has an important implication for EnKF: if OpenDA were to update `temperature.state` (writing corrected temperatures to `temperature_state.txt`), the model would still restart from the unmodified binary snapshot and ignore the correction. Two options to fix this when moving to EnKF:
 
 - **Option A** — switch to text restart (`Use text restart = True` in `Settings.par`), so `InitialConditions.dat` drives the restart and the OpenDA correction propagates.
-- **Option B** — have the wrapper inject the corrected state directly into the binary snapshot (requires knowledge of the Simstrat snapshot format).
+- **Option B** — have the wrapper inject the corrected state directly into the binary snapshot (requires knowledge of the Simstrat snapshot format). Since we have a module that handles reading/writing raw binary snapshots this is the preferred route.
 
 ---
 
@@ -83,13 +83,13 @@ The course explains that OpenDA steps through time between analysis times, runni
 <analysisTimes type="fromObservationTimes" />
 ```
 
-In our setup, the observations are daily (one value per day per depth). OpenDA therefore calls `simstrat_wrapper.py` once per day, each time advancing Simstrat by one day using Docker.
+In our basic sequential setups, the observations are daily (one value per day per depth). OpenDA therefore calls `simstrat_wrapper.py` once per day, each time advancing Simstrat by one day using Docker.
 
 The sequential loop is:
 1. OpenDA writes `time_control.yaml` with the next window's start/end times.
 2. `simstrat_wrapper.py` reads `time_control.yaml`, sets Simstrat dates in `Settings.par`, and launches Docker.
 3. Simstrat runs, writes `Results/T_out.dat` and `Results/simulation-snapshot.dat`.
-4. Wrapper extracts `T_0m.csv`, `T_10m.csv`, `T_20m.csv` and updates `temperature_state.txt`.
+4. Wrapper extracts `T_0m.csv`, `T_10m.csv`, `T_20m.csv` (or the defined values) and updates `temperature_state.txt`.
 5. OpenDA reads the predictor CSVs via `timeSeriesFormatter.xml`, compares them to observations.
 
 ---
@@ -231,24 +231,96 @@ where $H$ maps the state to observation space, $R$ is the observation error cova
 - If $H P_f H^\top \ll R$ (model confident, obs noisy): $K \approx 0$, state barely changes.
 - If spread is zero everywhere: $K = 0$, no correction is ever applied.
 
-### 10.1.1 EnSR vs EnKF — what changes and why it matters
+### 10.1.1 Deterministic analysis updates: EnSR and DEnKF
 
-The **Ensemble Square Root filter (EnSR)** keeps the same forecast step and the same mean correction as EnKF. The only difference is in how the ensemble *spread* is updated after assimilation.
+**Notation for this section**
 
-**The problem with EnKF:** to keep the ensemble spread statistically correct after the analysis, EnKF adds a small random noise sample $\varepsilon^i \sim \mathcal{N}(0, R)$ to each member's observation ($y^i = y + \varepsilon^i$). This trick works on average, but the random samples introduce extra noise — especially painful when the ensemble is small (N = 20 here). The result is that the post-analysis spread is slightly wrong for any given step, and this accumulates over time.
+| Symbol | Dimension | Meaning |
+|---|---|---|
+| $n$ | 576 | State size (Simstrat temperature cells) |
+| $p$ | 15 | Number of observations per step |
+| $N$ | 20 | Ensemble size |
+| $A \in \mathbb{R}^{n \times N}$ | — | Ensemble matrix; column $i$ is $x^i$ |
+| $A' \in \mathbb{R}^{n \times N}$ | — | Anomaly matrix; column $i$ is $x^i - \bar{x}$ |
+| $H \in \mathbb{R}^{p \times n}$ | — | Observation operator (linear depth selector) |
+| $R \in \mathbb{R}^{p \times p}$ | — | Obs error covariance ($\sigma^2 I$, $\sigma = 0.5$°C) |
+| $S \in \mathbb{R}^{p \times p}$ | — | Innovation covariance: $S = \frac{1}{N-1}HA'_f A_f^{\prime\top}H^\top + R$ |
 
-**What EnSR does instead:** it updates the ensemble spread *deterministically*, using a matrix transformation computed from the Kalman gain. No random observation noise is added. Every member moves to exactly the right place around the new mean. The mathematics guarantees that the post-analysis spread is correct — not just on average, but exactly.
+OpenDA never forms $P_f$ explicitly ($576 \times 576$). All operations are rearranged to work on the $p \times p$ matrix $S$ instead.
 
-In plain terms: think of the ensemble as 20 people standing in a circle (= spread around a mean). After each observation, you want to move them all to a new, tighter circle around a corrected center.
-- **EnKF** tells each person to move roughly in the right direction, with a random nudge — on average fine, but individual positions are noisy.
-- **EnSR** choreographs every move precisely — each person ends up at exactly the right spot with no extra scatter.
+---
 
-**Trade-off:**
-- EnSR performs better than EnKF for small ensembles because it removes one source of sampling error.
-- It requires a singular value decomposition (SVD) at each analysis step, making the analysis slightly more expensive — negligible for our problem size (N = 20, 15 observations).
-- It is strictly exact only when the observation operator $H$ is linear (which it is here: $H$ simply picks specific depth columns from the state vector).
+**Shared by all three algorithms: Kalman gain and mean update**
 
-In our setup (20 members, 15 observation depths, daily steps) **EnSR is the better choice** over EnKF for the same computational cost.
+The ensemble covariance is approximated as:
+$$P_f \approx \frac{1}{N-1} A'_f A_f^{\prime\top}$$
+
+The Kalman gain is:
+$$K = P_f H^\top S^{-1} = \frac{1}{N-1} A'_f (H A'_f)^\top S^{-1}$$
+
+The **mean update** (identical in EnKF, EnSR, and DEnKF):
+$$\bar{x}_a = \bar{x}_f + K(y - H\bar{x}_f)$$
+
+What differs between the three algorithms is how the **ensemble anomalies** $A'$ are updated after the mean correction.
+
+---
+
+**EnKF: stochastic anomaly update**
+
+A random perturbation matrix $E \in \mathbb{R}^{p \times N}$ is drawn with columns $\varepsilon^i \sim \mathcal{N}(0, R)$. The perturbed observation matrix is $D = y \mathbf{1}^\top + E$. The full ensemble update in one shot:
+
+$$A_a = A_f + K(D - H A_f)$$
+
+Separating mean and anomaly:
+$$A'_a = (I - KH)\, A'_f + K E$$
+
+The $KE$ term is a stochastic injection. Its expected outer product $KRK^\top$ exactly compensates the variance deficit from $(I-KH)$, so $\mathbb{E}[A'_a A_a^{\prime\top}] = (I-KH)P_f = P_a$ on average. However for any single analysis step the realised spread deviates from $P_a$ by $O(1/\sqrt{N})$ — the **Monte Carlo sampling error** that accumulates with small ensembles ($N = 20$).
+
+---
+
+**EnSR: exact square root update (Whitaker & Hamill 2002)**
+
+No observation perturbations. The mean update uses $K$ as above. For anomalies, a **reduced gain** $\tilde{K}$ is defined such that the anomaly contraction recovers the exact posterior covariance:
+
+$$(I - \tilde{K}H)\, P_f\, (I - \tilde{K}H)^\top = (I - KH)\,P_f = P_a$$
+
+This condition is satisfied by:
+$$\tilde{K} = K \left(I + \sqrt{R \cdot S^{-1}}\right)^{-1}$$
+
+In OpenDA, this is computed via eigendecomposition of $S = U \Lambda U^\top$ (cost $O(p^3)$; with $p=15$ this is negligible):
+$$\tilde{K} = \frac{1}{N-1} A'_f (H A'_f)^\top\, U\, (\Lambda^{1/2} + R^{1/2})^{-1}\, \Lambda^{-1/2}\, U^\top$$
+
+The anomaly update is:
+$$A'_a = (I - \tilde{K}H)\, A'_f$$
+
+There is no $KE$ term. The post-analysis spread equals $P_a$ exactly at every step, not just in expectation. OpenDA's `EnSR.analysis()` computes the eigendecomposition of $S$, forms $\tilde{K}$, and applies it to the $n \times N$ anomaly matrix.
+
+---
+
+**DEnKF: linearised square root update (Sakov & Oke 2008)**
+
+No observation perturbations. Uses the first-order Taylor approximation $(I - KH)^{1/2} \approx I - \frac{1}{2}KH$, giving:
+
+$$A'_a = \left(I - \frac{1}{2}KH\right) A'_f$$
+
+The post-analysis covariance to first order:
+$$A'_a A_a^{\prime\top} = P_f - KHP_f + \underbrace{\tfrac{1}{4}KHP_fH^\top K^\top}_{O(K^2)}$$
+
+The $O(K^2)$ residual vanishes when the innovation is small relative to the prior spread — satisfied for daily temperature updates where corrections are a fraction of a degree. In this limit the result equals $P_a = (I-KH)P_f$ exactly.
+
+In OpenDA, `DEnKF.analysis()` reuses the same $K$ already computed for the mean update, scales by $\frac{1}{2}$, and applies it to the anomaly matrix — no eigendecomposition required. It is the cheapest deterministic variant.
+
+---
+
+**Summary**
+
+| | Obs perturbations | Anomaly update | Post-analysis spread | Extra cost vs EnKF |
+|---|---|---|---|---|
+| **EnKF** | Yes: $\varepsilon^i \sim \mathcal{N}(0,R)$ | $(I - KH)A' + KE$ | Correct on average; $O(1/\sqrt{N})$ error | — |
+| **EnSR** | No | $(I - \tilde{K}H)A'$ | Exact at every step | Eigendecomposition of $p \times p$ $S$ |
+| **DEnKF** | No | $(I - \frac{1}{2}KH)A'$ | Exact to $O(K^2)$ | None — reuses $K$ directly |
+
+For our problem ($N=20$, $p=15$, $n=576$): the eigendecomposition costs $O(15^3)$ — microseconds per step. EnSR and DEnKF are equivalent in cost and produce essentially identical analyses. Both outperform EnKF at small ensemble size by eliminating the stochastic $KE$ injection.
 
 ### 10.2 Configuration in this exercise
 
@@ -319,47 +391,60 @@ Every OpenDA experiment is defined by a `.oda` file that wires together four ind
 
 The stochObserver, parallel model factory (`parallel_enkf.xml`), stochModel XML stack, and wrapper scripts are shared verbatim across all experiments.
 
-### 11.2 Algorithms available in OpenDA 3.4.0
+### 11.2 Algorithms implemented in this exercise
 
-The following sequential ensemble algorithms exist in `openda_3.4.0/xmlSchemas/algorithm/` and are bundled in `algorithms.jar`:
+The following sequential ensemble algorithms from `algorithms.jar` are implemented and configured. Note: **EWPF is not shipped in OpenDA 3.4.0** (the class is absent from `algorithms.jar`) — it was replaced by DEnKF and LocEnKF.
 
-| Algorithm | OpenDA class | XSD schema | Config effort |
+| Algorithm | OpenDA class | Status | Work directory |
 |---|---|---|---|
-| **EnKF** | `kalmanFilter.EnKF` | `enkf.xsd` | Already implemented |
-| **EnSR** (Ensemble Square Root) | `kalmanFilter.EnSR` | `ensr.xsd` | Rename `EnKFConfig` → `EnsrConfig`, update className — same fields |
-| **EWPF** (Ensemble Weighted Particle Filter) | `kalmanFilter.EWPF` | `ewpf.xsd` | Rename `EnKFConfig` → `EWPFConfig`, update className — same fields |
-| **Particle Filter** | `particleFilter.ParticleFilter` | `particleFilter.xsd` | Same fields + optional `<samplingMethod>` — see §11.4 |
-| **Steady State Filter** | `kalmanFilter.SteadyStateKalmanFilter` | `steadyStateFilter.xsd` | Requires a pre-computed Kalman gain from a prior EnKF run |
+| **EnKF** | `kalmanFilter.EnKF` | ✅ Running | `work_enkf/` |
+| **EnSR** | `kalmanFilter.EnSR` | ✅ Running | `work_ensr/` |
+| **DEnKF** | `kalmanFilter.DEnKF` | ✅ Running | `work_denkf/` |
+| **LocEnKF** | `kalmanFilter.LocEnKF` | ⚠️ Blocked — see below | `work_locenkf/` |
+| **Particle Filter** | `kalmanFilter.ParticleFilter` | Not configured | — |
+| **Steady State Filter** | `kalmanFilter.SteadyStateKalmanFilter` | Not configured | — |
 
-### 11.3 Minimal-effort additions: EnSR and EWPF
+Each experiment has its own isolated file set: `.oda`, `parallel_*.xml`, `algorithms/*.xml`, `stochModel/simstratModel*.xml`, `stochModel/simstratStochModel*.xml`, and `work_*/`.
 
-EnSR and EWPF share the `SequentialEnsembleAlgorithmConfigType` with EnKF — identical elements (`analysisTimes`, `mainModel`, `ensembleSize`, `ensembleModel`). Adding either is a pure XML operation:
+**LocEnKF status — geometry limitation.** The forecast step runs correctly (all 21 Simstrat instances complete). The analysis fails with:
+```
+ExchangeItem temperature.state does not have geometry info needed for localization
+```
+Hamill localization requires a depth coordinate attached to each of the 576 state cells so OpenDA can compute the distance taper. The `temperature.state` exchange item is a plain scalar vector from `temperature_state.txt` — no coordinates. The fix requires either replacing the state file with a NetCDF format that includes a depth coordinate variable, or a custom IoObject wrapper. Parked for now; DEnKF covers the deterministic-update use case without this requirement.
 
-**`algorithms/EnSR.xml`**:
+### 11.3 Adding EnSR, DEnKF, and LocEnKF: what changes
+
+EnSR, DEnKF, and LocEnKF all share the same `EnkfConfig` XML schema as EnKF — identical elements (`analysisTimes`, `mainModel`, `ensembleSize`, `ensembleModel`). Adding any of them is a pure XML swap:
+
+**`algorithms/DEnKF.xml`** (same structure as `EnKF.xml`, different root element and schema reference is not required — OpenDA reads the class from the `.oda` file):
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<EnsrConfig xmlns="http://www.openda.org"
+<EnkfConfig xmlns="http://www.openda.org"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.openda.org http://schemas.openda.org/algorithm/ensr.xsd">
+    xsi:schemaLocation="http://www.openda.org http://schemas.openda.org/algorithm/enkf.xsd">
 
     <analysisTimes type="fromObservationTimes" />
     <mainModel   stochParameter="false" stochForcing="false" stochInit="false" />
     <ensembleSize>20</ensembleSize>
     <ensembleModel stochParameter="false" stochForcing="false" stochInit="false" />
-</EnsrConfig>
+</EnkfConfig>
 ```
 
-**`EnSR.oda`** — copy `EnKF.oda`, change:
+**`algorithms/LocEnKF.xml`** — identical, plus two extra elements:
 ```xml
-<algorithm className="org.openda.algorithms.kalmanFilter.EnSR">
-    <workingDirectory>./algorithms</workingDirectory>
-    <configString>EnSR.xml</configString>
-</algorithm>
-...
-<configFile>ensr_results.py</configFile>
+    <localization>Hamill</localization>
+    <distance>10</distance>   <!-- localisation radius in metres depth -->
 ```
 
-The `work_enkf/` directory, both stochModel XML stacks, and `simstrat_wrapper_enkf.py` are unchanged. EWPF follows the identical pattern with `EWPFConfig` / `EWPF` / `ewpf_results.py`.
+**`.oda` file** — copy `EnKF.oda`, update the `className`, `configString`, and `configFile`:
+```xml
+<algorithm className="org.openda.algorithms.kalmanFilter.DEnKF">
+    <workingDirectory>./algorithms</workingDirectory>
+    <configString>DEnKF.xml</configString>
+</algorithm>
+```
+
+Each algorithm gets its own `work_*` directory and `stochModel/simstratModel*.xml` pointing to it, so runs are fully isolated and can be compared directly.
 
 ### 11.4 The Particle Filter — what needs care
 
@@ -376,22 +461,23 @@ The `simstrat_wrapper_enkf.py` state injection (read `temperature_state.txt` →
 
 For an initial comparison this limitation can be accepted; for publication-quality results Option A is needed.
 
-### 11.5 Suggested comparison setup
+### 11.5 Comparison setup
 
-Run three `.oda` files sequentially (or in separate directories) against the same observation dataset:
+Run the three working `.oda` files against the same observation dataset:
 
 ```
-EnKF.oda          → enkf_results.py       (already working)
-EnSR.oda          → ensr_results.py       (one new .oda + one algorithm XML)
-EWPF.oda          → ewpf_results.py       (one new .oda + one algorithm XML)
+EnKF.oda    → enkf_results.py    stochastic update, baseline
+EnSR.oda    → ensr_results.py    exact deterministic update
+DEnKF.oda   → denkf_results.py   linearised deterministic update
 ```
 
-Each run populates its own result file. A single comparison script loads all three via `exec()` and overlays RMSE, bias, and ensemble spread at the 15 observation depths.
+Each run is fully isolated — its own `work_*` directory, result file, and stochModel config. A single comparison script loads all three results via `exec()` and overlays RMSE, bias, and ensemble spread at the 15 observation depths.
 
-Note: each run needs its own `work_enkf/` directory tree (or the directory must be cleaned between runs), because the binary snapshots from one run's analysis step must not contaminate the next.
+Expected outcome: EnSR and DEnKF should produce near-identical results and both should outperform EnKF (lower RMSE, better-calibrated spread) during stratified periods when ensemble size is the binding constraint. Differences between EnSR and DEnKF, if any, would appear only after long observation gaps where a single large correction makes the $O(K^2)$ DEnKF approximation less accurate.
 
 ---
 
+<!--
 ## 12. Full-year run: results and new considerations
 
 The EnKF completed a full calendar year of daily analysis steps (Simstrat days 16073.5–16435.5, i.e., 2025-01-03 → 2025-12-31, 363 steps) with 20 ensemble members in approximately **4.6 hours** (16 657 s) on 21 threads (`maxThreads=21`). This is the first run long enough to reveal effects that are invisible over short windows.
@@ -445,3 +531,4 @@ The full-year run (363 steps × 21 instances) took 16 657 s ≈ **4.6 h**. This 
 - A second full-year run with a different algorithm (EnSR, EWPF) costs the same ~4.6 h. Plan accordingly when comparing algorithms.
 - Doubling the ensemble to 40 members increases wall-clock time only if thread count is not also increased (the bottleneck is `maxThreads`, not ensemble size, up to the available CPU count).
 - Extending the simulation period beyond one year does not require regenerating forcings if new `Forcing_i.dat` files are appended; the AR(1) perturbation method is stationary.
+-->

@@ -1,0 +1,7 @@
+%YAML 1.1
+---
+# Simstrat time control for OpenDA sequential simulation
+# Time is in Simstrat days (days since Jan 1, 1981 = MJD - 44605)
+# Format: [start_day, dt_day, end_day]
+# OpenDA reads/writes this via the #oda:time_control marker
+time: [16071.0, 1.0, 16073.5]  #oda:time_control

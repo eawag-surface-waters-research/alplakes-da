@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 """OpenDA black-box wrapper for Simstrat — EnKF variant with full-state injection.
 
+1. Reads the OpenDA-written time window and temperature state (temperature_state.txt)
+2. Injects the analysed temperature back into the Simstrat snapshot (so OpenDA's EnKF correction
+    propagates into the next model run)
+3. Injects the member's perturbed forcing (Forcing_N.dat)
+4. Runs Simstrat via Docker
+5. Extracts temperatures at the 15 observation depths from T_out.dat → writes T_1m.csv … T_40m.csv (the predictors OpenDA reads to compare against observations)
+6. Writes back the updated full-grid temperature state to temperature_state.txt (so OpenDA can apply the next analysis correction)
+
 Differences from simstrat_wrapper.py:
   - At the START of each call: if temperature_state.txt contains a full-grid
     T profile (N cells, not 7 IC-depth levels), it is injected directly into

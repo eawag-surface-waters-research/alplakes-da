@@ -8,18 +8,18 @@
 
 	<stochModelFactory className="org.openda.models.threadModel.ThreadStochModelFactory">
 		<workingDirectory>.</workingDirectory>
-		<configFile>parallel_ewpf.xml</configFile>
+		<configFile>parallel_denkf.xml</configFile>
 	</stochModelFactory>
 
-	<algorithm className="org.openda.algorithms.kalmanFilter.EWPF">
+	<algorithm className="org.openda.algorithms.kalmanFilter.DEnKF">
 		<workingDirectory>./algorithms</workingDirectory>
-		<configString>EWPF.xml</configString>
+		<configString>DEnKF.xml</configString>
 	</algorithm>
 
 	<resultWriters>
 		<resultWriter className="org.openda.resultwriters.PythonResultWriter">
 			<workingDirectory>.</workingDirectory>
-			<configFile>ewpf_results.py</configFile>
+			<configFile>denkf_results.py</configFile>
 			<selection>
 				<resultItem outputLevel="Verbose" maxSize="10000000" />
 			</selection>

@@ -26,6 +26,7 @@ LAKE_CONFIGS = {
         "pf_mean_subdir": "results_daily_update",
         "openda_enkf_dir":   os.path.join(ROOT, "OpenDA_Simstrat", "work_enkf"),
         "openda_ensr_dir":   os.path.join(ROOT, "OpenDA_Simstrat", "work_ensr"),
+        "openda_denkf_dir":  os.path.join(ROOT, "OpenDA_Simstrat", "work_denkf"),
         "n_openda_members":  20,
     },
     "murten": {
@@ -60,9 +61,10 @@ OBS2_LABEL     = cfg["obs2_label"]
 REF_DATE       = cfg["ref_date"]
 N_MEMBERS      = cfg["n_members"]
 PF_MEAN_SUBDIR = cfg["pf_mean_subdir"]
-OPENDA_DIR     = cfg.get("openda_enkf_dir")
-OPENDA_ENSR_DIR = cfg.get("openda_ensr_dir")
-N_OPENDA       = cfg.get("n_openda_members", 20)
+OPENDA_DIR       = cfg.get("openda_enkf_dir")
+OPENDA_ENSR_DIR  = cfg.get("openda_ensr_dir")
+OPENDA_DENKF_DIR = cfg.get("openda_denkf_dir")
+N_OPENDA         = cfg.get("n_openda_members", 20)
 
 MONTH_NAMES = [calendar.month_abbr[m] for m in range(1, 13)]
 
@@ -200,6 +202,10 @@ openda_ensr_members = load_openda_members(OPENDA_ENSR_DIR, N_OPENDA) if OPENDA_E
 openda_ensr_mean_traj, openda_ensr_min_traj, openda_ensr_max_traj = openda_ensemble_stats(openda_ensr_members)
 print(f"OpenDA EnSR members: {len(openda_ensr_members)}   mean: {'OK' if openda_ensr_mean_traj is not None else 'MISSING'}")
 
+openda_denkf_members = load_openda_members(OPENDA_DENKF_DIR, N_OPENDA) if OPENDA_DENKF_DIR else []
+openda_denkf_mean_traj, openda_denkf_min_traj, openda_denkf_max_traj = openda_ensemble_stats(openda_denkf_members)
+print(f"OpenDA DEnKF members: {len(openda_denkf_members)}   mean: {'OK' if openda_denkf_mean_traj is not None else 'MISSING'}")
+
 enkf_members      = load_members(N_MEMBERS, os.path.join("Results_EnKF",          "T_out_full.dat"))
 enkf_filt_members = load_members(N_MEMBERS, os.path.join("Results_EnKF_filtered", "T_out_full.dat"))
 pf_members        = load_members(N_MEMBERS, os.path.join("Results_PF",            "T_out_full.dat"))
@@ -207,7 +213,7 @@ print(f"EnKF members: {len(enkf_members)}   EnKF filt: {len(enkf_filt_members)} 
 
 _ref_traj = next((t for t in [e0_traj, enkf_mean_traj, enkf_filt_mean_traj,
                                pf_mean_traj, pf_filt_mean_traj, openda_mean_traj,
-                               openda_ensr_mean_traj]
+                               openda_ensr_mean_traj, openda_denkf_mean_traj]
                   if t is not None), None)
 if _ref_traj is None:
     raise RuntimeError("No trajectory files found.")
@@ -262,7 +268,7 @@ def to_matrix(monthly_dict):
 
 _active = [t for t in [e0_traj, enkf_mean_traj, enkf_filt_mean_traj,
                         pf_mean_traj, pf_filt_mean_traj, openda_mean_traj,
-                        openda_ensr_mean_traj]
+                        openda_ensr_mean_traj, openda_denkf_mean_traj]
            if t is not None]
 common_obs_depths = _common_depths(obs_depths, _active[0])
 for _ref in _active[1:]:
@@ -273,8 +279,9 @@ enkf_mo        = monthly_rmse(enkf_mean_traj,     obs, common_obs_depths)
 enkf_filt_mo   = monthly_rmse(enkf_filt_mean_traj, obs, common_obs_depths)
 pf_mo          = monthly_rmse(pf_mean_traj,       obs, common_obs_depths)
 pf_filt_mo     = monthly_rmse(pf_filt_mean_traj,  obs, common_obs_depths)
-openda_mo      = monthly_rmse(openda_mean_traj,      obs, common_obs_depths)
-openda_ensr_mo = monthly_rmse(openda_ensr_mean_traj, obs, common_obs_depths)
+openda_mo       = monthly_rmse(openda_mean_traj,       obs, common_obs_depths)
+openda_ensr_mo  = monthly_rmse(openda_ensr_mean_traj,  obs, common_obs_depths)
+openda_denkf_mo = monthly_rmse(openda_denkf_mean_traj, obs, common_obs_depths)
 
 # Collect active entries: (label, monthly_dict, color)
 entries = []
@@ -283,8 +290,9 @@ if enkf_mo        is not None: entries.append(("EnKF mean",        enkf_mo,     
 if enkf_filt_mo   is not None: entries.append(("EnKF filt mean",   enkf_filt_mo,   "darkorchid"))
 if pf_mo          is not None: entries.append(("PF mean",          pf_mo,          "steelblue"))
 if pf_filt_mo     is not None: entries.append(("PF filt mean",     pf_filt_mo,     "teal"))
-if openda_mo      is not None: entries.append(("OpenDA EnKF",      openda_mo,      "darkorange"))
-if openda_ensr_mo is not None: entries.append(("OpenDA EnSR",      openda_ensr_mo, "forestgreen"))
+if openda_mo       is not None: entries.append(("OpenDA EnKF",  openda_mo,       "darkorange"))
+if openda_ensr_mo  is not None: entries.append(("OpenDA EnSR",  openda_ensr_mo,  "forestgreen"))
+if openda_denkf_mo is not None: entries.append(("OpenDA DEnKF", openda_denkf_mo, "royalblue"))
 
 
 # ── Print monthly RMSE tables ─────────────────────────────────────────────────
@@ -326,8 +334,9 @@ for _ax0, _td in zip(axes0, _ts_depths):
         (enkf_filt_mean_traj,   "darkorchid",   "EnKF filt mean"),
         (pf_mean_traj,          "steelblue",    "PF mean"),
         (pf_filt_mean_traj,     "teal",         "PF filt mean"),
-        (openda_mean_traj,      "darkorange",   "OpenDA EnKF mean"),
-        (openda_ensr_mean_traj, "forestgreen",  "OpenDA EnSR mean"),
+        (openda_mean_traj,       "darkorange",  "OpenDA EnKF mean"),
+        (openda_ensr_mean_traj,  "forestgreen", "OpenDA EnSR mean"),
+        (openda_denkf_mean_traj, "royalblue",   "OpenDA DEnKF mean"),
     ]:
         if _traj0 is not None:
             _col0 = nearest_col(_traj0, _td)
@@ -344,6 +353,11 @@ for _ax0, _td in zip(axes0, _ts_depths):
         _ax0.fill_between(openda_ensr_min_traj.index,
                           openda_ensr_min_traj[_col0], openda_ensr_max_traj[_col0],
                           color="forestgreen", alpha=0.12, zorder=2)
+    if openda_denkf_mean_traj is not None:
+        _col0 = nearest_col(openda_denkf_min_traj, _td)
+        _ax0.fill_between(openda_denkf_min_traj.index,
+                          openda_denkf_min_traj[_col0], openda_denkf_max_traj[_col0],
+                          color="royalblue", alpha=0.12, zorder=2)
 
     _ax0.set_ylabel("T (°C)")
     _ax0.set_title(f"{_actual_d:.0f} m")
@@ -513,8 +527,9 @@ _annual_traj_list = [
     ("EnKF filt\nmean", enkf_filt_mean_traj,   "darkorchid"),
     ("PF\nmean",        pf_mean_traj,          "steelblue"),
     ("PF filt\nmean",   pf_filt_mean_traj,     "teal"),
-    ("OpenDA\nEnKF",    openda_mean_traj,       "darkorange"),
-    ("OpenDA\nEnSR",    openda_ensr_mean_traj,  "forestgreen"),
+    ("OpenDA\nEnKF",   openda_mean_traj,        "darkorange"),
+    ("OpenDA\nEnSR",   openda_ensr_mean_traj,   "forestgreen"),
+    ("OpenDA\nDEnKF",  openda_denkf_mean_traj,  "royalblue"),
 ]
 
 annual_comp = []
@@ -655,15 +670,25 @@ for _ri, _sd in enumerate(_SEAS_DEPTHS):
                                 color="forestgreen", alpha=0.12, zorder=2,
                                 label="OpenDA EnSR spread")
 
+        if openda_denkf_mean_traj is not None:
+            _dc = nearest_col(openda_denkf_min_traj, _neg_d)
+            _dmn_s, _dmx_s = openda_denkf_min_traj[_dc], openda_denkf_max_traj[_dc]
+            _spm = _seas_mask(_dmn_s.index, _smonths, YEAR)
+            if _spm.any():
+                ax.fill_between(_dmn_s.index[_spm], _dmn_s.values[_spm], _dmx_s.values[_spm],
+                                color="royalblue", alpha=0.12, zorder=2,
+                                label="OpenDA DEnKF spread")
+
         # Mean trajectories
         for _traj5, _c5, _l5 in [
-            (e0_traj,               "dimgrey",      "e0"),
+            (e0_traj,                "dimgrey",     "e0"),
             #(enkf_mean_traj,        "mediumpurple", "EnKF mean"),
             #(enkf_filt_mean_traj,   "darkorchid",   "EnKF filt mean"),
-            (pf_mean_traj,          "steelblue",    "PF mean"),
+            (pf_mean_traj,           "steelblue",   "PF mean"),
             #(pf_filt_mean_traj,     "teal",         "PF filt mean"),
-            (openda_mean_traj,      "darkorange",   "OpenDA EnKF mean"),
-            (openda_ensr_mean_traj, "forestgreen",  "OpenDA EnSR mean"),
+            (openda_mean_traj,       "darkorange",  "OpenDA EnKF mean"),
+            (openda_ensr_mean_traj,  "forestgreen", "OpenDA EnSR mean"),
+            #(openda_denkf_mean_traj, "royalblue",   "OpenDA DEnKF mean"),
         ]:
             if _traj5 is not None:
                 _tc   = nearest_col(_traj5, _neg_d)
@@ -716,8 +741,9 @@ def daily_rmse_ts(traj, obs_df, depths_arr):
 
 fig6, ax6 = plt.subplots(figsize=(14, 5))
 for _lbl6, _traj6, _color6 in [
-    ("e0",          e0_traj,               "dimgrey"),
-    ("OpenDA EnSR", openda_ensr_mean_traj, "forestgreen"),
+    ("e0",           e0_traj,                "dimgrey"),
+    ("OpenDA EnSR",  openda_ensr_mean_traj,  "forestgreen"),
+    ("OpenDA DEnKF", openda_denkf_mean_traj, "royalblue"),
 ]:
     _mean6, _q25_6, _q75_6 = daily_rmse_ts(_traj6, obs, common_obs_depths)
     if _mean6 is None:
@@ -804,7 +830,8 @@ _obs8_depths = np.sort(_obs8["depth"].unique())
 
 _active8 = [t for t in [e0_traj, enkf_mean_traj, enkf_filt_mean_traj,
                          pf_mean_traj, pf_filt_mean_traj,
-                         openda_mean_traj, openda_ensr_mean_traj] if t is not None]
+                         openda_mean_traj, openda_ensr_mean_traj,
+                         openda_denkf_mean_traj] if t is not None]
 _common8 = _common_depths(_obs8_depths, _active8[0])
 for _t8 in _active8[1:]:
     _common8 = np.intersect1d(_common8, _common_depths(_obs8_depths, _t8))
@@ -814,8 +841,9 @@ _enkf_mo8      = monthly_rmse(enkf_mean_traj,        _obs8, _common8)
 _enkf_filt_mo8 = monthly_rmse(enkf_filt_mean_traj,   _obs8, _common8)
 _pf_mo8        = monthly_rmse(pf_mean_traj,          _obs8, _common8)
 _pf_filt_mo8   = monthly_rmse(pf_filt_mean_traj,     _obs8, _common8)
-_oda_mo8       = monthly_rmse(openda_mean_traj,      _obs8, _common8)
-_oda_ensr_mo8  = monthly_rmse(openda_ensr_mean_traj, _obs8, _common8)
+_oda_mo8        = monthly_rmse(openda_mean_traj,        _obs8, _common8)
+_oda_ensr_mo8   = monthly_rmse(openda_ensr_mean_traj,   _obs8, _common8)
+_oda_denkf_mo8  = monthly_rmse(openda_denkf_mean_traj,  _obs8, _common8)
 
 _entries8 = []
 if _e0_mo8        is not None: _entries8.append(("e0",             _e0_mo8,        "dimgrey"))
@@ -825,6 +853,7 @@ if _pf_mo8        is not None: _entries8.append(("PF mean",        _pf_mo8,     
 if _pf_filt_mo8   is not None: _entries8.append(("PF filt mean",   _pf_filt_mo8,   "teal"))
 if _oda_mo8       is not None: _entries8.append(("OpenDA EnKF",    _oda_mo8,       "darkorange"))
 if _oda_ensr_mo8  is not None: _entries8.append(("OpenDA EnSR",    _oda_ensr_mo8,  "forestgreen"))
+if _oda_denkf_mo8 is not None: _entries8.append(("OpenDA DEnKF",   _oda_denkf_mo8, "royalblue"))
 
 if _e0_mo8 is not None:
     _e0_mat8     = to_matrix(_e0_mo8)

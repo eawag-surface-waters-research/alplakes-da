@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openDaApplication xmlns="http://www.openda.org" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.openda.org http://schemas.openda.org/openDaApplication.xsd">
+
+	<stochObserver className="org.openda.observers.TimeSeriesFormatterStochObserver">
+		<workingDirectory>./stochObserver</workingDirectory>
+		<configFile>timeSeriesFormatter.xml</configFile>
+	</stochObserver>
+
+	<stochModelFactory className="org.openda.models.threadModel.ThreadStochModelFactory">
+		<workingDirectory>.</workingDirectory>
+		<configFile>parallel_locenkf.xml</configFile>
+	</stochModelFactory>
+
+	<algorithm className="org.openda.algorithms.kalmanFilter.LocEnKF">
+		<workingDirectory>./algorithms</workingDirectory>
+		<configString>LocEnKF.xml</configString>
+	</algorithm>
+
+	<resultWriters>
+		<resultWriter className="org.openda.resultwriters.PythonResultWriter">
+			<workingDirectory>.</workingDirectory>
+			<configFile>locenkf_results.py</configFile>
+			<selection>
+				<resultItem outputLevel="Verbose" maxSize="10000000" />
+			</selection>
+		</resultWriter>
+	</resultWriters>
+
+</openDaApplication>

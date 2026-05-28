@@ -3,6 +3,6 @@
     <maxThreads>10</maxThreads>
     <stochModelFactory className="org.openda.blackbox.wrapper.BBStochModelFactory">
         <workingDirectory>./stochModel</workingDirectory>
-        <configFile>simstratStochModelEWPF.xml</configFile>
+        <configFile>simstratStochModelDEnKF.xml</configFile>
     </stochModelFactory>
 </threadConfigstoch>
