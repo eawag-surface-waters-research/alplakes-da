@@ -35,7 +35,15 @@ def build_args(raw: dict) -> dict:
     args.setdefault("out_dir",     os.path.join(reanalysis_dir, "processed"))
     args.setdefault("contour_dir", os.path.join(reanalysis_dir, "contours"))
 
-    args.setdefault("standard_inputs_path", os.path.join(ROOT, "standard_inputs", lake))
+    # Resolve ensemble_base cwd-independently (relative to src/, matching
+    # copy_standard_inputs.py and assimilate.py) so all scripts agree on
+    # ROOT/run/<lake> regardless of where the command is run from.
+    ensemble_base = args["ensemble_base"]
+    if not os.path.isabs(ensemble_base):
+        ensemble_base = os.path.normpath(os.path.join(SRC_DIR, ensemble_base))
+    args["ensemble_base"] = ensemble_base
+
+    args.setdefault("standard_inputs_path", os.path.join(ensemble_base, "standard_inputs"))
     args.setdefault("log_dir",     os.path.join(ROOT, "logs"))
     args.setdefault("rng_seed",    42)
     args.setdefault("sigma_scale", 1.0)

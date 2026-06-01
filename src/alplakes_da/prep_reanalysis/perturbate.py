@@ -1,6 +1,5 @@
 import logging
 import os
-import shutil
 import numpy as np
 import pandas as pd
 
@@ -22,21 +21,6 @@ def _simulate_ar1(phi: float, sigma: float, n: int, n_members: int, rng: np.rand
     for t in range(1, n):
         out[t] = phi * out[t - 1] + noise[t]
     return out
-
-
-def _copy_dir(src_dir: str, dst_dir: str, skip: set = None) -> None:
-    os.makedirs(dst_dir, exist_ok=True)
-    for fname in os.listdir(src_dir):
-        if skip and fname in skip:
-            continue
-        src = os.path.join(src_dir, fname)
-        dst = os.path.join(dst_dir, fname)
-        if os.path.isfile(src):
-            shutil.copy2(src, dst)
-        elif os.path.isdir(src):
-            if os.path.exists(dst):
-                shutil.rmtree(dst)
-            shutil.copytree(src, dst)
 
 
 def perturbate(args: dict, mean_df=None) -> None:
@@ -124,15 +108,14 @@ def perturbate(args: dict, mean_df=None) -> None:
     spreads = {name: arr.std(axis=1).mean() for name, arr in perturbed.items()}
     logger.info(f"{lake}: mean ensemble spread — " + ", ".join(f"{k}={v:.3f}" for k, v in spreads.items()))
 
-    # ensemble0 — unperturbed copy of standard_inputs
-    e0_dir = os.path.join(ensemble_base, "ensemble0")
-    _copy_dir(standard_inputs_path, e0_dir)
-    logger.info(f"{lake}: ensemble0 (unperturbed) -> {e0_dir}")
-
-    # ensemble1..N — copy non-Forcing files + write perturbed Forcing.dat
+    # Overwrite Forcing.dat in each member (ensemble1..N).  The instance dirs must
+    # already exist (created by copy_standard_inputs.py); ensemble0 is the
+    # unperturbed control and is left untouched here.
     for i in range(n_members):
         member_dir = os.path.join(ensemble_base, f"ensemble{i + 1}")
-        _copy_dir(standard_inputs_path, member_dir, skip={"Forcing.dat"})
+        if not os.path.isdir(member_dir):
+            raise FileNotFoundError(
+                f"{member_dir} missing — run copy_standard_inputs.py before perturbate")
 
         rows = np.column_stack([
             df["time_days"].values,
@@ -152,4 +135,4 @@ def perturbate(args: dict, mean_df=None) -> None:
             comments="",
         )
 
-    logger.info(f"{lake}: {n_members} perturbed ensemble members written -> {ensemble_base}")
+    logger.info(f"{lake}: perturbed Forcing.dat written to ensemble1..{n_members} -> {ensemble_base}")
