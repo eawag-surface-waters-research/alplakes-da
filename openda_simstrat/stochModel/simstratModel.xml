@@ -9,7 +9,7 @@
 
 	<aliasValues>
 		<alias key="templateDir"  value="template" />
-		<alias key="instanceDir"  value="../work/work" />
+		<alias key="instanceDir"  value="../../run/openda/work/work" />
 		<alias key="binDir"       value="bin" />
 		<alias key="configFile"   value="Settings.par" />
 		<alias key="stateFile"    value="temperature_state.txt" />

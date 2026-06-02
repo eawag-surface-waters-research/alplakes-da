@@ -1,4 +1,4 @@
-# OpenDA_Simstrat
+# openda_simstrat
 
 OpenDA black-box sequential simulation for Simstrat, with optional ensemble spread and EnKF data assimilation driven by pre-generated perturbed forcings.
 
@@ -21,7 +21,7 @@ Simstrat is called via Docker (image `eawag/simstrat:3.0.4`) — no local binary
 ## Directory structure
 
 ```
-OpenDA_Simstrat/
+openda_simstrat/
 ├── stochModel/
 │   ├── template/                 # Base model files cloned into each work instance
 │   │   ├── Settings.par
@@ -52,14 +52,12 @@ OpenDA_Simstrat/
 ├── forcings/                     # pre-generated perturbed Forcing.dat files
 │   ├── Forcing_0.dat             # unperturbed control
 │   └── Forcing_1..20.dat         # perturbed ensemble members
-├── work/                         # created/populated by OpenDA at runtime (sequential)
-│   ├── work0/
-│   └── work1..20/
-├── work_enkf/                    # created/populated by OpenDA at runtime (EnKF)
-│   ├── work0/                    # central (unperturbed) control model
-│   │   └── Results/T_out.dat     # hourly full-column temperature output
-│   └── work1..20/                # ensemble members (perturbed forcings + Kalman update)
-│       └── Results/T_out.dat
+│                                 # NOTE: per-member work dirs are no longer created here.
+│                                 # They are written under the repo-root run/openda/ at runtime:
+│                                 #   run/openda/work/work0..20/         (sequential)
+│                                 #   run/openda/work_enkf/work0..20/    (EnKF; work0 = control)
+│                                 #   run/openda/work_{denkf,ensr,locenkf}/work0..20/
+│                                 # each workN holds Results/T_out.dat (hourly full-column output).
 ├── SequentialSimulation.oda
 ├── SequentialEnsembleSimulation.oda
 ├── EnKF.oda
@@ -67,7 +65,6 @@ OpenDA_Simstrat/
 ├── parallel_enkf.xml
 ├── generate_warmup_snapshot.py
 ├── generate_ensemble_forcings.py
-├── prepare_real_obs.py
 ├── check_initial_snapshot.py
 ├── plot_results.py
 ├── plot_ensemble_results.py
@@ -91,11 +88,11 @@ Only needed once, or when resetting to a clean initial state.
 
 ### 2. Prepare observations
 
-Converts raw Castagnola CSV into the 15 per-depth files expected by the stochObserver (`T_1m_real.csv` … `T_40m_real.csv`).
-
-```bash
-python3 prepare_real_obs.py
-```
+The per-depth files expected by the stochObserver (`T_1m_real.csv` … `T_40m_real.csv`)
+are now built by the framework adapter `src/openda_adapter.py` (step 4), which reads
+`data/T_obs_<lake>.csv` and keeps, for each day, the reading nearest noon UTC at every
+depth (time in fractional Simstrat days). It runs automatically as part of the adapter,
+so there is no longer a standalone script to run.
 
 ### 3a. Run single sequential simulation
 
@@ -160,12 +157,12 @@ Key constants (edit in `generate_ensemble_forcings.py`):
 Same environment variables as above. Uses the same pre-generated perturbed forcings as the ensemble simulation.
 
 ```bash
-cd OpenDA_Simstrat
+cd openda_simstrat
 oda_run.sh EnKF.oda   # Linux/WSL
 od.bat EnKF.oda       # Windows
 ```
 
-OpenDA clones `stochModel/template/` into `work_enkf/work0`…`work_enkf/work20`, runs the 20-member ensemble, and applies a Kalman update to each member's temperature state at every analysis time (daily, from observation timestamps). Results are written to `enkf_results.py`, and hourly `T_out.dat` files are produced in each `work_enkf/workN/Results/` folder.
+OpenDA clones `stochModel/template/` into `run/openda/work_enkf/work0`…`run/openda/work_enkf/work20` (under the repo-root `run/` directory), runs the 20-member ensemble, and applies a Kalman update to each member's temperature state at every analysis time (daily, from observation timestamps). Results are written to `enkf_results.py`, and hourly `T_out.dat` files are produced in each `run/openda/work_enkf/workN/Results/` folder.
 
 **Configuring the simulation period** — edit `stochModel/template/time_control.yaml`:
 
@@ -205,6 +202,6 @@ Saves `initial_snapshot_check.png`.
 
 The EnKF results are automatically picked up by `src/analyze_results_general_v2.py`, which compares all DA methods (Python EnKF, PF, and OpenDA EnKF) side-by-side against observations.
 
-After running `EnKF.oda`, the `work_enkf/work1..20/Results/T_out.dat` files (hourly, full water column) are loaded as an ensemble. The script computes the ensemble mean and min–max spread and overlays them in orange on the time-series and RMSE bar chart plots.
+After running `EnKF.oda`, the `run/openda/work_enkf/work1..20/Results/T_out.dat` files (hourly, full water column) are loaded as an ensemble. The script computes the ensemble mean and min–max spread and overlays them in orange on the time-series and RMSE bar chart plots.
 
 No extra steps are needed — the loader checks for the files and silently skips if they are absent. Set `YEAR` in the script to match the period you ran.

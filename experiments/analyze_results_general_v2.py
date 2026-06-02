@@ -21,7 +21,7 @@ LAKE_CONFIGS = {
         "ref_date":      pd.Timestamp("1981-01-01", tz="UTC"),
         "n_members":     20,
         "pf_mean_subdir": "results_daily_update",
-        "openda_enkf_dir":    os.path.join(ROOT, "OpenDA_Simstrat", "work_enkf"),
+        "openda_enkf_dir":    os.path.join(ROOT, "run", "openda", "work_enkf"),
         "n_openda_members":   20,
     },
     "murten": {

@@ -8,9 +8,9 @@ Runs the full chain, skipping the expensive setup steps that are already done:
                                      [skip if instances already exist]
   3. perturbate                   -> perturbed Forcing.dat in ensemble1..N
                                      [skip if forcings already perturbed]
-  4. openda_adapter               -> sync inputs + forcings + warmup into OpenDA_Simstrat/
+  4. openda_adapter               -> sync inputs + forcings + warmup into openda_simstrat/
                                      [always]
-  5. oda_run.sh <oda_file>        -> run the OpenDA EnKF from OpenDA_Simstrat/
+  5. oda_run.sh <oda_file>        -> run the OpenDA EnKF from openda_simstrat/
                                      [always, unless --skip-oda]
 
 Overrides: --force-initial / --force-copy / --force-perturbate re-run a step even
@@ -22,7 +22,7 @@ Config JSON references the per-step arg files + the OpenDA target:
     "snapshot_args": "args/snapshot.json",
     "ensemble_args": "args/ensemble.json",
     "oda_file":      "EnKF.oda",
-    "openda_dir":    "OpenDA_Simstrat"
+    "openda_dir":    "openda_simstrat"
   }
 
 Run in WSL/bash (steps 1 and 5 use Docker with `$(id -u)` and oda_run.sh), with the
@@ -55,7 +55,7 @@ def _resolve(path):
 
 
 def _resolve_root(path):
-    """Resolve a possibly-relative repo path ('OpenDA_Simstrat', 'args/x.json') against ROOT."""
+    """Resolve a possibly-relative repo path ('openda_simstrat', 'args/x.json') against ROOT."""
     return path if os.path.isabs(path) else os.path.normpath(os.path.join(ROOT, path))
 
 
@@ -104,7 +104,7 @@ def run(cfg, dry_run=False, skip_oda=False, force=None):
     n_members     = ensemble_raw["n_members"]
     ensemble_base = _resolve(ensemble_raw["ensemble_base"])
     standard_inputs = os.path.join(ensemble_base, "standard_inputs")
-    openda_dir    = _resolve_root(cfg.get("openda_dir", "OpenDA_Simstrat"))
+    openda_dir    = _resolve_root(cfg.get("openda_dir", "openda_simstrat"))
     oda_file      = cfg.get("oda_file", "EnKF.oda")
 
     # Pin every step to the same absolute ensemble_base (avoids cwd-dependent

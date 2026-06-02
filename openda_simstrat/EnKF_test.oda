@@ -4,7 +4,7 @@
 	<!-- Test variant of EnKF.oda: identical run, but the PythonResultWriter output
 	     (enkf_results.py) is written to ./test_run/ instead of the OpenDA root, so a
 	     test run does not overwrite the reference enkf_results.py.
-	     NOTE: the per-member work dirs (work_enkf/workN) are still shared and are
+	     NOTE: the per-member work dirs (run/openda/work_enkf/workN) are still shared and are
 	     recreated from the template on every run (initializeActionsUsingDirClone),
 	     so they are transient scratch regardless of which .oda you launch. -->
 

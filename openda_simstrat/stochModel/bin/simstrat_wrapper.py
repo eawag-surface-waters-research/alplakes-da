@@ -22,6 +22,15 @@ import subprocess
 import sys
 
 # ---------------------------------------------------------------------------
+# Anchor paths off this script's location, not the cwd.  OpenDA runs the wrapper
+# with cwd = the instance dir (e.g. run/openda/work/workN), whose depth can
+# change, but this file always lives at <openda_dir>/stochModel/bin/:
+#   bin/ -> stochModel/ -> <openda_dir>.  Perturbed forcings live in <openda_dir>/forcings/.
+# ---------------------------------------------------------------------------
+_BIN_DIR    = os.path.dirname(os.path.abspath(__file__))
+_OPENDA_DIR = os.path.dirname(os.path.dirname(_BIN_DIR))
+
+# ---------------------------------------------------------------------------
 # Depth levels used in InitialConditions.dat (m, negative = below surface)
 # ---------------------------------------------------------------------------
 IC_DEPTHS = [0.0, -10.0, -20.0, -30.0, -40.0, -50.0, -95.0]
@@ -186,8 +195,7 @@ if __name__ == '__main__':
     work_dir_abs = os.path.abspath(os.getcwd())
     instance_num = int(os.path.basename(work_dir_abs).replace("work", ""))
     if instance_num > 0:
-        exercise_dir = os.path.dirname(os.path.dirname(work_dir_abs))
-        forcing_src  = os.path.join(exercise_dir, "forcings", f"Forcing_{instance_num}.dat")
+        forcing_src  = os.path.join(_OPENDA_DIR, "forcings", f"Forcing_{instance_num}.dat")
         if os.path.exists(forcing_src):
             shutil.copy2(forcing_src, "Forcing.dat")
             logger.info("Injected forcings/Forcing_%d.dat", instance_num)

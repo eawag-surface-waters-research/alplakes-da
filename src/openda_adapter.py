@@ -1,21 +1,27 @@
-"""Export framework outputs into the standalone OpenDA_Simstrat/ layout.
+"""Export framework outputs into the standalone openda_simstrat/ layout.
 
-Replaces OpenDA_Simstrat/generate_ensemble_forcings.py and
-generate_warmup_snapshot.py: instead of regenerating perturbed forcings (its own
-AR(1)) and a separate spin-up snapshot, this COPIES the Python framework's
-already-generated inputs into OpenDA's layout.  Result: the OpenDA EnKF reference
-runs on byte-identical forcings + warmup as the Python EnKF, so the
-cross-validation is rigorous, with no duplicated generation.
+Replaces openda_simstrat/generate_ensemble_forcings.py, generate_warmup_snapshot.py
+and prepare_real_obs.py: instead of regenerating perturbed forcings (its own AR(1)),
+a separate spin-up snapshot, and the observation CSVs by hand, this COPIES the Python
+framework's already-generated inputs into OpenDA's layout and builds the stochObserver
+observation files in one step.  Result: the OpenDA EnKF reference runs on byte-identical
+forcings + warmup as the Python EnKF, so the cross-validation is rigorous, with no
+duplicated generation.
 
 Syncs:
   run/<lake>/standard_inputs/*  (except OpenDA coupling files + Results/ + dated snapshots)
-      -> OpenDA_Simstrat/stochModel/template/*                                 (Bathymetry, Grid, Settings.par,
+      -> openda_simstrat/stochModel/template/*                                 (Bathymetry, Grid, Settings.par,
                                                                                 Absorption, Qin/Qout/Sin/Tin,
                                                                                 InitialConditions, aed2.nml, AED2_*, ...)
   run/<lake>/ensemble{i}/Forcing.dat
-      -> OpenDA_Simstrat/forcings/Forcing_{i}.dat                              (i = 0..N; 0 = control)
+      -> openda_simstrat/forcings/Forcing_{i}.dat                              (i = 0..N; 0 = control)
   run/<lake>/standard_inputs/simulation-snapshot_<date>.dat
-      -> OpenDA_Simstrat/stochModel/template/Results/simulation-snapshot.dat   (the warmup OpenDA reads)
+      -> openda_simstrat/stochModel/template/Results/simulation-snapshot.dat   (the warmup OpenDA reads)
+
+Builds (formerly prepare_real_obs.py):
+  data/T_obs_<lake>.csv  (raw 10-min profile observations; override with "obs_csv")
+      -> openda_simstrat/stochObserver/T_{depth}m_real.csv                     (one reading/day nearest noon UTC,
+                                                                                time in fractional Simstrat days)
 
 OpenDA-specific coupling files in the template are NEVER overwritten:
   temperature_state.txt, time_control.yaml, timeSeriesFormatter.xml.
@@ -34,21 +40,28 @@ Usage:  python src/openda_adapter.py args/ensemble.json [--dry-run]
 
 import os
 import sys
+import csv
 import glob
 import json
 import shutil
 import argparse
+from collections import defaultdict
+from datetime import date, datetime, timezone
 
 SRC_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT    = os.path.dirname(SRC_DIR)
 sys.path.insert(0, SRC_DIR)
 
 from alplakes_da.functions import verify_args
+from alplakes_da.prep_reanalysis.config import SIMSTRAT_REF_YEAR
 
 REQUIRED = ["lake", "n_members", "ensemble_base"]
 
 # Black-box coupling files OpenDA owns — never overwrite these in the template.
 OPENDA_SPECIFIC = {"temperature_state.txt", "time_control.yaml", "timeSeriesFormatter.xml"}
+
+# Observations: each day, keep the single reading nearest this UTC hour (noon snapshot).
+OBS_TARGET_HOUR = 12
 
 
 def _resolve(path):
@@ -80,6 +93,73 @@ def _copy_path(src, dst, dry_run):
         shutil.copy2(src, dst)
 
 
+def _noon_simstrat_day(day_str, ref_date):
+    """Fractional Simstrat day at noon (integer day + 0.5) for a YYYY-MM-DD string."""
+    return (date.fromisoformat(day_str) - ref_date).days + 0.5
+
+
+def _utc_minutes_since_midnight(iso_str):
+    dt = datetime.fromisoformat(iso_str)
+    if dt.tzinfo is not None:
+        dt = dt.astimezone(timezone.utc)
+    return dt.hour * 60 + dt.minute + dt.second / 60.0
+
+
+def _build_observations(raw, openda_dir, dry_run):
+    """Build the OpenDA stochObserver observation files from raw profile obs.
+
+    Reads the high-frequency (10-min) profile CSV (time,depth,...,value), keeps
+    for each day the reading nearest OBS_TARGET_HOUR UTC at every depth, and writes
+    one T_{depth}m_real.csv per depth into stochObserver/ — time in fractional
+    Simstrat days since 1 Jan SIMSTRAT_REF_YEAR.  Supersedes prepare_real_obs.py.
+    """
+    lake      = raw["lake"]
+    stoch_dir = os.path.join(openda_dir, "stochObserver")
+    obs_csv   = _resolve(raw["obs_csv"]) if raw.get("obs_csv") \
+        else os.path.join(ROOT, "data", f"T_obs_{lake}.csv")
+    if not os.path.isfile(obs_csv):
+        raise FileNotFoundError(
+            f"observation source not found: {obs_csv} (set 'obs_csv' or add data/T_obs_{lake}.csv)")
+
+    ref_date = date(SIMSTRAT_REF_YEAR, 1, 1)
+    start = date.fromisoformat(raw["start_date"][:10]) if raw.get("start_date") else None
+    end   = date.fromisoformat(raw["end_date"][:10])   if raw.get("end_date")   else None
+    target_minutes = OBS_TARGET_HOUR * 60
+
+    # best_obs[depth][day_str] = (abs_minutes_from_target, value)
+    best_obs = defaultdict(dict)
+    with open(obs_csv, newline="") as f:
+        for row in csv.DictReader(f):
+            if not row.get("value"):
+                continue
+            day_str = row["time"][:10]
+            day = date.fromisoformat(day_str)
+            if (start and day < start) or (end and day > end):
+                continue
+            depth = float(row["depth"])
+            diff  = abs(_utc_minutes_since_midnight(row["time"]) - target_minutes)
+            current = best_obs[depth].get(day_str)
+            if current is None or diff < current[0]:
+                best_obs[depth][day_str] = (diff, float(row["value"]))
+
+    window = f"{start or 'start'}..{end or 'end'}"
+    print(f"[adapter] observations: {os.path.relpath(obs_csv, ROOT)} -> "
+          f"stochObserver/T_*_real.csv  ({len(best_obs)} depths, window {window})")
+    for depth in sorted(best_obs):
+        out_path = os.path.join(stoch_dir, f"T_{depth:g}m_real.csv")
+        records  = best_obs[depth]
+        if dry_run:
+            print(f"  [dry-run] T_{depth:g}m_real.csv  ({len(records)} days)")
+            continue
+        with open(out_path, "w", newline="") as f:
+            f.write("time,value\n")
+            for day_str in sorted(records):
+                _, value = records[day_str]
+                f.write(f"{_noon_simstrat_day(day_str, ref_date):.6f},{value:.6f}\n")
+    if not dry_run:
+        print(f"  wrote {len(best_obs)} depth files -> {os.path.relpath(stoch_dir, ROOT)}")
+
+
 def adapt(raw, dry_run=False):
     verify_args(raw, REQUIRED)
 
@@ -91,7 +171,7 @@ def adapt(raw, dry_run=False):
         else os.path.join(ensemble_base, "standard_inputs")
 
     openda_dir   = _resolve(raw["openda_dir"]) if raw.get("openda_dir") \
-        else os.path.join(ROOT, "OpenDA_Simstrat")
+        else os.path.join(ROOT, "openda_simstrat")
     forcings_dir = os.path.join(openda_dir, "forcings")
     template_dir = os.path.join(openda_dir, "stochModel", "template")
 
@@ -148,11 +228,17 @@ def adapt(raw, dry_run=False):
               f"-> {os.path.relpath(target, openda_dir)} (overwrites OpenDA's current warmup)")
         _copy(snap_src, target, dry_run)
 
+    # ------------------------------------------------------------------
+    # 4. Observations: data/T_obs_<lake>.csv -> stochObserver/T_{depth}m_real.csv
+    #    (noon-snapshot per depth; formerly prepare_real_obs.py)
+    # ------------------------------------------------------------------
+    _build_observations(raw, openda_dir, dry_run)
+
     print("[adapter] done." if not dry_run else "[adapter] dry-run complete (nothing written).")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Export framework forcings + warmup into OpenDA_Simstrat/")
+    parser = argparse.ArgumentParser(description="Export framework forcings + warmup into openda_simstrat/")
     parser.add_argument("arg_file", help="Path to JSON args file (e.g. args/ensemble.json)")
     parser.add_argument("--dry-run", action="store_true", help="Show what would be copied, write nothing")
     cli = parser.parse_args()

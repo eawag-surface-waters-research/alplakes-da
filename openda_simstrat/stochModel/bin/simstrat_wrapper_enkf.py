@@ -37,14 +37,16 @@ import sys
 import time
 
 # ---------------------------------------------------------------------------
-# Locate snapshot_io from the project root (alplakes-da/snapshot/).
-# The wrapper runs with cwd = work_enkf/workN/.
-# work_enkf/workN/ -> work_enkf/ -> OpenDA_Simstrat/ -> alplakes-da/
+# Anchor paths off this script's location, not the cwd.  OpenDA runs the wrapper
+# with cwd = the instance dir (e.g. run/openda/work_enkf/workN), whose depth can
+# change, but this file always lives at <openda_dir>/stochModel/bin/:
+#   bin/ -> stochModel/ -> <openda_dir> -> alplakes-da (root)
+# snapshot_io lives in alplakes-da/snapshot/; perturbed forcings in <openda_dir>/forcings/.
 # ---------------------------------------------------------------------------
-_work_dir_abs = os.path.abspath(os.getcwd())
-_exercise_dir = os.path.dirname(os.path.dirname(_work_dir_abs))
-_root_dir     = os.path.dirname(_exercise_dir)
-sys.path.insert(0, os.path.join(_root_dir, "snapshot"))
+_BIN_DIR    = os.path.dirname(os.path.abspath(__file__))
+_OPENDA_DIR = os.path.dirname(os.path.dirname(_BIN_DIR))
+_ROOT_DIR   = os.path.dirname(_OPENDA_DIR)
+sys.path.insert(0, os.path.join(_ROOT_DIR, "snapshot"))
 from snapshot_io import read_snapshot, write_snapshot
 
 # ---------------------------------------------------------------------------
@@ -194,8 +196,7 @@ if __name__ == '__main__':
     work_dir_abs = os.path.abspath(os.getcwd())
     instance_num = int(os.path.basename(work_dir_abs).replace("work", ""))
     if instance_num > 0:
-        exercise_dir = os.path.dirname(os.path.dirname(work_dir_abs))
-        forcing_src  = os.path.join(exercise_dir, "forcings", f"Forcing_{instance_num}.dat")
+        forcing_src  = os.path.join(_OPENDA_DIR, "forcings", f"Forcing_{instance_num}.dat")
         if os.path.exists(forcing_src):
             shutil.copy2(forcing_src, "Forcing.dat")
             logger.info("Injected forcings/Forcing_%d.dat", instance_num)
