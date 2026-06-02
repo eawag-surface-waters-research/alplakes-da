@@ -66,8 +66,6 @@ Both engines share the same preprocessing. Each step is driven by a JSON file in
 ├── args/                    One JSON config per entry point (see Configuration)
 ├── static/                  Version/lake-independent templates: simstrat_<ver>.par, aed2.nml,
 │                            lake_parameters.json
-├── standard_inputs/         Per-lake baseline Simstrat packages (bathymetry, grid, calibrated
-│                            Settings.par, inflows) — the source inputs for step 1
 ├── data/                    Observations (T_obs_<lake>.csv) and lake-mean meteo
 │                            (lake_mean_<lake>_<year>.csv); large files are git-ignored
 ├── run/                     Working area (git-ignored per lake)
@@ -76,11 +74,8 @@ Both engines share the same preprocessing. Each step is driven by a JSON file in
 │   └── openda/work_<filter>/work0..N/   OpenDA per-member scratch (Results/T_out.dat)
 │
 ├── openda_simstrat/         OpenDA black-box configuration (see below; mostly generated)
-├── experiments/             Research/dev scripts (main_EnKF.py, main_PF_*.py, analysis, old*/)
-├── snapshot_examples/       Examples + sample binaries for snapshot_io (git-ignored data)
 ├── logs/                    Timestamped pipeline logs
-├── docs/ + mkdocs.yml       Documentation site
-└── assimilation/            Git-ignored scratch/output
+└── docs/ + mkdocs.yml       Documentation site
 ```
 
 ## Configuration (`args/`)
