@@ -36,8 +36,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from functions.par import overwrite_par_file_dates
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(ROOT, "snapshot"))
-from snapshot_io import read_snapshot, write_snapshot # Key! necessary to read and write Simstrat (Fortran) binary files and to update them
+sys.path.insert(0, os.path.join(ROOT, "src"))
+from alplakes_da.snapshot_io import read_snapshot, write_snapshot # Key! necessary to read and write Simstrat (Fortran) binary files and to update them
 
 LAKE = "upperlugano"
 

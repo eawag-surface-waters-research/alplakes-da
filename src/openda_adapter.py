@@ -54,6 +54,7 @@ sys.path.insert(0, SRC_DIR)
 
 from alplakes_da.functions import verify_args
 from alplakes_da.prep_reanalysis.config import SIMSTRAT_REF_YEAR
+from alplakes_da.snapshot_io import read_snapshot
 
 REQUIRED = ["lake", "n_members", "ensemble_base"]
 
@@ -105,6 +106,22 @@ def _utc_minutes_since_midnight(iso_str):
     return dt.hour * 60 + dt.minute + dt.second / 60.0
 
 
+def _model_output_depths(openda_dir):
+    """Depths (positive metres) the model outputs, read from the template's z_out.dat.
+    Returns [] if the file is absent (then no depth filtering is applied)."""
+    path = os.path.join(openda_dir, "stochModel", "template", "z_out.dat")
+    if not os.path.isfile(path):
+        return []
+    depths = []
+    with open(path) as f:
+        for line in f:
+            try:
+                depths.append(abs(float(line.strip())))
+            except ValueError:
+                continue  # header line ("Depths [m]")
+    return depths
+
+
 def _build_observations(raw, openda_dir, dry_run):
     """Build the OpenDA stochObserver observation files from raw profile obs.
 
@@ -112,6 +129,10 @@ def _build_observations(raw, openda_dir, dry_run):
     for each day the reading nearest OBS_TARGET_HOUR UTC at every depth, and writes
     one T_{depth}m_real.csv per depth into stochObserver/ — time in fractional
     Simstrat days since 1 Jan SIMSTRAT_REF_YEAR.  Supersedes prepare_real_obs.py.
+
+    The depth list is auto-detected from the CSV (every depth present, dropping any
+    with fewer than `obs_min_days` days of data), and is returned sorted so the
+    config generator can wire the same depths into the model / formatters / wrapper.
     """
     lake      = raw["lake"]
     stoch_dir = os.path.join(openda_dir, "stochObserver")
@@ -121,9 +142,10 @@ def _build_observations(raw, openda_dir, dry_run):
         raise FileNotFoundError(
             f"observation source not found: {obs_csv} (set 'obs_csv' or add data/T_obs_{lake}.csv)")
 
-    ref_date = date(SIMSTRAT_REF_YEAR, 1, 1)
+    ref_date     = date(SIMSTRAT_REF_YEAR, 1, 1)
     start = date.fromisoformat(raw["start_date"][:10]) if raw.get("start_date") else None
     end   = date.fromisoformat(raw["end_date"][:10])   if raw.get("end_date")   else None
+    min_days       = raw.get("obs_min_days", 1)
     target_minutes = OBS_TARGET_HOUR * 60
 
     # best_obs[depth][day_str] = (abs_minutes_from_target, value)
@@ -142,10 +164,24 @@ def _build_observations(raw, openda_dir, dry_run):
             if current is None or diff < current[0]:
                 best_obs[depth][day_str] = (diff, float(row["value"]))
 
+    depths = sorted(d for d in best_obs if len(best_obs[d]) >= min_days)
+
+    # Keep only depths the model actually outputs (z_out.dat): an obs depth with no
+    # matching model output depth (e.g. 0.5 m on a whole-metre grid) can't be
+    # assimilated, since there is no model prediction to compare it against.
+    model_depths = _model_output_depths(openda_dir)
+    if model_depths:
+        matched = [d for d in depths if any(abs(d - m) <= 1e-6 for m in model_depths)]
+        dropped = [d for d in depths if d not in matched]
+        if dropped:
+            print(f"[adapter] dropping obs depths with no matching model output depth (z_out.dat): "
+                  f"{[f'{d:g}' for d in dropped]} m")
+        depths = matched
+
     window = f"{start or 'start'}..{end or 'end'}"
     print(f"[adapter] observations: {os.path.relpath(obs_csv, ROOT)} -> "
-          f"stochObserver/T_*_real.csv  ({len(best_obs)} depths, window {window})")
-    for depth in sorted(best_obs):
+          f"stochObserver/T_*_real.csv  ({len(depths)} depths {[f'{d:g}' for d in depths]}, window {window})")
+    for depth in depths:
         out_path = os.path.join(stoch_dir, f"T_{depth:g}m_real.csv")
         records  = best_obs[depth]
         if dry_run:
@@ -157,7 +193,8 @@ def _build_observations(raw, openda_dir, dry_run):
                 _, value = records[day_str]
                 f.write(f"{_noon_simstrat_day(day_str, ref_date):.6f},{value:.6f}\n")
     if not dry_run:
-        print(f"  wrote {len(best_obs)} depth files -> {os.path.relpath(stoch_dir, ROOT)}")
+        print(f"  wrote {len(depths)} depth files -> {os.path.relpath(stoch_dir, ROOT)}")
+    return depths
 
 
 def adapt(raw, dry_run=False):
@@ -228,13 +265,28 @@ def adapt(raw, dry_run=False):
               f"-> {os.path.relpath(target, openda_dir)} (overwrites OpenDA's current warmup)")
         _copy(snap_src, target, dry_run)
 
+        # Seed OpenDA's initial state (temperature_state.txt) from the warmup
+        # snapshot's full-grid T profile — one value per cell.  Replaces the legacy
+        # 7-value placeholder and is automatically the right size for this lake's grid.
+        state_path = os.path.join(template_dir, "temperature_state.txt")
+        if dry_run:
+            print(f"  [dry-run] would seed {os.path.relpath(state_path, openda_dir)} from warmup")
+        else:
+            T = read_snapshot(snap_src, par_path=os.path.join(template_dir, "Settings.par")).model["T"]
+            with open(state_path, "w") as f:
+                for t in T:
+                    f.write(f"{float(t):.6f}\n")
+            print(f"[adapter] temperature_state.txt seeded from warmup ({len(T)} cells)")
+
     # ------------------------------------------------------------------
     # 4. Observations: data/T_obs_<lake>.csv -> stochObserver/T_{depth}m_real.csv
-    #    (noon-snapshot per depth; formerly prepare_real_obs.py)
+    #    (noon-snapshot per depth; formerly prepare_real_obs.py).  Returns the
+    #    auto-detected depth list for the config generator to wire everywhere.
     # ------------------------------------------------------------------
-    _build_observations(raw, openda_dir, dry_run)
+    obs_depths = _build_observations(raw, openda_dir, dry_run)
 
     print("[adapter] done." if not dry_run else "[adapter] dry-run complete (nothing written).")
+    return obs_depths
 
 
 if __name__ == "__main__":

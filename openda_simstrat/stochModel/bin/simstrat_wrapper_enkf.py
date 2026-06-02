@@ -41,13 +41,14 @@ import time
 # with cwd = the instance dir (e.g. run/openda/work_enkf/workN), whose depth can
 # change, but this file always lives at <openda_dir>/stochModel/bin/:
 #   bin/ -> stochModel/ -> <openda_dir> -> alplakes-da (root)
-# snapshot_io lives in alplakes-da/snapshot/; perturbed forcings in <openda_dir>/forcings/.
+# snapshot_io lives in the alplakes_da package (alplakes-da/src/); perturbed
+# forcings in <openda_dir>/forcings/.
 # ---------------------------------------------------------------------------
 _BIN_DIR    = os.path.dirname(os.path.abspath(__file__))
 _OPENDA_DIR = os.path.dirname(os.path.dirname(_BIN_DIR))
 _ROOT_DIR   = os.path.dirname(_OPENDA_DIR)
-sys.path.insert(0, os.path.join(_ROOT_DIR, "snapshot"))
-from snapshot_io import read_snapshot, write_snapshot
+sys.path.insert(0, os.path.join(_ROOT_DIR, "src"))
+from alplakes_da.snapshot_io import read_snapshot, write_snapshot
 
 # ---------------------------------------------------------------------------
 # IC depth levels (kept for legacy size detection only)
@@ -61,7 +62,6 @@ IC_K   = 3.0e-6
 IC_EPS = 5.0e-10
 
 SNAPSHOT_FILENAME        = 'simulation-snapshot.dat'
-WARMUP_SNAPSHOT_FILENAME = 'simulation-snapshot_20241231.dat'
 
 # ---------------------------------------------------------------------------
 # Helper functions (unchanged from simstrat_wrapper.py)
@@ -229,7 +229,14 @@ if __name__ == '__main__':
     t_out_file = os.path.join(output_dir, 'T_out.dat')
     times, depths, T_rows = read_t_out(t_out_file)
 
-    obs_depths = [1.0, 3.0, 5.0, 7.0, 9.0, 11.0, 13.0, 15.0, 17.0, 19.0, 21.0, 25.0, 30.0, 35.0, 40.0]
+    # Depths to extract come from the generated obs_depths.json (single source of
+    # truth shared with the model config + formatters); fall back to the legacy set.
+    _depths_file = os.path.join(_OPENDA_DIR, "stochModel", "template", "obs_depths.json")
+    try:
+        with open(_depths_file) as f:
+            obs_depths = json.load(f)
+    except FileNotFoundError:
+        obs_depths = [1.0, 3.0, 5.0, 7.0, 9.0, 11.0, 13.0, 15.0, 17.0, 19.0, 21.0, 25.0, 30.0, 35.0, 40.0]
     obs_specs = [(f"T_{d:g}m.csv", -d) for d in obs_depths]
     for csv_name, target_depth in obs_specs:
         col = find_depth_col(depths, target_depth)

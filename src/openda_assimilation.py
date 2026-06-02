@@ -8,20 +8,21 @@ Runs the full chain, skipping the expensive setup steps that are already done:
                                      [skip if instances already exist]
   3. perturbate                   -> perturbed Forcing.dat in ensemble1..N
                                      [skip if forcings already perturbed]
-  4. openda_adapter               -> sync inputs + forcings + warmup into openda_simstrat/
+  4. openda_adapter               -> sync inputs + forcings + warmup + observations into openda_simstrat/
                                      [always]
-  5. oda_run.sh <oda_file>        -> run the OpenDA EnKF from openda_simstrat/
-                                     [always, unless --skip-oda]
+  5. openda_config.render + oda_run.sh run.oda
+                                     -> render the filter's run.oda + chain, then run OpenDA
+                                     [always render; launch unless --skip-oda]
 
 Overrides: --force-initial / --force-copy / --force-perturbate re-run a step even
-if it looks done; --dry-run previews without executing; --skip-oda stops after the
-adapter.
+if it looks done; --dry-run previews without executing; --skip-oda renders the
+config then stops before launching OpenDA.
 
-Config JSON references the per-step arg files + the OpenDA target:
+Config JSON references the per-step arg files + the OpenDA target + the filter:
   {
     "snapshot_args": "args/snapshot.json",
     "ensemble_args": "args/ensemble.json",
-    "oda_file":      "EnKF.oda",
+    "filter":        "EnKF",            # one of EnKF | DEnKF | EnSR
     "openda_dir":    "openda_simstrat"
   }
 
@@ -47,6 +48,7 @@ from initial_conditions_snapshot import create_standard_inputs
 from copy_standard_inputs        import copy_standard_inputs
 from perturbate                  import perturbator
 from openda_adapter              import adapt
+from openda_config               import FILTERS, render as render_oda
 
 
 def _resolve(path):
@@ -105,7 +107,9 @@ def run(cfg, dry_run=False, skip_oda=False, force=None):
     ensemble_base = _resolve(ensemble_raw["ensemble_base"])
     standard_inputs = os.path.join(ensemble_base, "standard_inputs")
     openda_dir    = _resolve_root(cfg.get("openda_dir", "openda_simstrat"))
-    oda_file      = cfg.get("oda_file", "EnKF.oda")
+    filter_type   = cfg.get("filter", "EnKF")
+    if filter_type not in FILTERS:
+        raise ValueError(f"unknown filter '{filter_type}'; choose from {sorted(FILTERS)}")
 
     # Pin every step to the same absolute ensemble_base (avoids cwd-dependent
     # resolution differences between the sub-scripts).
@@ -113,8 +117,8 @@ def run(cfg, dry_run=False, skip_oda=False, force=None):
     ensemble_raw["ensemble_base"] = ensemble_base
 
     tag = "  (dry-run)" if dry_run else ""
-    print(f"=== OpenDA EnKF pipeline - lake={lake}  base={os.path.relpath(ensemble_base, ROOT)}"
-          f"  oda={oda_file}{tag} ===")
+    print(f"=== OpenDA pipeline - lake={lake}  base={os.path.relpath(ensemble_base, ROOT)}"
+          f"  filter={filter_type}{tag} ===")
 
     # --- 1. standard inputs ------------------------------------------------
     if force.get("initial") or not _standard_inputs_ready(standard_inputs):
@@ -143,19 +147,26 @@ def run(cfg, dry_run=False, skip_oda=False, force=None):
     else:
         print(f"[3/5] forcings already perturbed - skip")
 
-    # --- 4. adapter (always) ----------------------------------------------
+    # --- 4. adapter (always): sync inputs/forcings/warmup + build observations,
+    #         returning the auto-detected obs depth list for step 5 ------------
     print(f"[4/5] adapt framework -> {os.path.relpath(openda_dir, ROOT)}")
-    adapt({**ensemble_raw, "openda_dir": openda_dir}, dry_run=dry_run)
+    obs_depths = adapt({**ensemble_raw, "openda_dir": openda_dir}, dry_run=dry_run)
 
-    # --- 5. run OpenDA -----------------------------------------------------
+    # --- 5. render filter config + run OpenDA ------------------------------
+    if dry_run:
+        print(f"[5/5] [dry-run] would render run.oda + chain for filter={filter_type}, "
+              f"then oda_run.sh run.oda")
+        return
+    oda_file = render_oda(openda_dir, filter_type, n_members, obs_depths,
+                          ensemble_raw["start_date"], ensemble_raw["end_date"],
+                          obs_std=ensemble_raw.get("obs_std", 0.5))
+    print(f"[5/5] rendered {oda_file} + chain for filter={filter_type} "
+          f"(work_{filter_type.lower()}, {len(obs_depths)} obs depths)")
     if skip_oda:
-        print(f"[5/5] --skip-oda: stopping before OpenDA. Run manually: "
+        print(f"      --skip-oda: run manually: "
               f"cd {os.path.relpath(openda_dir, ROOT)} && oda_run.sh {oda_file}")
         return
-    print(f"[5/5] oda_run.sh {oda_file}  (cwd={os.path.relpath(openda_dir, ROOT)})")
-    if dry_run:
-        print("      [dry-run] not launching OpenDA")
-        return
+    print(f"      oda_run.sh {oda_file}  (cwd={os.path.relpath(openda_dir, ROOT)})")
     try:
         subprocess.run(["oda_run.sh", oda_file], cwd=openda_dir, check=True)
     except FileNotFoundError:

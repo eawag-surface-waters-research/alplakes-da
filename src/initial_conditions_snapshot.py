@@ -76,7 +76,7 @@ def build_args(raw: dict) -> dict:
     args.setdefault("output_time_resolution",      10800)
     args.setdefault("simstrat_binary",             "/entrypoint.sh")
     args.setdefault("simstrat_workdir",            "/simstrat/run")
-    args.setdefault("par_template",               os.path.join(ROOT, "par", "simstrat_{}.par".format(args["simstrat_version"])))
+    args.setdefault("par_template",               os.path.join(ROOT, "static", "simstrat_{}.par".format(args["simstrat_version"])))
 
     tz = timezone.utc
     args["snapshot_date"]   = datetime.fromisoformat(args["snapshot_date"]).replace(tzinfo=tz)

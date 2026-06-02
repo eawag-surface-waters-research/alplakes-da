@@ -51,9 +51,7 @@ def load_T(ensemble_dir, args):
 
 
 def _snapshot_io():
-    root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    sys.path.insert(0, os.path.join(root, "snapshot"))
-    from snapshot_io import read_snapshot, write_snapshot
+    from .snapshot_io import read_snapshot, write_snapshot
     return read_snapshot, write_snapshot
 
 

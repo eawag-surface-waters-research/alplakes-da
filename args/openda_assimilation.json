@@ -1,6 +1,6 @@
 {
     "snapshot_args": "args/snapshot.json",
     "ensemble_args": "args/ensemble.json",
-    "oda_file":      "EnKF.oda",
+    "filter":        "EnSR",
     "openda_dir":    "openda_simstrat"
 }

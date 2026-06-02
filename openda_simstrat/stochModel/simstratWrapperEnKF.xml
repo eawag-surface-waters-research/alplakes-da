@@ -21,21 +21,10 @@
 				<arg>%configFile%</arg>
 				<arg>--log_level</arg>
 				<arg>INFO</arg>
-				<checkOutput file="T_1m.csv"/>
-				<checkOutput file="T_3m.csv"/>
-				<checkOutput file="T_5m.csv"/>
-				<checkOutput file="T_7m.csv"/>
-				<checkOutput file="T_9m.csv"/>
-				<checkOutput file="T_11m.csv"/>
-				<checkOutput file="T_13m.csv"/>
-				<checkOutput file="T_15m.csv"/>
-				<checkOutput file="T_17m.csv"/>
-				<checkOutput file="T_19m.csv"/>
-				<checkOutput file="T_21m.csv"/>
-				<checkOutput file="T_25m.csv"/>
-				<checkOutput file="T_30m.csv"/>
-				<checkOutput file="T_35m.csv"/>
-				<checkOutput file="T_40m.csv"/>
+				<!-- No per-depth output checks here: the predictor files (T_<d>m.csv) are
+				     depth-specific, so listing them would hardcode this file to one lake.
+				     The generated timeSeriesFormatter.gen.xml 'output' dataObject reads them
+				     and will fail the run if any are missing. -->
 			</action>
 		</computeActions>
 
@@ -56,7 +45,7 @@
 		</dataObject>
 
 		<dataObject className="org.openda.exchange.dataobjects.TimeSeriesFormatterDataObject">
-			<file>timeSeriesFormatter.xml</file>
+			<file>timeSeriesFormatter.gen.xml</file>
 			<id>output</id>
 		</dataObject>
 	</inputOutput>

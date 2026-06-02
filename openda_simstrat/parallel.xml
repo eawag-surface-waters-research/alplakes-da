@@ -1,8 +1,0 @@
-<threadConfigstoch>
-    <!-- 6 instances total (1 main + 5 ensemble); raise maxThreads if you have more cores -->
-    <maxThreads>6</maxThreads>
-    <stochModelFactory className="org.openda.blackbox.wrapper.BBStochModelFactory">
-        <workingDirectory>./stochModel</workingDirectory>
-        <configFile>simstratStochModel.xml</configFile>
-    </stochModelFactory>
-</threadConfigstoch>

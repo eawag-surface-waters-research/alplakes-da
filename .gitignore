@@ -5,7 +5,7 @@ docs/
 data/
 datasets/
 output/
-snapshot/
+snapshot_examples/
 openda_course/openda/
 .idea/
 run/upperlugano/

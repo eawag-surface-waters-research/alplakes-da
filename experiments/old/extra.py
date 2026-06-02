@@ -428,7 +428,7 @@ class Simstrat(object):
 
     def create_par_file(self):
         self.log.begin_stage("create_par_file")
-        file_path = os.path.join(self.args["repo_dir"], "par", "simstrat_{}.par".format(self.args["simstrat_version"]))
+        file_path = os.path.join(self.args["repo_dir"], "static", "simstrat_{}.par".format(self.args["simstrat_version"]))
         if not os.path.exists(file_path):
             raise ValueError(
                 "Unable to locate default PAR file for Simstrat version {}".format(self.args["simstrat_version"]))
