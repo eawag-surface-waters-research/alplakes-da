@@ -1,0 +1,17 @@
+{
+    "lake":             "upperlugano",
+    "reanalysis_lake":  "lugano",
+    "lake_bbox":        [45.89, 8.85, 46.03, 9.13],
+    "lake_key":         "lugano",
+
+    "n_members":  20,
+    "ensemble_base": "../run/upperlugano",
+    "start_date": "2025-01-01",
+    "end_date":   "2025-12-31",
+
+    "reanalysis_dir": "../prep_reanalysis",
+    "rng_seed":    42,
+    "sigma_scale": 1.0,
+    "save_intermediates": false,
+    "skip": []
+}
