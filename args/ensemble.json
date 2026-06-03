@@ -9,7 +9,6 @@
     "start_date": "2025-01-01",
     "end_date":   "2025-12-31",
 
-    "reanalysis_dir": "../prep_reanalysis",
     "rng_seed":    42,
     "sigma_scale": 1.0,
     "save_intermediates": false,

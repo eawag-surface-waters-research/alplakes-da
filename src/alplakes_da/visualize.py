@@ -1,5 +1,6 @@
 import os
 import sys
+import glob
 import json
 import argparse
 import numpy as np
@@ -8,6 +9,10 @@ import matplotlib.pyplot as plt
 
 from .functions import verify_file, load_obs
 from .simstrat import read_ref_date
+
+
+# Plot colour per trajectory label
+COLORS = {"e0": "dimgrey", "PF mean": "steelblue", "EnKF mean": "steelblue", "OpenDA": "seagreen"}
 
 
 # ── Data loading ───────────────────────────────────────────────────────────────
@@ -40,6 +45,37 @@ def load_e0(ensemble_base, results_dir, ref_date):
     return None
 
 
+def load_openda(openda_base, ref_date):
+    # work0 is the mainModel: the EnSR analysis IS applied to its central state at every step
+    # (verified: x_a_central != x_f_central, mean increment ~0.26 degC), so its trajectory is
+    # the assimilated best estimate — NOT a free baseline. The work_* dir is filter-named.
+    if not openda_base or not os.path.isdir(openda_base):
+        print("OpenDA:  NOT FOUND")
+        return None
+    candidates = sorted(glob.glob(os.path.join(openda_base, "work_*", "work0", "Results", "T_out.dat")))
+    candidates.append(os.path.join(openda_base, "work0", "Results", "T_out.dat"))
+    for path in candidates:
+        t = load_traj(path, ref_date)
+        if t is not None:
+            print(f"OpenDA:  {path}")
+            return t
+    print("OpenDA:  NOT FOUND")
+    return None
+
+
+def load_openda_members(openda_base, ref_date):
+    # work1..workN are the EnSR analysis ensemble members (work0 is the central estimate).
+    if not openda_base or not os.path.isdir(openda_base):
+        return []
+    paths = glob.glob(os.path.join(openda_base, "work_*", "work*", "Results", "T_out.dat"))
+    members = [t for p in sorted(paths)
+               if os.path.basename(os.path.dirname(os.path.dirname(p))) != "work0"
+               and (t := load_traj(p, ref_date)) is not None]
+    if members:
+        print(f"OpenDA spread: {len(members)} members")
+    return members
+
+
 def nearest_col(df, target):
     return df.columns[np.argmin(np.abs(df.columns - target))]
 
@@ -59,8 +95,9 @@ def rmse_by_depth(traj, obs_df, obs_depths):
 
 # ── Plots ─────────────────────────────────────────────────────────────────────
 
-def plot_timeseries(e0_traj, pf_traj, obs, obs_depths, lake_label, year):
-    ref_traj = pf_traj if pf_traj is not None else e0_traj
+def plot_timeseries(entries, obs, obs_depths, lake_label, year, spreads=None):
+    spreads = spreads or {}
+    ref_traj = entries[-1][1]
     neg_depths = -obs_depths
 
     fig, axes = plt.subplots(len(neg_depths), 1,
@@ -78,13 +115,15 @@ def plot_timeseries(e0_traj, pf_traj, obs, obs_depths, lake_label, year):
                    s=1, color="tomato", alpha=0.3, zorder=5,
                    label=f"obs ({near_obs_d:.1f} m)")
 
-        for traj, color, label in [
-            (e0_traj, "dimgrey",   "e0"),
-            (pf_traj, "steelblue", "PF mean"),
-        ]:
-            if traj is not None:
-                col = nearest_col(traj, nd)
-                ax.plot(traj[col].index, traj[col].values, lw=1.5, color=color, label=label)
+        for label, traj in entries:
+            color   = COLORS.get(label, "k")
+            members = spreads.get(label)
+            if members:
+                band = pd.concat([m[nearest_col(m, nd)] for m in members], axis=1)
+                ax.fill_between(band.index, band.min(axis=1), band.max(axis=1),
+                                color=color, alpha=0.15, lw=0, label=f"{label} spread")
+            col = nearest_col(traj, nd)
+            ax.plot(traj[col].index, traj[col].values, lw=1.5, color=color, label=label)
 
         ax.set_ylabel("T (°C)")
         ax.set_title(f"{actual_d:.0f} m", fontsize=9)
@@ -101,7 +140,6 @@ def plot_timeseries(e0_traj, pf_traj, obs, obs_depths, lake_label, year):
 
 def plot_rmse_bar(entries, obs, obs_depths, lake_label, year):
     depth_cmap = plt.cm.viridis(np.linspace(0.9, 0.1, len(obs_depths)))
-    colors     = {"e0": "dimgrey", "PF mean": "steelblue"}
 
     annual = {lbl: rmse_by_depth(traj, obs, obs_depths) for lbl, traj in entries}
 
@@ -121,7 +159,7 @@ def plot_rmse_bar(entries, obs, obs_depths, lake_label, year):
     e0_total = sum(r for _, r in annual["e0"]) if "e0" in annual else None
     for xi, (lbl, _) in enumerate(entries):
         total = bottoms[xi]
-        ax.bar(xi, total, bottom=0, color="none", edgecolor=colors.get(lbl, "k"), lw=2, width=0.5)
+        ax.bar(xi, total, bottom=0, color="none", edgecolor=COLORS.get(lbl, "k"), lw=2, width=0.5)
         if e0_total and lbl != "e0":
             gain = (total - e0_total) / e0_total * 100
             ann  = f"{total:.3f}°C\n{gain:+.1f}%"
@@ -151,11 +189,15 @@ def visualize(args, save=False):
     lake_label     = args["lake"].capitalize()
     year           = args.get("year")
 
+    openda_base    = args.get("openda_base")
+
     e0_traj = load_e0(ensemble_base, results_dir, ref_date)
     pf_traj = load_traj(mean_traj_path, ref_date)
     print(f"PF mean: {mean_traj_path if pf_traj is not None else 'NOT FOUND'}")
+    openda_traj    = load_openda(openda_base, ref_date)
+    openda_members = load_openda_members(openda_base, ref_date)
 
-    if e0_traj is None and pf_traj is None:
+    if e0_traj is None and pf_traj is None and openda_traj is None:
         raise RuntimeError("No trajectory data found — has the assimilation been run?")
 
     obs           = load_obs(obs_path)
@@ -165,7 +207,8 @@ def visualize(args, save=False):
         obs = obs[obs["time"].dt.year == year]
     obs_depths = np.sort(obs["depth"].unique())
 
-    entries = [(lbl, t) for lbl, t in [("e0", e0_traj), ("PF mean", pf_traj)] if t is not None]
+    entries = [(lbl, t) for lbl, t in
+               [("e0", e0_traj), ("PF mean", pf_traj), ("OpenDA", openda_traj)] if t is not None]
 
     # RMSE table
     print(f"\nAnnual RMSE (°C) — {lake_label}" + (f" {year}" if year else ""))
@@ -177,7 +220,8 @@ def visualize(args, save=False):
             row += f"  {r:>10.4f}" if not np.isnan(r) else f"  {'--':>10}"
         print(row)
 
-    plot_timeseries(e0_traj, pf_traj, obs, obs_depths, lake_label, year)
+    spreads = {"OpenDA": openda_members} if openda_members else {}
+    plot_timeseries(entries, obs, obs_depths, lake_label, year, spreads=spreads)
     plot_rmse_bar(entries, obs, obs_depths, lake_label, year)
 
     if save:
@@ -218,6 +262,7 @@ if __name__ == "__main__":
 
     raw.setdefault("ensemble_base", os.path.join(ROOT, "run", raw["lake"]))
     raw.setdefault("obs_path",      os.path.join(ROOT, "data", f"T_obs_{raw['lake']}.csv"))
+    raw.setdefault("openda_base",   os.path.join(ROOT, "run", "openda"))
     raw["ref_date"]       = read_ref_date(raw["ensemble_base"])
     raw["mean_traj_path"] = raw.get("mean_traj_path",
                                     os.path.join(raw["ensemble_base"],

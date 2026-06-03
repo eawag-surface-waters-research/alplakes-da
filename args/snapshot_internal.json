@@ -1,6 +1,0 @@
-{
-    "lake":          "upperlugano",
-    "snapshot_date": "2025-01-01",
-    "ensemble_base": "run/upperlugano_internaltest",
-    "external":      false
-}

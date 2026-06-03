@@ -12,7 +12,7 @@ from alplakes_da.functions                     import verify_args
 from alplakes_da.prep_reanalysis.pipeline      import run, STEPS
 from alplakes_da.prep_reanalysis.logging_utils import setup_logging
 
-REQUIRED = ["lake", "lake_bbox", "n_members", "ensemble_base", "start_date", "end_date", "reanalysis_dir"]
+REQUIRED = ["lake", "lake_bbox", "n_members", "ensemble_base", "start_date", "end_date"]
 
 
 def build_args(raw: dict) -> dict:
@@ -25,15 +25,25 @@ def build_args(raw: dict) -> dict:
     if "lake_contour" in args:
         lake_cfg["contour"] = args["lake_contour"]
 
-    # reanalysis_lake lets you reuse data downloaded under a different lake name
+    # reanalysis_lake lets you reuse data downloaded under a different lake name (for e.g. upperlugano vs lugano)
     reanalysis_lake        = args.get("reanalysis_lake", lake)
     args["reanalysis_lake"] = reanalysis_lake
     args["lakes"]           = {reanalysis_lake: lake_cfg}
 
-    reanalysis_dir = args["reanalysis_dir"]
-    args.setdefault("raw_dir",     os.path.join(reanalysis_dir, "raw_data"))
-    args.setdefault("out_dir",     os.path.join(reanalysis_dir, "processed"))
-    args.setdefault("contour_dir", os.path.join(reanalysis_dir, "contours"))
+    # raw ICON responses and lake contours are held in memory (never written to
+    # disk); reanalysis_dir only holds optional intermediates when
+    # save_intermediates is set, so it defaults inside the repo at data/.
+    # Resolved relative to ROOT (cwd-independent), matching ensemble_base.
+    reanalysis_dir = args.get("reanalysis_dir", os.path.join("data", "reanalysis_data"))
+    if not os.path.isabs(reanalysis_dir):
+        reanalysis_dir = os.path.normpath(os.path.join(ROOT, reanalysis_dir))
+    args["reanalysis_dir"] = reanalysis_dir
+
+    # Pipeline steps read out_dir unconditionally (intermediates land in
+    # {reanalysis_dir}/processed/{lake}/ when save_intermediates is set).
+    args.setdefault("out_dir", os.path.join(reanalysis_dir, "processed"))
+
+    args.setdefault("contours_geojson", os.path.join(ROOT, "static", "lakes.geojson"))
 
     # Resolve ensemble_base cwd-independently (relative to src/, matching
     # copy_standard_inputs.py and assimilate.py) so all scripts agree on

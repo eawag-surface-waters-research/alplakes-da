@@ -8,11 +8,11 @@ run/<lake>/standard_inputs:
 The heavy spinup output in standard_inputs/Results/ (T_out.dat, OXY_*, etc. —
 ~2.6 GB) is skipped: each member regenerates its own Results at assimilation
 time and seeds the warmup snapshot from the dated simulation-snapshot_*.dat that
-IS copied (a top-level file).  Copying Results/ would mean ~55 GB across 21 dirs.
+IS copied (a top-level file).  
 
 This is deliberately a SEPARATE step from perturbate.py (which only overwrites
 Forcing.dat in ensemble1..N).  Isolating instance-creation keeps it swappable —
-e.g. if an external tool ever owns the cloning step instead.
+e.g. if an external tool owns the cloning step instead like OpenDA.
 
 Pipeline:
   initial_conditions_snapshot.py  (snapshot.json)  -> run/<lake>/standard_inputs
@@ -49,8 +49,7 @@ def _resolve(path):
 
 def _copy_dir(src_dir, dst_dir, skip=None):
     """Copy files/subdirs from src_dir into dst_dir (overwriting), skipping names
-    in `skip`.  Does not wipe dst_dir, so unrelated outputs (e.g. Results_EnKF
-    from a previous DA run) are preserved."""
+    in `skip`.  Does not wipe dst_dir, so unrelated outputs are preserved."""
     os.makedirs(dst_dir, exist_ok=True)
     for fname in os.listdir(src_dir):
         if skip and fname in skip:

@@ -48,7 +48,8 @@ from initial_conditions_snapshot import create_standard_inputs
 from copy_standard_inputs        import copy_standard_inputs
 from perturbate                  import perturbator
 from openda_adapter              import adapt
-from openda_config               import FILTERS, render as render_oda
+from openda_config               import FILTERS, render as render_oda, work_dir_name
+from alplakes_da.summarize        import summarize_run
 
 
 def _resolve(path):
@@ -116,6 +117,11 @@ def run(cfg, dry_run=False, skip_oda=False, force=None):
     snapshot_raw["ensemble_base"] = ensemble_base
     ensemble_raw["ensemble_base"] = ensemble_base
 
+    # The snapshot builds time-varying inputs (forcing/inflows/absorption); they
+    # must cover the full simulation window, so hand it the run's end_date. The
+    # spin-up itself still stops at snapshot_date.
+    snapshot_raw.setdefault("simulation_end_date", ensemble_raw["end_date"])
+
     tag = "  (dry-run)" if dry_run else ""
     print(f"=== OpenDA pipeline - lake={lake}  base={os.path.relpath(ensemble_base, ROOT)}"
           f"  filter={filter_type}{tag} ===")
@@ -171,6 +177,17 @@ def run(cfg, dry_run=False, skip_oda=False, force=None):
         subprocess.run(["oda_run.sh", oda_file], cwd=openda_dir, check=True)
     except FileNotFoundError:
         raise RuntimeError("oda_run.sh not found on PATH - source the OpenDA environment first")
+
+    # Posterior ensemble summary (members 1..N) -> final_output/
+    work_base = os.path.join(os.path.dirname(openda_dir), "run", "openda", work_dir_name(filter_type))
+    member_files = [os.path.join(work_base, f"work{i}", "Results", "T_out.dat")
+                    for i in range(1, n_members + 1)]
+    obs_csv = ensemble_raw.get("obs_csv")
+    obs_csv = _resolve_root(obs_csv) if obs_csv else os.path.join(ROOT, "data", f"T_obs_{lake}.csv")
+    _, n_mem, T, D = summarize_run(os.path.join(ROOT, "final_output"),
+                                   lake, "openda", filter_type, member_files, obs_csv=obs_csv)
+    print(f"[summary] {n_mem} members, {T} steps x {D} depths "
+          f"-> final_output/{lake}_openda_{filter_type}.csv")
     print("=== pipeline complete ===")
 
 

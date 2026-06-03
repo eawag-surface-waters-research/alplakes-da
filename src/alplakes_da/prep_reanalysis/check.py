@@ -14,23 +14,22 @@ logger = logging.getLogger(__name__)
 _VAR_LABELS = {"T_2M": "T_2M [K]", "U": "U [m/s]", "V": "V [m/s]", "GLOB": "GLOB [W/m²]"}
 
 
-def check(args: dict, flat_df=None, mean_df=None) -> str:
-    lake        = args.get("reanalysis_lake", args["lake"])
-    contour_dir = args["contour_dir"]
-    out_dir     = args["out_dir"]
+def check(args: dict, flat_df=None, mean_df=None, contours=None) -> str:
+    lake    = args.get("reanalysis_lake", args["lake"])
+    out_dir = args["out_dir"]
 
-    out_path     = os.path.join(args["ensemble_base"], "check.png")
+    out_path = os.path.join(args["ensemble_base"], "check.png")
     os.makedirs(args["ensemble_base"], exist_ok=True)
-    contour_path = os.path.join(contour_dir, f"{lake}.json")
-    if not os.path.exists(contour_path):
-        raise FileNotFoundError(f"{contour_path} not found — run fetch_contours first")
+    feature  = (contours or {}).get(lake)
+    if feature is None:
+        raise ValueError(f"No contour for {lake} — run fetch_contours (it cannot be skipped)")
 
     logger.info(f"{lake}: loading data for check plot ...")
     df   = flat_df if flat_df is not None else pd.read_csv(os.path.join(out_dir, lake, "flat.csv"))
     mean = mean_df if mean_df is not None else pd.read_csv(os.path.join(out_dir, lake, "lake_mean.csv"), parse_dates=["time"])
     if "time" in mean.columns and mean["time"].dtype == object:
         mean["time"] = pd.to_datetime(mean["time"])
-    gdf  = gpd.read_file(contour_path).to_crs(4326)
+    gdf  = gpd.GeoDataFrame.from_features([feature], crs="EPSG:4326")
 
     # Recompute lake mask on unique grid points
     unique_pts = df[["lat", "lon"]].drop_duplicates()

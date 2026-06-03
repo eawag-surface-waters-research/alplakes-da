@@ -12,6 +12,7 @@ from alplakes_da.functions import Logger, verify_args, verify_file, discover_n_m
 from alplakes_da.simstrat import read_ref_date
 from alplakes_da.PF_assimilate import run_pf_daily
 from alplakes_da.EnKF_assimilate import run_enkf_daily
+from alplakes_da.summarize import summarize_run
 
 REQUIRED_COMMON = ["algorithm", "lake", "results_dir", "par_file", "start_date", "end_date"]
 REQUIRED_ENKF   = ["sigma_obs", "inflation"]
@@ -64,6 +65,15 @@ def assimilator(raw_args):
         run_enkf_daily(args, log)
     else:
         raise ValueError(f"Unknown algorithm: '{args['algorithm']}'. Use 'PF' or 'EnKF'.")
+
+    # Posterior ensemble summary (members 1..N) -> final_output/
+    member_files = [os.path.join(args["ensemble_base"], f"ensemble{i}", args["results_dir"], "T_out.dat")
+                    for i in args["member_ids"]]
+    _, n_mem, T, D = summarize_run(os.path.join(ROOT, "final_output"),
+                                   args["lake"], "python", args["algorithm"], member_files,
+                                   obs_csv=args["obs_path"])
+    log.info(f"Summary written: {n_mem} members, {T} steps x {D} depths "
+             f"-> final_output/{args['lake']}_python_{args['algorithm']}.csv")
 
 
 if __name__ == "__main__":

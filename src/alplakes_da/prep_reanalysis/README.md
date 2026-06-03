@@ -13,30 +13,34 @@ reads a JSON args file (e.g. `args/ensemble.json`) and calls `run`.
 ## Pipeline
 
 ```
-fetch_contours   →   contours/{lake}.json
+fetch_contours   →   {lake} polygon                         (in memory)
        ↓
-retrieve         →   raw_data/{lake}/YYYYMMDD.json          (one file per day)
+retrieve         →   {date: ICON JSON}                      (in memory, one per day)
        ↓
-parse_json       →   processed/{lake}/flat.csv              (all grid points × all timesteps)
+parse_json       →   flat table                             (all grid points × all timesteps, in memory)
        ↓
-lake_mean        →   processed/{lake}/lake_mean.csv         (spatial mean over lake surface)
+lake_mean        →   lake-mean meteo series                 (spatial mean over lake surface, in memory)
        ↓
 check            →   {ensemble_base}/check.png              (diagnostic plot)
        ↓
 perturbate       →   {ensemble_base}/ensemble{1..N}/Forcing.dat   (perturbed Simstrat forcing)
 ```
 
-**Step 0 — fetch_contours:** Downloads the Alplakes lake contour GeoJSON and
-extracts one `{lake}.json` polygon per configured lake. Lakes not in the remote
-file can use a local fallback contour.
+The whole download→perturbate path runs in memory; only `check.png` and the
+member `Forcing.dat` files are written (plus optional `flat.csv` / `lake_mean.csv`
+when `save_intermediates` is enabled).
 
-**Step 1 — retrieve:** Downloads daily JSON files from the ICON KENDA-CH1
-reanalysis API for the lake bounding box, in parallel. Already-downloaded files
-are skipped (idempotent).
+**Step 0 — fetch_contours:** Reads the bundled `static/lakes.geojson`
+(`contours_geojson`) and resolves one polygon per configured lake by `key`,
+returning them in memory. Lakes not in that file can use a local fallback
+contour (`lake_contour`).
 
-**Step 2 — parse_json:** Reads every daily JSON and flattens the 3-D
-(time × lat × lon) grid into a single flat table with one row per timestep per
-grid point.
+**Step 1 — retrieve:** Downloads daily JSON from the ICON KENDA-CH1 reanalysis
+API for the lake bounding box, in parallel, and returns `{date: payload}` in
+memory — nothing is cached to disk.
+
+**Step 2 — parse_json:** Flattens each daily 3-D (time × lat × lon) grid into a
+single flat table with one row per timestep per grid point.
 
 **Step 3 — lake_mean:** Loads the lake contour polygon, identifies which grid
 points fall inside the lake, and computes a spatial mean of all variables per
@@ -55,8 +59,9 @@ directories (`ensemble1..N`) must already exist (created by
 `copy_standard_inputs.py`); `ensemble0` is the unperturbed control and is not
 touched.
 
-Steps 2–4 pass their results in memory to the next step, so `save_intermediates`
-can be turned off to skip writing `flat.csv` / `lake_mean.csv` to disk.
+Steps 0–4 pass their results in memory to the next step. `save_intermediates`
+(default off) can be turned on to additionally write `flat.csv` / `lake_mean.csv`
+to `out_dir` for inspection.
 
 ## Usage
 
@@ -114,27 +119,36 @@ dict the steps consume. Example (`args/ensemble.json`):
 | `n_members` | yes | Number of perturbed members to write |
 | `ensemble_base` | yes | Base dir of the Simstrat ensemble (resolved relative to `src/`); holds `ensemble1..N` and `check.png` |
 | `start_date` / `end_date` | yes | ISO dates; treated as UTC |
-| `reanalysis_dir` | yes | Base dir for the data tree (`raw_data/`, `processed/`, `contours/`) |
-| `reanalysis_lake` | no | Reuse data downloaded under a different lake name (defaults to `lake`) |
-| `lake_key` | no | Key matching the remote Alplakes GeoJSON feature |
+| `reanalysis_dir` | no | Base dir for optional intermediates (`processed/` when `save_intermediates`); resolved relative to repo root, default `data/reanalysis_data` |
+| `reanalysis_lake` | no | Reuse the bbox/contour configured under a different lake name (defaults to `lake`) |
+| `lake_key` | no | Key matching a feature in the bundled `static/lakes.geojson` |
 | `lake_contour` | no | Path to a local fallback contour polygon |
 | `rng_seed` | no | AR(1) random seed (default `42`) |
 | `sigma_scale` | no | Scales the perturbation spread (default `1.0`) |
-| `save_intermediates` | no | Write `flat.csv` / `lake_mean.csv` to disk (default `true`) |
+| `save_intermediates` | no | Write `flat.csv` / `lake_mean.csv` to disk (default `false`) |
 | `skip` | no | Steps to skip (same as `--skip`) |
 
-Derived paths (`raw_dir`, `out_dir`, `contour_dir`, `standard_inputs_path`,
-`log_dir`) default off these and can be overridden in the JSON.
+Raw ICON responses are downloaded and parsed in memory — they are never written
+to disk. As a consequence `retrieve` cannot be skipped independently of `parse`
+(there is no cached raw data to fall back on).
+
+Lake contours are read from the bundled `static/lakes.geojson`
+(`contours_geojson`) and held in memory — `fetch_contours` writes nothing and,
+like `retrieve`, cannot be skipped independently of the steps that consume it.
+
+Derived paths (`out_dir`, `contours_geojson`, `standard_inputs_path`, `log_dir`)
+default off these and can be overridden in the JSON. `out_dir` is only used when
+`save_intermediates` is enabled.
 
 ## Modules
 
 | File | Purpose |
 |---|---|
-| `config.py` | Static constants: API URL, variable list, contour URL, Simstrat reference year, `Forcing.dat` header |
+| `config.py` | Static constants: API URL, variable list, contour source URL, Simstrat reference year, `Forcing.dat` header |
 | `pipeline.py` | `run(args, skip)` — orchestrates the six steps; exposes `STEPS` |
-| `fetch_contours.py` | Downloads / copies lake contour polygons |
-| `retrieve.py` | Downloads daily ICON reanalysis JSON (parallel, skip-if-exists) |
-| `parse_json.py` | Flattens raw JSON into a flat table per lake |
+| `fetch_contours.py` | Resolves lake contour polygons from the bundled GeoJSON (in memory) |
+| `retrieve.py` | Downloads daily ICON reanalysis JSON in parallel, returned in memory |
+| `parse_json.py` | Flattens the in-memory raw JSON into a flat table per lake |
 | `lake_mean.py` | Masks grid points inside the lake polygon and computes the spatial mean |
 | `check.py` | Diagnostic plot of grid-point selection + lake-mean time series |
 | `perturbate.py` | Fits AR(1) on ICON-vs-standard residuals and writes perturbed `Forcing.dat` per member |
@@ -152,7 +166,7 @@ lakes, bounding boxes, dates and paths all come from the args file.
 |---|---|
 | `API_BASE` | Alplakes internal ICON KENDA-CH1 reanalysis endpoint |
 | `VARIABLES` | `T_2M`, `U`, `V`, `GLOB` (2 m temperature, wind components, global radiation) |
-| `CONTOURS_URL` | Alplakes lakes GeoJSON on S3 |
+| `CONTOURS_URL` | Canonical S3 source of `static/lakes.geojson` (for manual refresh; not fetched at runtime) |
 | `SIMSTRAT_REF_YEAR` | Reference year for the `Forcing.dat` time axis (days since 1 Jan) |
 | `FORCING_HEADER` | Column header written to each perturbed `Forcing.dat` |
 
@@ -160,10 +174,8 @@ lakes, bounding boxes, dates and paths all come from the args file.
 
 | Path | Description |
 |---|---|
-| `{reanalysis_dir}/raw_data/{lake}/YYYYMMDD.json` | Raw API response per day (time × 2-D grid) |
-| `{reanalysis_dir}/processed/{lake}/flat.csv` | All grid points × all timesteps: `time, lat, lon, T_2M, U, V, GLOB` |
-| `{reanalysis_dir}/processed/{lake}/lake_mean.csv` | Spatial mean over in-lake grid points per timestep |
-| `{reanalysis_dir}/contours/{lake}.json` | GeoJSON polygon used for the spatial mask |
+| `{reanalysis_dir}/processed/{lake}/flat.csv` | _(optional, `save_intermediates`)_ All grid points × all timesteps: `time, lat, lon, T_2M, U, V, GLOB` |
+| `{reanalysis_dir}/processed/{lake}/lake_mean.csv` | _(optional, `save_intermediates`)_ Spatial mean over in-lake grid points per timestep |
 | `{ensemble_base}/check.png` | Diagnostic map + time series plot |
 | `{ensemble_base}/ensemble{1..N}/Forcing.dat` | Perturbed Simstrat forcing — the pipeline's main output |
 | `{log_dir}/pipeline_YYYYMMDD_HHMMSS.log` | Timestamped log file |

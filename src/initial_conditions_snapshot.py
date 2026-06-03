@@ -14,6 +14,7 @@ SRC_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT    = os.path.dirname(SRC_DIR)
 sys.path.insert(0, SRC_DIR)
 
+# Loading initial conditions
 from alplakes_da.functions import (
     Logger, verify_args,
     # initial conditions helpers ### copied from operational_simstrat
@@ -32,6 +33,7 @@ REQUIRED = ["lake", "snapshot_date", "ensemble_base"]
 
 LAKE_PARAMETERS_FILE = os.path.join(ROOT, "static", "lake_parameters.json")
 
+# Coped parameters from operational simstrat model.py
 FORCING_PARAMETERS = {
     "Time": {"unit": "d",     "description": "Time in days since reference date"},
     "u":    {"unit": "m/s",   "description": "Wind W→E",        "max_interpolate_gap": 7,     "fill": "mean",  "min": -20, "max": 20},
@@ -43,6 +45,7 @@ FORCING_PARAMETERS = {
     "rain": {"unit": "m/hr",  "description": "Precipitation",   "max_interpolate_gap": 7,     "fill": "mean",  "negative_to_zero": True},
 }
 
+# Coped parameters from operational simstrat model.py
 INFLOW_PARAMETERS = {
     "depth": {"unit": "m"},
     "Q": {"unit": "m3/s", "max_interpolate_gap": 5, "fill": "doy",  "negative_to_zero": True, "max": 1500},
@@ -59,7 +62,7 @@ def _load_lake_params(lake_key: str) -> dict:
             return lake
     raise ValueError("Lake '{}' not found in {}".format(lake_key, LAKE_PARAMETERS_FILE))
 
-
+# Coped parameters from operational simstrat model.py
 def build_args(raw: dict) -> dict:
     # Load lake parameters from the shared catalogue; user args override if present
     lake_params = _load_lake_params(raw["lake"])
@@ -82,6 +85,13 @@ def build_args(raw: dict) -> dict:
     args["snapshot_date"]   = datetime.fromisoformat(args["snapshot_date"]).replace(tzinfo=tz)
     args["reference_date"]  = datetime.strptime(args["reference_date"], "%Y%m%d").replace(tzinfo=tz)
 
+    # Time-varying inputs must span the whole simulation window; the spin-up run
+    # still stops at snapshot_date. Defaults to snapshot_date (spin-up only) when
+    # no simulation end is given (e.g. a standalone snapshot with no later run).
+    sim_end = args.get("simulation_end_date")
+    args["simulation_end_date"] = (datetime.fromisoformat(sim_end).replace(tzinfo=tz)
+                                   if sim_end else args["snapshot_date"])
+
     ensemble_base = args["ensemble_base"]
     if not os.path.isabs(ensemble_base):
         ensemble_base = os.path.normpath(os.path.join(os.getcwd(), ensemble_base))
@@ -90,10 +100,10 @@ def build_args(raw: dict) -> dict:
 
     return args
 
-
+# needed for external download of initial conditions
 S3_BASE = "https://alplakes-eawag.s3.eu-central-1.amazonaws.com/simulations/simstrat/downloads"
 
-
+# needed for external download of initial conditions (as if clicking on download on alplakes ...)
 def _download_from_s3(lake: str, output_dir: str, log) -> None:
     url = "{}/{}.zip".format(S3_BASE, lake)
     log.info("Downloading inputs from {}".format(url), indent=1)
@@ -104,7 +114,9 @@ def _download_from_s3(lake: str, output_dir: str, log) -> None:
         z.extractall(output_dir)
     log.info("Extracted {} files".format(len(z.namelist())), indent=1)
 
-
+# Internal = build every Simstrat input from scratch by querying the data API.
+# External = download a pre-built zip from S3 (the same bundle you'd get clicking 
+# "Download" on the alplakes site) and reuse those files, skipping almost all generation.
 def create_standard_inputs(raw_args: dict) -> None:
     verify_args(raw_args, REQUIRED)
     args = build_args(raw_args)
@@ -194,7 +206,8 @@ def create_standard_inputs(raw_args: dict) -> None:
         write_output_time_resolution(steps, t_out_file)
 
     start_date = args["reference_date"]
-    end_date   = args["snapshot_date"]
+    end_date   = args["snapshot_date"]          # spin-up run boundary / snapshot instant
+    inputs_end = args["simulation_end_date"]    # time-varying inputs span the full simulation
     external   = args.get("external", False)
 
     # 5. Fetch forcing station metadata (populates f["parameters"], f["elevation"], f["latlng"])
@@ -214,12 +227,12 @@ def create_standard_inputs(raw_args: dict) -> None:
     # 7. Absorption
     if not external:
         log.info("Creating absorption file", indent=0)
-        absorption = absorption_from_observations(raw_args["lake"], start_date, end_date,
+        absorption = absorption_from_observations(raw_args["lake"], start_date, inputs_end,
                                                   args["data_api"], args["reference_date"])
         if not absorption:
             log.info("No observation data; using default absorption", indent=1)
             absorption = default_absorption(args["trophic_state"], args["elevation"],
-                                            start_date, end_date, args.get("absorption", False),
+                                            start_date, inputs_end, args.get("absorption", False),
                                             args["reference_date"])
         write_absorption(absorption, os.path.join(output_dir, "Absorption.dat"), merge_inputs=False, log=log)
 
@@ -231,7 +244,7 @@ def create_standard_inputs(raw_args: dict) -> None:
             forcing_data[key] = dict(forcing_data[key])
             forcing_data[key]["data"] = np.array([])
         forcing_data = download_forcing_data(
-            forcing_data, start_date, end_date,
+            forcing_data, start_date, inputs_end,
             parameters["forcing"], args["elevation"], args["latitude"], args["longitude"],
             args["reference_date"], args["data_api"], log)
         forcing_data = quality_assurance_forcing_data(forcing_data, log)
@@ -249,7 +262,7 @@ def create_standard_inputs(raw_args: dict) -> None:
             parameters["inflow_mode"] = 2
             inflow_data = collect_inflow_data(
                 args["inflows"], args["inflow_salinity"],
-                start_date, end_date, args["reference_date"],
+                start_date, inputs_end, args["reference_date"],
                 output_dir, args["data_api"], log)
             inflow_data = quality_assurance_inflow_data(inflow_data, INFLOW_PARAMETERS, log)
             log.info("Interpolating small inflow gaps", indent=1)
@@ -296,7 +309,7 @@ def create_standard_inputs(raw_args: dict) -> None:
     else:
         par = update_par_file(
             args["simstrat_version"], args["par_template"],
-            start_date, end_date, snapshot=False, parameters=parameters, args=args, log=log)
+            start_date, end_date, snapshot=True, parameters=parameters, args=args, log=log)
     write_par_file(args["simstrat_version"], par, output_dir, filename="Settings_spinup.par")
 
     # 12. Run spin-up simulation

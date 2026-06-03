@@ -46,22 +46,40 @@ Both engines share the same preprocessing. Each step is driven by a JSON file in
 ```
 .
 ├── src/                     Python source
-│   ├── alplakes_da/         Importable package (core library)
-│   │   ├── functions.py        Docker/Simstrat helpers, logging, arg validation
-│   │   ├── simstrat.py         Simstrat run + state read/write helpers
-│   │   ├── snapshot_io.py      Read/write Simstrat Fortran binary snapshots
-│   │   ├── EnKF_assimilate.py  Native Ensemble Kalman Filter
-│   │   ├── PF_assimilate.py    Native Particle Filter
-│   │   ├── visualize.py        Plotting helpers
-│   │   └── prep_reanalysis/    Meteo pipeline: ICON reanalysis → perturbed forcing ensemble
-│   │                           (see src/alplakes_da/prep_reanalysis/README.md)
-│   ├── initial_conditions_snapshot.py   step 1 (spin-up + warmup snapshot)
-│   ├── copy_standard_inputs.py          step 2 (build ensemble instances)
-│   ├── perturbate.py                    step 3 (reanalysis + AR(1) forcing perturbation)
-│   ├── assimilate.py                    step 4 — native EnKF/PF
-│   ├── openda_adapter.py                OpenDA: sync inputs/forcings/warmup + build observations
-│   ├── openda_config.py                 OpenDA: single source of truth that generates the config
-│   └── openda_assimilation.py           OpenDA: end-to-end orchestrator
+│   │   ─ Entry-point scripts — each is a CLI taking one args/*.json (see Workflow) ─
+│   ├── initial_conditions_snapshot.py   Step 1. Builds every Simstrat input from the data API and
+│   │                                    runs a Docker spin-up to the snapshot date, saving a warmup
+│   │                                    state; inputs span the whole simulation window.
+│   ├── copy_standard_inputs.py          Step 2. Clones standard_inputs into ensemble0..N (0 = control).
+│   ├── perturbate.py                    Step 3. Thin CLI over prep_reanalysis: fits AR(1) noise from
+│   │                                    ICON reanalysis → perturbed Forcing.dat in ensemble1..N.
+│   ├── assimilate.py                    Step 4 (native). Dispatches to the EnKF/PF engine and runs
+│   │                                    the daily forecast→update cycle.
+│   ├── openda_assimilation.py           OpenDA orchestrator: runs steps 1–3 (skipping done ones),
+│   │                                    renders the config, then launches the filter.
+│   ├── openda_adapter.py                OpenDA: syncs inputs/forcings/warmup into openda_simstrat/
+│   │                                    and builds the observation files.
+│   ├── openda_config.py                 OpenDA: single source of truth rendering run.oda + every
+│   │                                    .gen.xml from the FILTERS spec (adding a filter = one line).
+│   │
+│   └── alplakes_da/         Importable package (core library shared by both engines)
+│       ├── functions.py        Docker/Simstrat + data-API helpers, logging, arg validation
+│       ├── simstrat.py         Simstrat run + Settings.par / state read-write helpers
+│       ├── snapshot_io.py      Read/write Simstrat Fortran binary snapshots
+│       ├── EnKF_assimilate.py  Native Ensemble Kalman Filter engine
+│       ├── PF_assimilate.py    Native Particle Filter engine
+│       ├── summarize.py        Post-run posterior summary (.csv) + skill/bias report (.json)
+│       ├── visualize.py        Plots: time series, RMSE, ensemble spread, OpenDA results
+│       └── prep_reanalysis/    Meteo pipeline: ICON reanalysis → AR(1)-perturbed forcing ensemble
+│           ├── pipeline.py        Step runner: contours → retrieve → parse → mean → check → perturbate
+│           ├── fetch_contours.py  Download lake-boundary polygons
+│           ├── retrieve.py        Parallel day-by-day ICON reanalysis download
+│           ├── parse_json.py      ICON JSON → flat (time, lat, lon, vars) table
+│           ├── lake_mean.py       Spatial mean over in-lake grid points
+│           ├── check.py           QA / sanity diagnostics
+│           ├── perturbate.py      AR(1) fit on (ICON − Forcing) residuals → perturbed forcings
+│           ├── config.py          API URLs, variable list, Simstrat reference year
+│           └── logging_utils.py   Logging setup   (full detail: prep_reanalysis/README.md)
 │
 ├── args/                    One JSON config per entry point (see Configuration)
 ├── static/                  Version/lake-independent templates: simstrat_<ver>.par, aed2.nml,
@@ -72,6 +90,10 @@ Both engines share the same preprocessing. Each step is driven by a JSON file in
 │   ├── <lake>/standard_inputs/   spun-up inputs + dated warmup snapshot
 │   ├── <lake>/ensemble0..N/      control (0) + perturbed members; DA writes Results_* here
 │   └── openda/work_<filter>/work0..N/   OpenDA per-member scratch (Results/T_out.dat)
+├── final_output/            Per-run summaries (auto-written), named <lake>_<engine>_<label>:
+│                            .csv  = posterior ensemble mean + std (time, depth, T_mean, T_std)
+│                            .json = skill/bias report vs observations (bias, rmse, mae,
+│                                    spread, coverage), overall + per depth
 │
 ├── openda_simstrat/         OpenDA black-box configuration (see below; mostly generated)
 ├── logs/                    Timestamped pipeline logs
@@ -155,7 +177,8 @@ python src/openda_assimilation.py args/openda_assimilation.json --skip-oda # gen
 
 Set `"filter"` in `args/openda_assimilation.json` to `EnKF`, `DEnKF`, or `EnSR`. Output for each
 filter goes to `run/openda/work_<filter>/workN/Results/T_out.dat` (hourly, full water column) plus
-`openda_simstrat/<filter>_results.py` (OpenDA `PythonResultWriter`).
+`openda_simstrat/<filter>_results.py` (OpenDA `PythonResultWriter`), and a posterior summary +
+skill/bias report are auto‑written to `final_output/<lake>_openda_<filter>.{csv,json}`.
 
 > **Output convention:** in `<filter>_results.py`, `pred_a_central` is `H·x_f` (the forecast
 > prediction), not `H·x_a`. To see the true analysis correction at observation depths, read the
@@ -173,7 +196,9 @@ python src/assimilate.py                  args/enkf.json     # or args/pf.json
 ```
 
 Per‑member results are written to `run/<lake>/ensemble{i}/Results_<algo>/`, with the ensemble‑mean
-trajectory and diagnostics alongside in `run/<lake>/`.
+trajectory and diagnostics alongside in `run/<lake>/`. On completion a posterior summary (ensemble
+mean + 1σ per time/depth) and a skill/bias report are auto‑written to
+`final_output/<lake>_python_<algo>.{csv,json}`.
 
 ## Prerequisites
 
