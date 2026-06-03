@@ -35,7 +35,7 @@ OpenDA's XML configs / wrappers are left untouched (this only writes data files)
 Prerequisite: run copy_standard_inputs.py + perturbate.py first so the ensemble
 Forcing.dat files exist.
 
-Usage:  python src/openda_adapter.py args/ensemble.json [--dry-run]
+Usage:  python src/alplakes_da/openda/adapter.py args/ensemble.json [--dry-run]
 """
 
 import os
@@ -48,8 +48,9 @@ import argparse
 from collections import defaultdict
 from datetime import date, datetime, timezone
 
-SRC_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT    = os.path.dirname(SRC_DIR)
+# this file lives at src/alplakes_da/openda/adapter.py
+SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # src/
+ROOT    = os.path.dirname(SRC_DIR)                                                       # repo root
 sys.path.insert(0, SRC_DIR)
 
 from alplakes_da.functions import verify_args

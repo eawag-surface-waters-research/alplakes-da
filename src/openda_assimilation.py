@@ -8,9 +8,9 @@ Runs the full chain, skipping the expensive setup steps that are already done:
                                      [skip if instances already exist]
   3. perturbate                   -> perturbed Forcing.dat in ensemble1..N
                                      [skip if forcings already perturbed]
-  4. openda_adapter               -> sync inputs + forcings + warmup + observations into openda_simstrat/
+  4. openda.adapter               -> sync inputs + forcings + warmup + observations into openda_simstrat/
                                      [always]
-  5. openda_config.render + oda_run.sh run.oda
+  5. openda.config.render + oda_run.sh run.oda
                                      -> render the filter's run.oda + chain, then run OpenDA
                                      [always render; launch unless --skip-oda]
 
@@ -47,8 +47,8 @@ sys.path.insert(0, SRC_DIR)
 from initial_conditions_snapshot import create_standard_inputs
 from copy_standard_inputs        import copy_standard_inputs
 from perturbate                  import perturbator
-from openda_adapter              import adapt
-from openda_config               import FILTERS, render as render_oda, work_dir_name
+from alplakes_da.openda.adapter  import adapt
+from alplakes_da.openda.config   import FILTERS, render as render_oda, work_dir_name
 from alplakes_da.summarize        import summarize_run
 
 

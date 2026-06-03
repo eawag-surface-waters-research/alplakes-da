@@ -57,10 +57,6 @@ Both engines share the same preprocessing. Each step is driven by a JSON file in
 │   │                                    the daily forecast→update cycle.
 │   ├── openda_assimilation.py           OpenDA orchestrator: runs steps 1–3 (skipping done ones),
 │   │                                    renders the config, then launches the filter.
-│   ├── openda_adapter.py                OpenDA: syncs inputs/forcings/warmup into openda_simstrat/
-│   │                                    and builds the observation files.
-│   ├── openda_config.py                 OpenDA: single source of truth rendering run.oda + every
-│   │                                    .gen.xml from the FILTERS spec (adding a filter = one line).
 │   │
 │   └── alplakes_da/         Importable package (core library shared by both engines)
 │       ├── functions.py        Docker/Simstrat + data-API helpers, logging, arg validation
@@ -70,16 +66,19 @@ Both engines share the same preprocessing. Each step is driven by a JSON file in
 │       ├── PF_assimilate.py    Native Particle Filter engine
 │       ├── summarize.py        Post-run posterior summary (.csv) + skill/bias report (.json)
 │       ├── visualize.py        Plots: time series, RMSE, ensemble spread, OpenDA results
-│       └── prep_reanalysis/    Meteo pipeline: ICON reanalysis → AR(1)-perturbed forcing ensemble
-│           ├── pipeline.py        Step runner: contours → retrieve → parse → mean → check → perturbate
-│           ├── fetch_contours.py  Download lake-boundary polygons
-│           ├── retrieve.py        Parallel day-by-day ICON reanalysis download
-│           ├── parse_json.py      ICON JSON → flat (time, lat, lon, vars) table
-│           ├── lake_mean.py       Spatial mean over in-lake grid points
-│           ├── check.py           QA / sanity diagnostics
-│           ├── perturbate.py      AR(1) fit on (ICON − Forcing) residuals → perturbed forcings
-│           ├── config.py          API URLs, variable list, Simstrat reference year
-│           └── logging_utils.py   Logging setup   (full detail: prep_reanalysis/README.md)
+│       ├── prep_reanalysis/    Meteo pipeline: ICON reanalysis → AR(1)-perturbed forcing ensemble
+│       │   ├── pipeline.py        Step runner: contours → retrieve → parse → mean → check → perturbate
+│       │   ├── fetch_contours.py  Resolve lake-boundary polygons from bundled GeoJSON (in memory)
+│       │   ├── retrieve.py        Parallel day-by-day ICON reanalysis download (in memory)
+│       │   ├── parse_json.py      ICON JSON → flat (time, lat, lon, vars) table
+│       │   ├── lake_mean.py       Spatial mean over in-lake grid points
+│       │   ├── check.py           QA / sanity diagnostics
+│       │   ├── perturbate.py      AR(1) fit on (ICON − Forcing) residuals → perturbed forcings
+│       │   ├── config.py          API URLs, variable list, Simstrat reference year
+│       │   └── logging_utils.py   Logging setup   (full detail: prep_reanalysis/README.md)
+│       └── openda/            OpenDA cross-validation bridge (data + config)
+│           ├── adapter.py         Sync framework inputs/forcings/warmup + build observations
+│           └── config.py          Render run.oda + every .gen.xml from the FILTERS spec
 │
 ├── args/                    One JSON config per entry point (see Configuration)
 ├── static/                  Version/lake-independent templates: simstrat_<ver>.par, aed2.nml,
@@ -120,7 +119,7 @@ calls a wrapper script that runs Simstrat in Docker, and applies the Kalman upda
 member's temperature state at every analysis (observation) time.
 
 The setup is **almost entirely generated per run** from a single source of truth
-(`src/openda_config.py`), driven by three inputs — the chosen `filter`, `n_members`, and the
+(`src/alplakes_da/openda/config.py`), driven by three inputs — the chosen `filter`, `n_members`, and the
 observation depths (auto‑detected from `data/T_obs_<lake>.csv`, restricted to the depths the model
 actually outputs). The observation depth list flows into every coupled file, so a different lake
 needs no manual edits.
@@ -150,8 +149,8 @@ openda_simstrat/
 
 Only `simstratWrapperEnKF.xml`, `bin/`, and the base files in `template/` are hand‑maintained;
 everything marked GENERATED (and `run.oda`) is rewritten on each run by `openda_assimilation.py`
-(`openda_adapter.py` syncs inputs/forcings/warmup and builds observations; `openda_config.py`
-renders the config). Adding a new filter is a one‑line entry in the `FILTERS` spec.
+(`alplakes_da/openda/adapter.py` syncs inputs/forcings/warmup and builds observations;
+`alplakes_da/openda/config.py` renders the config). Adding a new filter is a one‑line entry in the `FILTERS` spec.
 
 ### Running the OpenDA engine
 
