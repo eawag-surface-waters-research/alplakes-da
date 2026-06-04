@@ -5,9 +5,13 @@ import numpy as np
 import pandas as pd
 from datetime import timedelta
 
-from .functions import load_obs, obs_to_sim_col, append_rows, accumulate_mean, start_containers, stop_containers, run_window_parallel
-from .simstrat import read_snapshot_T, write_snapshot_T
+from .functions import (load_obs, obs_to_sim_col, append_rows, accumulate_mean,
+                         start_containers, stop_containers, run_window_parallel,
+                         read_snapshot_T, write_snapshot_T)
 
+# ---------------------------------------------------------------------------
+# The Python Ensemble Kalman Filter, run as a daily-window loop.
+# ---------------------------------------------------------------------------
 
 def window_obs_vector(obs_df, window_start, window_end, min_obs_depth):
     obs_win = obs_df[(obs_df["time"] >= window_start) & (obs_df["time"] < window_end)]

@@ -5,9 +5,12 @@ import concurrent.futures
 import numpy as np
 from datetime import timedelta
 
-from .functions import load_obs, obs_to_sim_col, accumulate_mean, start_containers, stop_containers, run_window_parallel
-from .simstrat import load_T
+from .functions import (load_obs, obs_to_sim_col, accumulate_mean, start_containers,
+                         stop_containers, run_window_parallel, load_T)
 
+# ---------------------------------------------------------------------------
+# The Python Particle Filter (a simple "best member, resample-to-all" scheme), run as a daily-window loop.
+# ---------------------------------------------------------------------------
 
 def compute_depth_weights(obs_df, min_obs_depth):
     depths = np.sort(obs_df["depth"].unique()).astype(float)

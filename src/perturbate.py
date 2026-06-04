@@ -1,3 +1,5 @@
+"""Thin CLI/entry wrapper around the reanalysis-driven forcing perturbation pipeline (alplakes_da.prep_reanalysis). 
+Resolves paths and dates, configures logging, then runs the pipeline."""
 import os
 import sys
 import json

@@ -1,11 +1,8 @@
 {
     "algorithm": "EnKF",
-    "lake": "upperlugano",
     "results_dir": "Results_EnKF",
     "par_file": "Settings_EnKF.par",
     "sigma_obs": 0.4,
     "inflation": 1.05,
-    "start_date": "2025-01-01",
-    "end_date": "2025-12-31",
     "reset": true
 }

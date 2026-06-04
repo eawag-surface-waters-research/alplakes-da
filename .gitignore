@@ -19,6 +19,7 @@ old/
 # Local diagnostic scripts
 plot_ensemble.py
 settings.local.json
+in_depth.md
 
 # Local migration / debugging notes (not part of the committed source)
 OPENDA_MIGRATION_DIFF.md
@@ -46,3 +47,7 @@ __pycache__/
 
 # OpenDA result-writer output
 openda_simstrat/enkf_results.py
+final_output/upperlugano_python_EnKF.json
+final_output/upperlugano_python_PF.json
+final_output/upperlugano_openda_EnSR.json
+

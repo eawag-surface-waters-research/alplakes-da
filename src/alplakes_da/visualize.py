@@ -1,3 +1,5 @@
+"""Comparison plots + an RMSE table across the reference free-run, 
+1the Python EnKF/PF posterior means, and the OpenDA EnSR ensemble."""
 import os
 import sys
 import glob
@@ -7,8 +9,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from .functions import verify_file, load_obs
-from .simstrat import read_ref_date
+from .functions import verify_file, load_obs, read_ref_date
 
 
 # Plot colour per trajectory label
@@ -267,8 +268,7 @@ if __name__ == "__main__":
     ROOT    = os.path.dirname(SRC_DIR)
     sys.path.insert(0, SRC_DIR)
 
-    from alplakes_da.functions import discover_n_members
-    from alplakes_da.simstrat import read_ref_date
+    from alplakes_da.functions import discover_n_members, read_ref_date
 
     parser = argparse.ArgumentParser(description="Visualize assimilation results")
     parser.add_argument("arg_file", help="Path to JSON arguments file")

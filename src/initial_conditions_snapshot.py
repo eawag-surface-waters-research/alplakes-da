@@ -1,3 +1,9 @@
+"""Builds the full set of Simstrat input files for a lake and runs a spin-up simulation 
+to produce the warm-start snapshot. Two modes: internal (build everything by querying 
+the Alplakes data API) or external (download a pre-built input bundle zip from S3 and reuse it).
+ From alplakes_da.functions it pulls a large set of input-builder helpers (forcing/inflow/absorption/IC/bathymetry/grid/AED2
+ generators and the corresponding write_* functions, plus update_par_file)."""
+
 import io
 import os
 import sys
@@ -55,6 +61,7 @@ INFLOW_PARAMETERS = {
 
 
 def _load_lake_params(lake_key: str) -> dict:
+    """find the lake's entry in the shared catalogue."""
     with open(LAKE_PARAMETERS_FILE) as f:
         lakes = json.load(f)
     for lake in lakes:
@@ -64,7 +71,7 @@ def _load_lake_params(lake_key: str) -> dict:
 
 # Coped parameters from operational simstrat model.py
 def build_args(raw: dict) -> dict:
-    # Load lake parameters from the shared catalogue; user args override if present
+    """Load lake parameters from the shared catalogue; user args override if present"""
     lake_params = _load_lake_params(raw["lake"])
     args = {**lake_params, **raw}
 
@@ -104,6 +111,7 @@ def build_args(raw: dict) -> dict:
 S3_BASE = "https://alplakes-eawag.s3.eu-central-1.amazonaws.com/simulations/simstrat/downloads"
 
 # needed for external download of initial conditions (as if clicking on download on alplakes ...)
+# fetch and unzip the pre-built input bundle (external mode).
 def _download_from_s3(lake: str, output_dir: str, log) -> None:
     url = "{}/{}.zip".format(S3_BASE, lake)
     log.info("Downloading inputs from {}".format(url), indent=1)
@@ -115,8 +123,10 @@ def _download_from_s3(lake: str, output_dir: str, log) -> None:
     log.info("Extracted {} files".format(len(z.namelist())), indent=1)
 
 # Internal = build every Simstrat input from scratch by querying the data API.
+# the main routine
 # External = download a pre-built zip from S3 (the same bundle you'd get clicking 
 # "Download" on the alplakes site) and reuse those files, skipping almost all generation.
+# then runs the spin-up in Docker, copies the resulting snapshot to a dated archive
 def create_standard_inputs(raw_args: dict) -> None:
     verify_args(raw_args, REQUIRED)
     args = build_args(raw_args)

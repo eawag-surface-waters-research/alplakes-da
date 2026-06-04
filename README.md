@@ -13,10 +13,13 @@ uncertainty.
 Two assimilation engines run on the **same** ensemble and observations, so results can be
 cross‑validated:
 
-| Engine | Entry point | Filters | Role |
+Both engines share one entry point, `src/assimilator.py`, selected by the `"engine"` field
+in the config:
+
+| Engine | `"engine"` | Filters | Role |
 |---|---|---|---|
-| **Native Python** | `src/assimilate.py` | EnKF, PF | Primary in‑house implementation |
-| **OpenDA black‑box** | `src/openda_assimilation.py` | EnKF, DEnKF, EnSR | Independent reference / cross‑check |
+| **Native Python** | `"python"` | EnKF, PF | Primary in‑house implementation |
+| **OpenDA black‑box** | `"openda"` | EnKF, DEnKF, EnSR | Independent reference / cross‑check |
 
 Simstrat itself always runs in **Docker** (`eawag/simstrat:3.0.4`); no local Simstrat binary is
 needed. The OpenDA engine additionally requires an OpenDA installation (see
@@ -24,39 +27,46 @@ needed. The OpenDA engine additionally requires an OpenDA installation (see
 
 ## Workflow
 
-Both engines share the same preprocessing. Each step is driven by a JSON file in `args/`:
+`assimilator.py` orchestrates the whole chain end‑to‑end, skipping any preprocessing that is
+already done. A single run config in `args/` selects the engine and points at the per‑step
+arg files; the underlying stages are:
 
 ```
-1. initial_conditions_snapshot.py  snapshot.json   spin-up -> run/<lake>/standard_inputs + warmup snapshot
-2. copy_standard_inputs.py         ensemble.json   clone     -> run/<lake>/ensemble0..N  (0 = control)
-3. perturbate.py                   ensemble.json   ICON reanalysis -> AR(1)-perturbed Forcing.dat in ensemble1..N
-                                                   (runs the prep_reanalysis pipeline)
-4. assimilate.py                   enkf.json|pf.json   native EnKF/PF, daily updates
-   — or —
-   openda_assimilation.py          openda_assimilation.json   runs steps 1–3 (skipping done ones),
-                                                   then generates the OpenDA config and launches it
+1. initial_conditions_snapshot   snapshot.json   spin-up -> run/<lake>/standard_inputs + warmup snapshot
+2. copy_standard_inputs          ensemble.json   clone     -> run/<lake>/ensemble0..N  (0 = control)
+3. perturbate                    ensemble.json   ICON reanalysis -> AR(1)-perturbed Forcing.dat in ensemble1..N
+                                                 (runs the prep_reanalysis pipeline)
+4. run                           engine=python:  native EnKF/PF daily updates (run_args = enkf.json|pf.json)
+                                 engine=openda:  generate the OpenDA config and launch the filter
+5. summarize                     posterior ensemble -> final_output/
 ```
 
-- **Native path:** run steps 1→2→3→4 (`assimilate.py`).
-- **OpenDA path:** run `openda_assimilation.py` alone — it orchestrates the whole chain and re‑uses
-  any already‑completed preprocessing.
+Run either engine with one command — it re‑uses any already‑completed preprocessing:
+
+```bash
+python src/assimilator.py args/run_enkf.json     # native EnKF
+python src/assimilator.py args/run_pf.json       # native PF
+python src/assimilator.py args/run_openda.json   # OpenDA
+```
+
+Shared facts (`lake`, `start_date`, `end_date`, `n_members`) live only in `ensemble.json`; the
+run args (`enkf.json`/`pf.json`) carry just the engine‑specific knobs.
 
 ## Repository layout
 
 ```
 .
 ├── src/                     Python source
-│   │   ─ Entry-point scripts — each is a CLI taking one args/*.json (see Workflow) ─
+│   ├── assimilator.py                   Single entry point. Orchestrates the whole chain (steps
+│   │                                    1–5, skipping done ones) and dispatches to the engine
+│   │                                    named in the run config. Takes one args/run_*.json.
+│   │   ─ Stage scripts called by assimilator.py (each also runnable standalone with its args/*.json) ─
 │   ├── initial_conditions_snapshot.py   Step 1. Builds every Simstrat input from the data API and
 │   │                                    runs a Docker spin-up to the snapshot date, saving a warmup
 │   │                                    state; inputs span the whole simulation window.
 │   ├── copy_standard_inputs.py          Step 2. Clones standard_inputs into ensemble0..N (0 = control).
 │   ├── perturbate.py                    Step 3. Thin CLI over prep_reanalysis: fits AR(1) noise from
 │   │                                    ICON reanalysis → perturbed Forcing.dat in ensemble1..N.
-│   ├── assimilate.py                    Step 4 (native). Dispatches to the EnKF/PF engine and runs
-│   │                                    the daily forecast→update cycle.
-│   ├── openda_assimilation.py           OpenDA orchestrator: runs steps 1–3 (skipping done ones),
-│   │                                    renders the config, then launches the filter.
 │   │
 │   └── alplakes_da/         Importable package (core library shared by both engines)
 │       ├── functions.py        Docker/Simstrat + data-API helpers, logging, arg validation
@@ -101,13 +111,17 @@ Both engines share the same preprocessing. Each step is driven by a JSON file in
 
 ## Configuration (`args/`)
 
+Run configs (`run_*.json`) are the entry points passed to `assimilator.py`; they reference the
+per‑step arg files below.
+
 | File | Used by | Key fields |
 |---|---|---|
-| `snapshot.json` | `initial_conditions_snapshot.py` | `lake`, `snapshot_date`, `ensemble_base`, `external` |
-| `ensemble.json` | `copy_standard_inputs.py`, `perturbate.py` | `lake`, `n_members`, `start_date`, `end_date`, `lake_bbox`, `reanalysis_dir` |
-| `enkf.json` | `assimilate.py` | `algorithm:"EnKF"`, `lake`, `sigma_obs`, `inflation`, dates |
-| `pf.json` | `assimilate.py` | `algorithm:"PF"`, `lake`, dates |
-| `openda_assimilation.json` | `openda_assimilation.py` | `snapshot_args`, `ensemble_args`, `filter` (EnKF\|DEnKF\|EnSR), `openda_dir` |
+| `run_enkf.json` / `run_pf.json` | `assimilator.py` | `engine:"python"`, `snapshot_args`, `ensemble_args`, `run_args` |
+| `run_openda.json` | `assimilator.py` | `engine:"openda"`, `snapshot_args`, `ensemble_args`, `filter` (EnKF\|DEnKF\|EnSR), `openda_dir` |
+| `snapshot.json` | step 1 | `lake`, `snapshot_date`, `ensemble_base`, `external` |
+| `ensemble.json` | steps 2–3 | `lake`, `n_members`, `start_date`, `end_date`, `lake_bbox`, `reanalysis_dir` |
+| `enkf.json` | python `run_args` | `algorithm:"EnKF"`, `results_dir`, `par_file`, `sigma_obs`, `inflation`, `reset` |
+| `pf.json` | python `run_args` | `algorithm:"PF"`, `results_dir`, `par_file`, `reset` |
 
 The `lake` field resolves data and run paths by convention: observations from
 `data/T_obs_<lake>.csv`, ensemble from `run/<lake>/`.
@@ -148,7 +162,7 @@ openda_simstrat/
 ```
 
 Only `simstratWrapperEnKF.xml`, `bin/`, and the base files in `template/` are hand‑maintained;
-everything marked GENERATED (and `run.oda`) is rewritten on each run by `openda_assimilation.py`
+everything marked GENERATED (and `run.oda`) is rewritten on each run by `assimilator.py`
 (`alplakes_da/openda/adapter.py` syncs inputs/forcings/warmup and builds observations;
 `alplakes_da/openda/config.py` renders the config). Adding a new filter is a one‑line entry in the `FILTERS` spec.
 
@@ -169,12 +183,12 @@ export LD_LIBRARY_PATH="$OPENDALIB/lib:$LD_LIBRARY_PATH"
 Then:
 
 ```bash
-python src/openda_assimilation.py args/openda_assimilation.json            # full run
-python src/openda_assimilation.py args/openda_assimilation.json --dry-run  # preview, write nothing
-python src/openda_assimilation.py args/openda_assimilation.json --skip-oda # generate config, don't launch
+python src/assimilator.py args/run_openda.json            # full run
+python src/assimilator.py args/run_openda.json --dry-run  # preview, write nothing
+python src/assimilator.py args/run_openda.json --skip-oda # generate config, don't launch
 ```
 
-Set `"filter"` in `args/openda_assimilation.json` to `EnKF`, `DEnKF`, or `EnSR`. Output for each
+Set `"filter"` in `args/run_openda.json` to `EnKF`, `DEnKF`, or `EnSR`. Output for each
 filter goes to `run/openda/work_<filter>/workN/Results/T_out.dat` (hourly, full water column) plus
 `openda_simstrat/<filter>_results.py` (OpenDA `PythonResultWriter`), and a posterior summary +
 skill/bias report are auto‑written to `final_output/<lake>_openda_<filter>.{csv,json}`.
@@ -185,13 +199,20 @@ skill/bias report are auto‑written to `final_output/<lake>_openda_<filter>.{cs
 
 ## Running the native engine
 
+One command runs preprocessing (skipping any already done) and the assimilation:
+
 ```bash
-# preprocessing (once per lake/period)
+python src/assimilator.py args/run_enkf.json     # or args/run_pf.json
+```
+
+Add `--dry-run` to preview the plan, or `--force-initial` / `--force-copy` / `--force-perturbate`
+to re‑run a preprocessing step that otherwise looks done. The stage scripts can still be run
+standalone if needed:
+
+```bash
 python src/initial_conditions_snapshot.py args/snapshot.json
 python src/copy_standard_inputs.py        args/ensemble.json
 python src/perturbate.py                  args/ensemble.json
-# assimilation
-python src/assimilate.py                  args/enkf.json     # or args/pf.json
 ```
 
 Per‑member results are written to `run/<lake>/ensemble{i}/Results_<algo>/`, with the ensemble‑mean

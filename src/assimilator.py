@@ -52,8 +52,7 @@ sys.path.insert(0, SRC_DIR)
 from initial_conditions_snapshot import create_standard_inputs
 from copy_standard_inputs        import copy_standard_inputs
 from perturbate                  import perturbator
-from alplakes_da.functions       import Logger, verify_args
-from alplakes_da.simstrat        import read_ref_date
+from alplakes_da.functions       import Logger, verify_args, read_ref_date
 from alplakes_da.PF_assimilate   import run_pf_daily
 from alplakes_da.EnKF_assimilate import run_enkf_daily
 from alplakes_da.openda.adapter  import adapt
@@ -62,7 +61,6 @@ from alplakes_da.summarize       import summarize_run
 
 REQUIRED_RUN  = ["algorithm", "results_dir", "par_file"]
 REQUIRED_ENKF = ["sigma_obs", "inflation"]
-
 
 def _resolve(path):
     """Resolve a possibly-relative ensemble_base ('../run/<lake>') against src/."""
@@ -73,7 +71,7 @@ def _resolve_root(path):
     """Resolve a possibly-relative repo path ('openda_simstrat', 'args/x.json') against ROOT."""
     return path if os.path.isabs(path) else os.path.normpath(os.path.join(ROOT, path))
 
-
+# load a config JSON, trying the path as given then under ROOT
 def _load_json(path):
     p = path if os.path.isfile(path) else _resolve_root(path)
     if not os.path.isfile(p):
@@ -85,17 +83,17 @@ def _load_json(path):
 # ---------------------------------------------------------------------------
 # Availability checks ("already done?")
 # ---------------------------------------------------------------------------
-
+# true if a simulation-snapshot_*.dat and Forcing.dat exist (step 1 done)
 def _standard_inputs_ready(standard_inputs):
     return (bool(glob.glob(os.path.join(standard_inputs, "simulation-snapshot_*.dat")))
             and os.path.isfile(os.path.join(standard_inputs, "Forcing.dat")))
 
-
+# true if every ensemble{0..N}/Settings.par exists (step 2 done)
 def _instances_ready(ensemble_base, n_members):
     return all(os.path.isfile(os.path.join(ensemble_base, f"ensemble{i}", "Settings.par"))
                for i in range(n_members + 1))
 
-
+# true if ensemble1's Forcing.dat differs byte-wise from ensemble0's control (step 3 done)
 def _forcings_perturbed(ensemble_base):
     """True if member forcings differ from the control (i.e. perturbate has run)."""
     ctrl = os.path.join(ensemble_base, "ensemble0", "Forcing.dat")
@@ -110,8 +108,8 @@ def _forcings_perturbed(ensemble_base):
 # ---------------------------------------------------------------------------
 
 def _build_python_args(run_raw, ensemble_raw, ensemble_base, n_members):
-    """Merge run-specific knobs with the shared facts from the ensemble args,
-    then fill defaults / parse dates (formerly assimilate.build_args)."""
+    """merge run-specific knobs with shared ensemble facts; fill defaults (obs path, Simstrat version/binary/workdir), 
+       set container_tag, parse UTC dates, derive ref_date, and (for EnKF) the diagnostics output paths."""
     args = dict(run_raw)
     args["lake"]          = ensemble_raw["lake"]
     args["ensemble_base"] = ensemble_base
@@ -140,6 +138,8 @@ def _build_python_args(run_raw, ensemble_raw, ensemble_base, n_members):
 
 
 def _run_python(cfg, ensemble_raw, ensemble_base, n_members):
+    """load + verify run args, build the merged args, instantiate Logger, 
+       dispatch to run_pf_daily/run_enkf_daily, then summarise. """
     run_raw = _load_json(cfg["run_args"])
     required = REQUIRED_RUN + (REQUIRED_ENKF if run_raw.get("algorithm") == "EnKF" else [])
     verify_args(run_raw, required)
@@ -166,6 +166,8 @@ def _run_python(cfg, ensemble_raw, ensemble_base, n_members):
 # ---------------------------------------------------------------------------
 
 def _run_openda(cfg, ensemble_raw, ensemble_base, n_members, dry_run, skip_oda):
+    """validate filter; run the adapter (adapt) to sync inputs/forcings/warmup and build observation files (returns obs depths); 
+       render run.oda + the .gen.xml chain; launch oda_run.sh via subprocess (unless --dry-run/--skip-oda); then summarise"""
     openda_dir  = _resolve_root(cfg.get("openda_dir", "openda_simstrat"))
     filter_type = cfg.get("filter", "EnKF")
     if filter_type not in FILTERS:
@@ -220,6 +222,9 @@ def _summarize(engine, label, member_files, lake, obs_csv):
 # ---------------------------------------------------------------------------
 
 def run(cfg, dry_run=False, skip_oda=False, force=None):
+    """the orchestration: validate engine, load snapshot + ensemble configs, 
+    pin an absolute ensemble_base everywhere, then run steps 1 (standard inputs) → 2 (copy instances) → 3 (perturbate)
+    → 4–5 (engine-specific). Each of 1–3 is skipped when its "already done?" check passes unless force-overridden."""
     force  = force or {}
     engine = cfg.get("engine", "python")
     if engine not in ("python", "openda"):
