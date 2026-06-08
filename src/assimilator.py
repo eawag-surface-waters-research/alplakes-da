@@ -22,7 +22,7 @@ OpenDA filter). Config JSON:
     "snapshot_args": "args/snapshot.json",
     "ensemble_args": "args/ensemble.json",
     "run_args":      "args/enkf.json",  # python only: algorithm + params
-    "filter":        "EnKF"             # openda only: EnKF | DEnKF | EnSR
+    "filter":        "EnKF"             # openda only: EnKF | DEnKF | EnSR | PF
   }
 
 Overrides: --force-initial / --force-copy / --force-perturbate re-run a step even
@@ -302,6 +302,7 @@ if __name__ == "__main__":
     cli = parser.parse_args()
 
     cfg = _load_json(cli.arg_file)
+    #khsjjshsjjbss
     run(cfg,
         dry_run=cli.dry_run,
         skip_oda=cli.skip_oda,

@@ -51,6 +51,19 @@ FILTERS = {
     "EnKF":  {"class": "org.openda.algorithms.kalmanFilter.EnKF",  "root": "EnKFConfig", "schema": "enkf.xsd"},
     "DEnKF": {"class": "org.openda.algorithms.kalmanFilter.DEnKF", "root": "EnkfConfig", "schema": "enkf.xsd"},
     "EnSR":  {"class": "org.openda.algorithms.kalmanFilter.EnSR",  "root": "EnsrConfig", "schema": "ensr.xsd"},
+    # SIR particle filter (residual resampling). samplingMethod is optional + fixed in
+    # particleFilter.xsd, so it's omitted; the shared body below is a valid ParticleFilterConfig.
+    # Spread/diversity comes from the wrapper's per-instance Forcing_<i>.dat injection (same as the
+    # Kalman filters above), so stochForcing stays false — there is no OpenDA noiseModel to drive.
+    # needs_restart: the PF clones whole particles during resampling via
+    # saveInternalState/restoreInternalState, which requires the model's restart files to be
+    # declared (<restartInfo>) at both the model and stoch-model layer.  The Kalman filters work
+    # purely through getState/axpyOnState and never checkpoint the model, so they omit it.  Crucially
+    # the stoch-layer dirPrefix uses the INSTANCE_DIR/ token (see _STOCH_RESTART_INFO) so each
+    # particle's modelState.zip lands in its own work dir; otherwise BBStochModelInstance roots every
+    # member's saved state at the shared stoch configRootDir under one timestamp-named dir, they
+    # collide on a single modelState.zip, and resampling's release crashes.
+    "PF":    {"class": "org.openda.algorithms.kalmanFilter.ParticleFilter", "root": "ParticleFilterConfig", "schema": "particleFilter.xsd", "needs_restart": True},
 }
 
 DEFAULT_OBS_STD = 0.5  # per-depth observation standard deviation (°C)
@@ -148,8 +161,18 @@ _STOCHMODEL = """<?xml version="1.0" encoding="UTF-8"?>
 {predictors}
 \t\t</predictor>
 \t</vectorSpecification>
-
+{stoch_restart_info}
 </blackBoxStochModel>
+"""
+
+# Stoch-layer restart declaration (PF only).  The model-layer restartInfo (below) checkpoints the
+# Simstrat state per instance; this tells the BBStochModel wrapper where to bundle that state into
+# its per-particle modelState.zip for resampling.  The INSTANCE_DIR/ token is rewritten by
+# BBStochModelFactory.getInstance to the member's own getModelRunDir() (work_pf/workN), so each
+# particle gets its OWN savedStochModelState_ dir.  Without it the prefix is rooted at the shared
+# stoch configRootDir and every member collides on one modelState.zip (release double-deletes -> crash).
+_STOCH_RESTART_INFO = """
+\t<restartInfo dirPrefix="INSTANCE_DIR/savedStochModelState_" />
 """
 
 _MODEL = """<?xml version="1.0" encoding="UTF-8"?>
@@ -165,7 +188,7 @@ _MODEL = """<?xml version="1.0" encoding="UTF-8"?>
 
 \t<aliasValues>
 \t\t<alias key="templateDir"  value="template" />
-\t\t<alias key="instanceDir"  value="../../run/openda/{work}/work" />
+\t\t<alias key="instanceDir"  value="{instance_dir}" />
 \t\t<alias key="binDir"       value="bin" />
 \t\t<alias key="configFile"   value="Settings.par" />
 \t\t<alias key="stateFile"    value="temperature_state.txt" />
@@ -182,10 +205,25 @@ _MODEL = """<?xml version="1.0" encoding="UTF-8"?>
 \t\t<vector id="temperature.state" ioObjectId="state_temperature" elementId="temperature_state" />
 {outputs}
 \t</exchangeItems>
-
+{restart_info}
 \t<doCleanUp>false</doCleanUp>
 
 </blackBoxModelConfig>
+"""
+
+# Restart declaration (PF only — see FILTERS["PF"]["needs_restart"]).  Both files travel together
+# on every save/restore:
+#   - Results/simulation-snapshot.dat is Simstrat's full binary state (T, U, V, S, k, eps on all cells)
+#     and the true continuity between windows (the wrapper runs "Continue from last snapshot").
+#   - temperature_state.txt is OpenDA's T-only view, which the wrapper re-injects into the snapshot at
+#     the start of every step.  Cloning the snapshot alone would leave a killed particle's stale
+#     temperature_state.txt in place, and that re-injection would clobber the restored snapshot on the
+#     next run — silently undoing the resampling.  Listing both keeps them in lockstep.
+_RESTART_INFO = """
+\t<restartInfo dirPrefix="./savedModelState_">
+\t\t<modelStateFile>Results/simulation-snapshot.dat</modelStateFile>
+\t\t<modelStateFile>temperature_state.txt</modelStateFile>
+\t</restartInfo>
 """
 
 # Observation formatter (stochObserver/): reads the real-obs CSVs over the window.
@@ -313,9 +351,21 @@ def render(openda_dir, filter_type, n_members, obs_depths, start_date, end_date,
         results_dir=results_subdir, results_file=results_filename(filter_type),
     )
     parallel   = _PARALLEL.format(max_threads=n_members + 1)
-    stochmodel = _STOCHMODEL.format(predictors=_predictor_lines(depths))
-    model      = _MODEL.format(filter=filter_type, work=work_dir_name(filter_type),
-                               ref_year=SIMSTRAT_REF_YEAR, outputs=_output_lines(depths))
+    stochmodel = _STOCHMODEL.format(predictors=_predictor_lines(depths),
+                                    stoch_restart_info=_STOCH_RESTART_INFO if spec.get("needs_restart") else "")
+    # instanceDir: relative is fine for the Kalman filters.  PF additionally uses the INSTANCE_DIR
+    # restart token (see _STOCH_RESTART_INFO), and OpenDA only resolves that correctly when the
+    # model run dir is ABSOLUTE — a relative getModelRunDir() gets re-rooted under the stoch
+    # configRootDir, doubling the path (.../stochModel/stochModel/...).  config.py is generated in
+    # the OpenDA runtime (WSL, see assimilator.py), so abspath yields the /mnt/... form OpenDA sees.
+    work = work_dir_name(filter_type)
+    if spec.get("needs_restart"):
+        instance_dir = os.path.abspath(os.path.join(openda_dir, "..", "run", "openda", work, "work"))
+    else:
+        instance_dir = f"../../run/openda/{work}/work"
+    model      = _MODEL.format(filter=filter_type, instance_dir=instance_dir,
+                               ref_year=SIMSTRAT_REF_YEAR, outputs=_output_lines(depths),
+                               restart_info=_RESTART_INFO if spec.get("needs_restart") else "")
     obs_fmt    = _OBS_FORMATTER.format(ref_year=SIMSTRAT_REF_YEAR, start_day=start_day,
                                        end_day=end_day, rows=_obs_formatter_rows(depths, obs_std))
     model_fmt  = _MODEL_FORMATTER.format(ref_year=SIMSTRAT_REF_YEAR, rows=_model_formatter_rows(depths))

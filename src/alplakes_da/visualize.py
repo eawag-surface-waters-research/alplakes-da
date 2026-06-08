@@ -1,5 +1,6 @@
-"""Comparison plots + an RMSE table across the reference free-run, 
-1the Python EnKF/PF posterior means, and the OpenDA EnSR ensemble."""
+"""Comparison plots + an RMSE table across the reference free-run, the Python
+EnKF ensemble, and the OpenDA EnSR and PF ensembles (each shown as an ensemble
+mean with min/max spread)."""
 import os
 import sys
 import glob
@@ -14,9 +15,6 @@ from .functions import verify_file, load_obs, read_ref_date
 
 # Plot colour per trajectory label
 COLORS = {"ref": "dimgrey", "EnKF": "steelblue", "PF": "darkorange", "EnSR": "seagreen"}
-
-# Native (python) filters: label -> posterior-mean file (no per-member spread).
-PY_FILTERS = [("EnKF", "T_out_enkf_mean.dat"), ("PF", "T_out_pf_mean.dat")]
 
 
 # ── Data loading ───────────────────────────────────────────────────────────────
@@ -51,19 +49,19 @@ def load_e0(ensemble_base, results_dir, ref_date):
     return None
 
 
-def load_ensr_members(openda_base, ref_date):
-    # EnSR analysis ensemble members: openda/work_ensr/work1..workN/Results/T_out.dat
+def load_openda_members(openda_base, subdir, label, ref_date):
+    # OpenDA analysis ensemble members: openda/<subdir>/work1..workN/Results/T_out.dat
     # (work0 is the central estimate and is excluded from the spread).
     if not openda_base or not os.path.isdir(openda_base):
-        print("EnSR:    NOT FOUND")
+        print(f"{label:>7}: NOT FOUND")
         return []
-    paths = [p for p in glob.glob(os.path.join(openda_base, "work_ensr", "work*", "Results", "T_out.dat"))
+    paths = [p for p in glob.glob(os.path.join(openda_base, subdir, "work*", "Results", "T_out.dat"))
              if os.path.basename(os.path.dirname(os.path.dirname(p))) != "work0"]
     members = [t for p in sorted(paths) if (t := load_traj(p, ref_date)) is not None]
     if members:
-        print(f"EnSR:    {len(members)} members (openda/work_ensr/work*/Results/T_out.dat)")
+        print(f"{label:>7}: {len(members)} members (openda/{subdir}/work*/Results/T_out.dat)")
     else:
-        print("EnSR:    NOT FOUND")
+        print(f"{label:>7}: NOT FOUND")
     return members
 
 
@@ -202,23 +200,17 @@ def visualize(args, save=False):
 
     e0_traj = load_e0(ensemble_base, results_dir, ref_date)
 
-    # native EnKF / PF posterior means (no per-member spread)
-    py_means = {}
-    for label, mean_name in PY_FILTERS:
-        path = os.path.join(ensemble_base, mean_name)
-        traj = load_traj(path, ref_date)
-        print(f"{label:>7}: {path if traj is not None else 'NOT FOUND'}")
-        if traj is not None:
-            py_means[label] = traj
-
-    # EnKF spread from the per-member full trajectories
+    # Python EnKF: posterior mean + spread from the per-member full trajectories
     enkf_members = load_enkf_members(ensemble_base, ref_date)
+    enkf_traj    = ensemble_mean(enkf_members)
 
-    # OpenDA EnSR: mean + spread from the analysis ensemble members
-    ensr_members = load_ensr_members(openda_base, ref_date)
+    # OpenDA EnSR + PF: mean + spread from the analysis ensemble members
+    ensr_members = load_openda_members(openda_base, "work_ensr", "EnSR", ref_date)
     ensr_traj    = ensemble_mean(ensr_members)
+    pf_members   = load_openda_members(openda_base, "work_pf", "PF", ref_date)
+    pf_traj      = ensemble_mean(pf_members)
 
-    if e0_traj is None and not py_means and ensr_traj is None:
+    if e0_traj is None and enkf_traj is None and ensr_traj is None and pf_traj is None:
         raise RuntimeError("No trajectory data found — has the assimilation been run?")
 
     obs           = load_obs(obs_path)
@@ -229,8 +221,8 @@ def visualize(args, save=False):
     obs_depths = np.sort(obs["depth"].unique())
 
     entries = [(lbl, t) for lbl, t in
-               [("ref", e0_traj), ("EnKF", py_means.get("EnKF")),
-                ("PF", py_means.get("PF")), ("EnSR", ensr_traj)] if t is not None]
+               [("ref", e0_traj), ("EnKF", enkf_traj),
+                ("EnSR", ensr_traj), ("PF", pf_traj)] if t is not None]
 
     # RMSE table
     print(f"\nAnnual RMSE (°C) — {lake_label}" + (f" {year}" if year else ""))
@@ -247,6 +239,8 @@ def visualize(args, save=False):
         spreads["EnKF"] = enkf_members
     if ensr_members:
         spreads["EnSR"] = ensr_members
+    if pf_members:
+        spreads["PF"] = pf_members
     plot_timeseries(entries, obs, obs_depths, lake_label, year, spreads=spreads)
     plot_rmse_bar(entries, obs, obs_depths, lake_label, year)
 

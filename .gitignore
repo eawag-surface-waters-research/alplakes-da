@@ -35,6 +35,7 @@ OPENDA_MIGRATION_DIFF.md
 *.geojson
 *.dll
 *.tgz
+*.check.xml
 
 # Ignore temporary files
 *.log
@@ -50,4 +51,10 @@ openda_simstrat/enkf_results.py
 final_output/upperlugano_python_EnKF.json
 final_output/upperlugano_python_PF.json
 final_output/upperlugano_openda_EnSR.json
+
+# varia
+analyze_pf_process.png
+analyze_pf_process.py
+final_output/upperlugano_openda_PF.json
+openda_simstrat/pf_results.py
 

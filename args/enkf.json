@@ -2,7 +2,7 @@
     "algorithm": "EnKF",
     "results_dir": "Results_EnKF",
     "par_file": "Settings_EnKF.par",
-    "sigma_obs": 0.4,
-    "inflation": 1.05,
+    "sigma_obs": 0.5,
+    "inflation": 1.00,
     "reset": true
 }
