@@ -19,7 +19,7 @@ in the config:
 | Engine | `"engine"` | Filters | Role |
 |---|---|---|---|
 | **Native Python** | `"python"` | EnKF, PF | Primary in‑house implementation |
-| **OpenDA black‑box** | `"openda"` | EnKF, DEnKF, EnSR | Independent reference / cross‑check |
+| **OpenDA black‑box** | `"openda"` | EnKF, DEnKF, EnSR, PF | Independent reference / cross‑check |
 
 Simstrat itself always runs in **Docker** (`eawag/simstrat:3.0.4`); no local Simstrat binary is
 needed. The OpenDA engine additionally requires an OpenDA installation (see
@@ -69,8 +69,8 @@ run args (`enkf.json`/`pf.json`) carry just the engine‑specific knobs.
 │   │                                    ICON reanalysis → perturbed Forcing.dat in ensemble1..N.
 │   │
 │   └── alplakes_da/         Importable package (core library shared by both engines)
-│       ├── functions.py        Docker/Simstrat + data-API helpers, logging, arg validation
-│       ├── simstrat.py         Simstrat run + Settings.par / state read-write helpers
+│       ├── functions.py        Docker/data-API helpers, Simstrat run + Settings.par / state
+│       │                       read-write helpers, logging, arg validation
 │       ├── snapshot_io.py      Read/write Simstrat Fortran binary snapshots
 │       ├── EnKF_assimilate.py  Native Ensemble Kalman Filter engine
 │       ├── PF_assimilate.py    Native Particle Filter engine
@@ -117,7 +117,7 @@ per‑step arg files below.
 | File | Used by | Key fields |
 |---|---|---|
 | `run_enkf.json` / `run_pf.json` | `assimilator.py` | `engine:"python"`, `snapshot_args`, `ensemble_args`, `run_args` |
-| `run_openda.json` | `assimilator.py` | `engine:"openda"`, `snapshot_args`, `ensemble_args`, `filter` (EnKF\|DEnKF\|EnSR), `openda_dir` |
+| `run_openda.json` / `run_openda_pf.json` | `assimilator.py` | `engine:"openda"`, `snapshot_args`, `ensemble_args`, `filter` (EnKF\|DEnKF\|EnSR\|PF), `openda_dir` (`run_openda_pf.json` is the PF preset) |
 | `snapshot.json` | step 1 | `lake`, `snapshot_date`, `ensemble_base`, `external` |
 | `ensemble.json` | steps 2–3 | `lake`, `n_members`, `start_date`, `end_date`, `lake_bbox`, `reanalysis_dir` |
 | `enkf.json` | python `run_args` | `algorithm:"EnKF"`, `results_dir`, `par_file`, `sigma_obs`, `inflation`, `reset` |
@@ -142,7 +142,7 @@ needs no manual edits.
 openda_simstrat/
 ├── run.oda                          GENERATED  entry point (selects the filter's algorithm + results)
 ├── parallel.gen.xml                 GENERATED  thread/ensemble config (maxThreads = n_members + 1)
-├── algorithms/<filter>.gen.xml      GENERATED  algorithm config (EnKF/DEnKF/EnSR, ensembleSize)
+├── algorithms/<filter>.gen.xml      GENERATED  algorithm config (EnKF/DEnKF/EnSR/PF, ensembleSize)
 ├── stochObserver/
 │   ├── timeSeriesFormatter.gen.xml  GENERATED  observations + time window + obs std
 │   └── T_<d>m_real.csv              built by the adapter (one reading/day nearest noon UTC)
@@ -188,14 +188,20 @@ python src/assimilator.py args/run_openda.json --dry-run  # preview, write nothi
 python src/assimilator.py args/run_openda.json --skip-oda # generate config, don't launch
 ```
 
-Set `"filter"` in `args/run_openda.json` to `EnKF`, `DEnKF`, or `EnSR`. Output for each
-filter goes to `run/openda/work_<filter>/workN/Results/T_out.dat` (hourly, full water column) plus
+Set `"filter"` in `args/run_openda.json` to `EnKF`, `DEnKF`, or `EnSR`, or use the
+`args/run_openda_pf.json` preset for `PF`. Output for each filter goes to
+`run/openda/work_<filter>/workN/Results/T_out.dat` (hourly, full water column) plus
 `openda_simstrat/<filter>_results.py` (OpenDA `PythonResultWriter`), and a posterior summary +
 skill/bias report are auto‑written to `final_output/<lake>_openda_<filter>.{csv,json}`.
 
 > **Output convention:** in `<filter>_results.py`, `pred_a_central` is `H·x_f` (the forecast
 > prediction), not `H·x_a`. To see the true analysis correction at observation depths, read the
 > `x_a_central` columns directly.
+
+> **PF note:** unlike the Kalman filters, the particle filter clones whole particles during
+> resampling, so it needs model restart files. Its generated config therefore adds `restartInfo`
+> declarations (stoch- and model-layer) that the EnKF/DEnKF/EnSR configs omit — flagged by
+> `needs_restart` in the `FILTERS` spec in `openda/config.py`.
 
 ## Running the native engine
 

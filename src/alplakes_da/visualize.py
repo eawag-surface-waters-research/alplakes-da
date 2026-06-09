@@ -1,6 +1,7 @@
 """Comparison plots + an RMSE table across the reference free-run, the Python
-EnKF ensemble, and the OpenDA EnSR and PF ensembles (each shown as an ensemble
-mean with min/max spread)."""
+EnKF and PF posteriors, and the OpenDA EnSR and PF ensembles. Ensemble members
+(Python EnKF, OpenDA EnSR/PF) are shown as a mean with min/max spread; the
+Python PF is shown as its posterior-mean trajectory only (no per-member spread)."""
 import os
 import sys
 import glob
@@ -14,7 +15,8 @@ from .functions import verify_file, load_obs, read_ref_date
 
 
 # Plot colour per trajectory label
-COLORS = {"ref": "dimgrey", "EnKF": "steelblue", "PF": "darkorange", "EnSR": "seagreen"}
+COLORS = {"ref": "dimgrey", "EnKF": "steelblue", "PF": "darkorange",
+          "EnSR (oda)": "seagreen", "PF (oda)": "crimson"}
 
 
 # ── Data loading ───────────────────────────────────────────────────────────────
@@ -149,34 +151,51 @@ def plot_timeseries(entries, obs, obs_depths, lake_label, year, spreads=None):
 def plot_rmse_bar(entries, obs, obs_depths, lake_label, year):
     depth_cmap = plt.cm.viridis(np.linspace(0.9, 0.1, len(obs_depths)))
 
-    annual = {lbl: rmse_by_depth(traj, obs, obs_depths) for lbl, traj in entries}
+    annual = {lbl: dict(rmse_by_depth(traj, obs, obs_depths)) for lbl, traj in entries}
+    ref_d  = annual.get("ref", {})
 
-    fig, ax = plt.subplots(figsize=(max(6, 3 * len(entries)), 6))
-    x       = np.arange(len(entries))
-    bottoms = np.zeros(len(entries))
+    # ref first, then non-ref ordered worst → best (highest total RMSE → lowest)
+    totals  = {lbl: sum(annual[lbl].values()) for lbl in annual}
+    non_ref = sorted((l for l in totals if l != "ref"), key=totals.get, reverse=True)
+    labels  = (["ref"] if "ref" in totals else []) + non_ref
+
+    fig, ax = plt.subplots(figsize=(max(7, 3.2 * len(labels)), 7))
+    x       = np.arange(len(labels))
+    bottoms = np.zeros(len(labels))
 
     for d_idx, d in reversed(list(enumerate(obs_depths))):
-        vals = np.array([
-            next((r for dep, r in annual[lbl] if dep == d), np.nan)
-            for lbl, _ in entries
-        ])
+        vals = np.array([annual[lbl].get(d, np.nan) for lbl in labels])
         vals = np.where(np.isnan(vals), 0, vals)
-        ax.bar(x, vals, bottom=bottoms, color=depth_cmap[d_idx], width=0.5, label=f"{d:.0f} m")
+        ax.bar(x, vals, bottom=bottoms, color=depth_cmap[d_idx], width=0.6, label=f"{d:.0f} m")
+
+        # per-depth RMSE inside each segment; non-ref bars also show % change vs ref (gain is negative)
+        r_d = ref_d.get(d, np.nan)
+        for xi, lbl in enumerate(labels):
+            seg = vals[xi]
+            if seg <= 0:
+                continue
+            if lbl != "ref" and not np.isnan(r_d) and r_d > 0:
+                pct = (seg - r_d) / r_d * 100             # negative = gain
+                txt = f"{seg:.2f}  {pct:+.0f}%"
+            else:
+                txt = f"{seg:.2f}"
+            ax.text(xi, bottoms[xi] + seg / 2, txt, ha="center", va="center", fontsize=5,
+                    color="white" if d_idx > len(obs_depths) / 2 else "black")
         bottoms += vals
 
-    ref_total = sum(r for _, r in annual["ref"]) if "ref" in annual else None
-    for xi, (lbl, _) in enumerate(entries):
+    ref_total = totals.get("ref")
+    for xi, lbl in enumerate(labels):
         total = bottoms[xi]
-        ax.bar(xi, total, bottom=0, color="none", edgecolor=COLORS.get(lbl, "k"), lw=2, width=0.5)
+        ax.bar(xi, total, bottom=0, color="none", edgecolor=COLORS.get(lbl, "k"), lw=2, width=0.6)
         if ref_total and lbl != "ref":
-            gain = (total - ref_total) / ref_total * 100
+            gain = (total - ref_total) / ref_total * 100      # negative = gain
             ann  = f"{total:.3f}°C\n{gain:+.1f}%"
         else:
             ann = f"{total:.3f}°C"
         ax.text(xi, total + 0.01 * (ref_total or total), ann, ha="center", va="bottom", fontsize=9)
 
     ax.set_xticks(x)
-    ax.set_xticklabels([lbl for lbl, _ in entries])
+    ax.set_xticklabels(labels)
     ax.set_ylabel("RMSE (°C)")
     ax.set_title(f"Annual RMSE — {lake_label}" + (f" {year}" if year else ""))
     handles, lbls = ax.get_legend_handles_labels()
@@ -204,13 +223,18 @@ def visualize(args, save=False):
     enkf_members = load_enkf_members(ensemble_base, ref_date)
     enkf_traj    = ensemble_mean(enkf_members)
 
+    # Python PF: posterior-mean trajectory only (no per-member full trajectories saved)
+    pf_py_path = os.path.join(ensemble_base, "T_out_pf_mean.dat")
+    pf_py_traj = load_traj(pf_py_path, ref_date)
+    print(f"     PF: {pf_py_path if pf_py_traj is not None else 'NOT FOUND'}")
+
     # OpenDA EnSR + PF: mean + spread from the analysis ensemble members
-    ensr_members = load_openda_members(openda_base, "work_ensr", "EnSR", ref_date)
+    ensr_members = load_openda_members(openda_base, "work_ensr", "EnSR (oda)", ref_date)
     ensr_traj    = ensemble_mean(ensr_members)
-    pf_members   = load_openda_members(openda_base, "work_pf", "PF", ref_date)
+    pf_members   = load_openda_members(openda_base, "work_pf", "PF (oda)", ref_date)
     pf_traj      = ensemble_mean(pf_members)
 
-    if e0_traj is None and enkf_traj is None and ensr_traj is None and pf_traj is None:
+    if all(t is None for t in (e0_traj, enkf_traj, pf_py_traj, ensr_traj, pf_traj)):
         raise RuntimeError("No trajectory data found — has the assimilation been run?")
 
     obs           = load_obs(obs_path)
@@ -221,8 +245,8 @@ def visualize(args, save=False):
     obs_depths = np.sort(obs["depth"].unique())
 
     entries = [(lbl, t) for lbl, t in
-               [("ref", e0_traj), ("EnKF", enkf_traj),
-                ("EnSR", ensr_traj), ("PF", pf_traj)] if t is not None]
+               [("ref", e0_traj), ("EnKF", enkf_traj), ("PF", pf_py_traj),
+                ("EnSR (oda)", ensr_traj), ("PF (oda)", pf_traj)] if t is not None]
 
     # RMSE table
     print(f"\nAnnual RMSE (°C) — {lake_label}" + (f" {year}" if year else ""))
@@ -238,9 +262,9 @@ def visualize(args, save=False):
     if enkf_members:
         spreads["EnKF"] = enkf_members
     if ensr_members:
-        spreads["EnSR"] = ensr_members
+        spreads["EnSR (oda)"] = ensr_members
     if pf_members:
-        spreads["PF"] = pf_members
+        spreads["PF (oda)"] = pf_members
     plot_timeseries(entries, obs, obs_depths, lake_label, year, spreads=spreads)
     plot_rmse_bar(entries, obs, obs_depths, lake_label, year)
 
