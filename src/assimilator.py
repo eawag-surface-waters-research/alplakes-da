@@ -128,12 +128,18 @@ def _build_python_args(run_raw, ensemble_raw, ensemble_base, n_members):
     args["start_date"] = datetime.fromisoformat(ensemble_raw["start_date"]).replace(tzinfo=tz)
     args["end_date"]   = datetime.fromisoformat(ensemble_raw["end_date"]).replace(tzinfo=tz)
 
+    # Adaptive EnKF writes to its own results_dir + output filenames so it never
+    # overwrites a plain EnKF run; the two can coexist and be compared.
     algo = args["algorithm"].lower()
+    if args["algorithm"] == "EnKF" and args.get("adaptive"):
+        args["results_dir"] = f"{args['results_dir']}_adaptive"
+        algo = "enkf_adaptive"
+
     args.setdefault("mean_traj_path", os.path.join(ensemble_base, f"T_out_{algo}_mean.dat"))
     if args["algorithm"] == "EnKF":
-        args.setdefault("diag_path",        os.path.join(ensemble_base, "enkf_diagnostics.csv"))
-        args.setdefault("innov_depth_path", os.path.join(ensemble_base, "enkf_innov_by_depth.csv"))
-        args.setdefault("kgain_depth_path", os.path.join(ensemble_base, "enkf_kgain_by_depth.csv"))
+        args.setdefault("diag_path",        os.path.join(ensemble_base, f"{algo}_diagnostics.csv"))
+        args.setdefault("innov_depth_path", os.path.join(ensemble_base, f"{algo}_innov_by_depth.csv"))
+        args.setdefault("kgain_depth_path", os.path.join(ensemble_base, f"{algo}_kgain_by_depth.csv"))
     return args
 
 

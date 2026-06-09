@@ -1192,3 +1192,160 @@ def write_snapshot_T(member_id, T_new, args):
     tmp = snap_path + ".tmp"
     write_snapshot(tmp, snap)
     os.replace(tmp, snap_path)
+
+
+# =============================================================================
+# Initial conditions from observations
+# ### copied from operational_simstrat (functions/observations.py)
+# =============================================================================
+
+def _closest_profile(csv_path, start_date, log, max_days=32, direction="closest"):
+    df = pd.read_csv(csv_path)
+    df.columns = [c.strip().lower() for c in df.columns]
+    if not {"time", "depth", "value"}.issubset(df.columns):
+        return None
+    df["time"] = pd.to_datetime(df["time"], utc=True)
+    df = df.dropna(subset=["time", "depth", "value"])
+    if df.empty:
+        return None
+    start = pd.Timestamp(start_date)
+    if start.tzinfo is None:
+        start = start.tz_localize("UTC")
+    times = df["time"].drop_duplicates().reset_index(drop=True)
+    name = os.path.basename(csv_path)
+    if direction == "forward":
+        forward_times = times[times >= start].reset_index(drop=True)
+        if forward_times.empty:
+            log.warning("No profile in {} on or after start_date.".format(name))
+            return None
+        diffs = forward_times - start
+        idx = diffs.idxmin()
+        diff_days = diffs.iloc[idx].total_seconds() / 86400.0
+        if diff_days > max_days:
+            log.warning("No profile in {} within {} days after start_date (earliest is {:.1f} days away).".format(name, max_days, diff_days))
+            return None
+        chosen = forward_times.iloc[idx]
+        log.info("Using {} profile {:.1f} days after start_date.".format(name, diff_days), indent=2)
+    elif direction == "backward":
+        backward_times = times[times <= start].reset_index(drop=True)
+        if backward_times.empty:
+            log.warning("No profile in {} on or before start_date.".format(name))
+            return None
+        diffs = start - backward_times
+        idx = diffs.idxmin()
+        diff_days = diffs.iloc[idx].total_seconds() / 86400.0
+        if diff_days > max_days:
+            log.warning("No profile in {} within {} days before start_date (latest is {:.1f} days away).".format(name, max_days, diff_days))
+            return None
+        chosen = backward_times.iloc[idx]
+        log.info("Using {} profile {:.1f} days before start_date.".format(name, diff_days), indent=2)
+    else:
+        diffs = (times - start).abs()
+        idx = diffs.idxmin()
+        diff_days = diffs.iloc[idx].total_seconds() / 86400.0
+        if diff_days > max_days:
+            log.warning("No profile in {} within {} days of start_date (closest is {:.1f} days away).".format(name, max_days, diff_days))
+            return None
+        chosen = times.iloc[idx]
+        log.info("Using {} profile {:.1f} days from start_date.".format(name, diff_days), indent=2)
+    profile = df[df["time"] == chosen].sort_values("depth").reset_index(drop=True)
+    return {"profile": profile, "time": chosen}
+
+
+def initial_conditions_from_observations(observations_dir, key, start_date, max_depth, log,
+                                         salinity=0.15, max_days=183, direction="forward"):
+    try:
+        lake_dir = os.path.join(observations_dir, key)
+        temp_path = os.path.join(lake_dir, "temperature.csv")
+        if not os.path.isfile(temp_path):
+            return False
+        t_result = _closest_profile(temp_path, start_date, log, max_days=max_days, direction=direction)
+        if t_result is None:
+            return False
+        t_profile = t_result["profile"]
+        chosen_time = t_result["time"]
+        if t_profile.empty:
+            return False
+        t_profile["depth"] = t_profile["depth"].abs()
+        t_profile = t_profile.sort_values("depth").reset_index(drop=True)
+        t_profile = t_profile[t_profile["depth"] <= max_depth].reset_index(drop=True)
+        if t_profile.empty:
+            return False
+        if t_profile["depth"].iloc[0] > 0:
+            log.warning("Shallowest temperature observation depth {:.3f} m > 0; snapping to 0.".format(t_profile["depth"].iloc[0]))
+            t_profile.loc[0, "depth"] = 0.0
+        depth_arr = t_profile["depth"].to_numpy()
+        temperature_arr = t_profile["value"].to_numpy()
+
+        salinity_arr = np.full(len(depth_arr), salinity)
+        sal_path = os.path.join(lake_dir, "salinity.csv")
+        if os.path.isfile(sal_path):
+            s_result = _closest_profile(sal_path, chosen_time, log)
+            if s_result is not None:
+                s_profile = s_result["profile"]
+                if not s_profile.empty:
+                    s_profile["depth"] = s_profile["depth"].abs()
+                    s_profile = s_profile.sort_values("depth")
+                    salinity_arr = np.interp(depth_arr, s_profile["depth"].to_numpy(), s_profile["value"].to_numpy())
+
+        return {"depth": depth_arr, "temperature": temperature_arr, "salinity": salinity_arr,
+                "start_date": chosen_time.to_pydatetime()}
+    except Exception:
+        return False
+
+
+def climatology_initial_conditions_from_observations(observations_dir, key, start_date, max_depth, log,
+                                                     salinity=0.15, min_years=5, day_window=14):
+    try:
+        lake_dir = os.path.join(observations_dir, key)
+        temp_path = os.path.join(lake_dir, "temperature.csv")
+        if not os.path.isfile(temp_path):
+            return False
+        df = pd.read_csv(temp_path)
+        df.columns = [c.strip().lower() for c in df.columns]
+        if not {"time", "depth", "value"}.issubset(df.columns):
+            return False
+        df["time"] = pd.to_datetime(df["time"], utc=True)
+        df = df.dropna(subset=["time", "depth", "value"])
+        if df.empty:
+            return False
+
+        target_doy = start_date.timetuple().tm_yday
+        doy = df["time"].dt.dayofyear.to_numpy()
+        diff = np.abs(doy - target_doy)
+        circ_diff = np.minimum(diff, 365 - diff)
+        df = df.loc[circ_diff <= day_window].copy()
+        if df.empty:
+            log.warning("No temperature observations within ±{} days of day-of-year {}.".format(day_window, target_doy))
+            return False
+
+        df["depth"] = df["depth"].abs()
+
+        standard_depths = np.array([0, 2, 5, 10, 15, 20, 30, 40, 50, 75, 100, 150, 200, 300], dtype=float)
+        depth_arr = np.append(standard_depths[standard_depths < max_depth], max_depth)
+
+        years = set()
+        interpolated = []
+        for chosen_time, group in df.groupby("time"):
+            prof = group.sort_values("depth").reset_index(drop=True)
+            prof = prof[prof["depth"] <= max_depth].reset_index(drop=True)
+            if len(prof) < 2:
+                continue
+            if prof["depth"].iloc[0] > 0:
+                prof.loc[0, "depth"] = 0.0
+            t_interp = np.interp(depth_arr, prof["depth"].to_numpy(), prof["value"].to_numpy())
+            interpolated.append(t_interp)
+            years.add(chosen_time.year)
+
+        if len(years) < min_years:
+            log.warning("Only {} distinct years of observations within ±{} days of day-of-year {} "
+                        "(need {}); skipping climatology.".format(len(years), day_window, target_doy, min_years))
+            return False
+
+        temperature_arr = np.mean(np.vstack(interpolated), axis=0)
+        salinity_arr = np.full(len(depth_arr), salinity)
+        log.info("Built climatological initial profile from {} profiles across {} years.".format(
+            len(interpolated), len(years)), indent=2)
+        return {"depth": depth_arr, "temperature": temperature_arr, "salinity": salinity_arr}
+    except Exception:
+        return False

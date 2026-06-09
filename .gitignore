@@ -15,6 +15,7 @@ run/upperlugano_internaltest/
 run/openda/
 assimilation/
 old/
+template_os_init/
 
 # Local diagnostic scripts
 plot_ensemble.py

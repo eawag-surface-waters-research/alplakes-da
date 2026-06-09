@@ -81,6 +81,7 @@ def run_enkf_daily(args, log):
     member_ids  = args["member_ids"]
     sigma_obs   = args["sigma_obs"]
     inflation   = args["inflation"]
+    adaptive    = args.get("adaptive", False)
     max_workers = args.get("max_workers")
     diag_path   = args["diag_path"]
     innov_path  = args["innov_depth_path"]
@@ -108,7 +109,8 @@ def run_enkf_daily(args, log):
 
     log.info(f"Daily EnKF: {start_date.date()} → {end_date.date()} "
              f"({(end_date - start_date).days} days, {len(member_ids)} members, "
-             f"σ_obs={sigma_obs} °C, inflation={inflation})")
+             f"σ_obs={sigma_obs} °C, inflation={inflation}, "
+             f"adaptive={'on (skip update when NIS < n_obs)' if adaptive else 'off'})")
     log.newline()
 
     start_containers(args, max_workers=max_workers)
@@ -116,6 +118,7 @@ def run_enkf_daily(args, log):
         current      = start_date
         days_run     = 0
         days_updated = 0
+        days_skipped = 0
 
         while current < end_date:
             window_end = min(current + timedelta(days=1), end_date)
@@ -143,6 +146,8 @@ def run_enkf_daily(args, log):
 
             t_enkf    = 0.0
             n_updated = 0
+            skipped   = False
+            nis       = None
             if y_obs is not None:
                 good_ids = [i for i in member_ids if i not in failed]
                 if len(good_ids) >= 2:
@@ -167,25 +172,36 @@ def run_enkf_daily(args, log):
                         H          = build_H(z_vol, lake_lev, sim_depths)
                         X_a, diags = enkf_update(X_f, y_obs, H, sigma_obs, inflation=inflation, rng=rng)
 
-                        def _write_T(col_i):
-                            col, i = col_i
-                            try:
-                                write_snapshot_T(i, X_a[:, col], args)
-                            except Exception as e:
-                                print(f"[ensemble{i:02d}] snapshot write failed: {e}")
+                        # Adaptive gate: NIS is chi-squared with n_obs dof, so its
+                        # expected value is n_obs.  NIS < n_obs means the forecast
+                        # already agrees with the observations within their expected
+                        # error — the model is "doing well", so skip the analysis and
+                        # let the members keep running unperturbed.
+                        nis     = diags["NIS"] if diags is not None else None
+                        skipped = adaptive and nis is not None and nis < diags["n_obs"]
 
-                        with concurrent.futures.ThreadPoolExecutor() as pool:
-                            pool.map(_write_T, enumerate(readable))
+                        if not skipped:
+                            def _write_T(col_i):
+                                col, i = col_i
+                                try:
+                                    write_snapshot_T(i, X_a[:, col], args)
+                                except Exception as e:
+                                    print(f"[ensemble{i:02d}] snapshot write failed: {e}")
 
-                        n_updated    = len(readable)
-                        days_updated += 1
+                            with concurrent.futures.ThreadPoolExecutor() as pool:
+                                pool.map(_write_T, enumerate(readable))
+
+                            n_updated    = len(readable)
+                            days_updated += 1
+                        else:
+                            days_skipped += 1
 
                         if diags is not None:
                             valid_mask = diags.pop("_valid_mask")
                             innov_vec  = diags.pop("_innov_vec")
                             K_arr      = diags.pop("_K")
 
-                            pd.DataFrame([{"date": current.date(), **diags}]).to_csv(
+                            pd.DataFrame([{"date": current.date(), "skipped": skipped, **diags}]).to_csv(
                                 diag_path, mode="a",
                                 header=not os.path.exists(diag_path), index=False,
                             )
@@ -211,13 +227,21 @@ def run_enkf_daily(args, log):
 
             t_total = time.perf_counter() - t_day
             timing  = f"docker={t_docker:.1f}s  mean={t_mean:.1f}s  enkf={t_enkf:.1f}s  total={t_total:.1f}s"
-            obs_str = f"n_obs={len(y_obs)}  n_updated={n_updated}" if y_obs is not None else "no obs"
+            if y_obs is not None:
+                nis_str = f"NIS={nis:.1f}" if nis is not None else "NIS=--"
+                act     = "skipped (model ok)" if skipped else f"n_updated={n_updated}"
+                obs_str = f"n_obs={len(y_obs)}  {nis_str}  {act}"
+            else:
+                obs_str = "no obs"
             status  = f"failed={failed}" if failed else "ok"
             log.info(f"  {current.date()}  {obs_str}  [{status}]  [{timing}]")
 
             current = window_end
 
-        log.end(f"Done. {days_run} days run, {days_updated} EnKF updates applied.")
+        end_msg = f"Done. {days_run} days run, {days_updated} EnKF updates applied."
+        if adaptive:
+            end_msg += f" {days_skipped} skipped (NIS < n_obs)."
+        log.end(end_msg)
 
     finally:
         stop_containers(args)

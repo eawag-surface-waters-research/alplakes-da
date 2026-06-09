@@ -15,7 +15,7 @@ from .functions import verify_file, load_obs, read_ref_date
 
 
 # Plot colour per trajectory label
-COLORS = {"ref": "dimgrey", "EnKF": "steelblue", "PF": "darkorange",
+COLORS = {"ref": "dimgrey", "EnKF": "steelblue", "EnKF (ad)": "purple", "PF": "darkorange",
           "EnSR (oda)": "seagreen", "PF (oda)": "crimson"}
 
 
@@ -67,14 +67,15 @@ def load_openda_members(openda_base, subdir, label, ref_date):
     return members
 
 
-def load_enkf_members(ensemble_base, ref_date):
-    # EnKF analysis ensemble members: run/<lake>/ensemble1..N/Results_EnKF/T_out_full.dat
-    paths = sorted(glob.glob(os.path.join(ensemble_base, "ensemble*", "Results_EnKF", "T_out_full.dat")))
+def load_enkf_members(ensemble_base, ref_date, results_dir="Results_EnKF", label="EnKF"):
+    # EnKF analysis ensemble members: run/<lake>/ensemble1..N/<results_dir>/T_out_full.dat
+    # (the adaptive run writes to Results_EnKF_adaptive; absent → returns []).
+    paths = sorted(glob.glob(os.path.join(ensemble_base, "ensemble*", results_dir, "T_out_full.dat")))
     members = [t for p in paths
                if os.path.basename(os.path.dirname(os.path.dirname(p))) != "ensemble0"
                and (t := load_traj(p, ref_date)) is not None]
     if members:
-        print(f"EnKF:    {len(members)} members (ensemble*/Results_EnKF/T_out_full.dat)")
+        print(f"{label:>7}: {len(members)} members (ensemble*/{results_dir}/T_out_full.dat)")
     return members
 
 
@@ -183,15 +184,19 @@ def plot_rmse_bar(entries, obs, obs_depths, lake_label, year):
                     color="white" if d_idx > len(obs_depths) / 2 else "black")
         bottoms += vals
 
+    # mean per-depth RMSE = sum of segments / number of depths with valid RMSE
+    counts    = {lbl: sum(not np.isnan(annual[lbl].get(d, np.nan)) for d in obs_depths) for lbl in labels}
     ref_total = totals.get("ref")
+    ref_mean  = ref_total / counts["ref"] if ref_total and counts.get("ref") else None
     for xi, lbl in enumerate(labels):
         total = bottoms[xi]
+        mean  = total / counts[lbl] if counts[lbl] else np.nan
         ax.bar(xi, total, bottom=0, color="none", edgecolor=COLORS.get(lbl, "k"), lw=2, width=0.6)
-        if ref_total and lbl != "ref":
-            gain = (total - ref_total) / ref_total * 100      # negative = gain
-            ann  = f"{total:.3f}°C\n{gain:+.1f}%"
+        if ref_mean and lbl != "ref":
+            gain = (mean - ref_mean) / ref_mean * 100      # negative = gain
+            ann  = f"avg {mean:.3f}°C\n{gain:+.1f}%"
         else:
-            ann = f"{total:.3f}°C"
+            ann = f"avg {mean:.3f}°C"
         ax.text(xi, total + 0.01 * (ref_total or total), ann, ha="center", va="bottom", fontsize=9)
 
     ax.set_xticks(x)
@@ -223,6 +228,11 @@ def visualize(args, save=False):
     enkf_members = load_enkf_members(ensemble_base, ref_date)
     enkf_traj    = ensemble_mean(enkf_members)
 
+    # Adaptive EnKF (NIS-gated): same, from Results_EnKF_adaptive if that run exists
+    enkf_ad_members = load_enkf_members(ensemble_base, ref_date,
+                                        results_dir="Results_EnKF_adaptive", label="EnKF (ad)")
+    enkf_ad_traj    = ensemble_mean(enkf_ad_members)
+
     # Python PF: posterior-mean trajectory only (no per-member full trajectories saved)
     pf_py_path = os.path.join(ensemble_base, "T_out_pf_mean.dat")
     pf_py_traj = load_traj(pf_py_path, ref_date)
@@ -234,7 +244,7 @@ def visualize(args, save=False):
     pf_members   = load_openda_members(openda_base, "work_pf", "PF (oda)", ref_date)
     pf_traj      = ensemble_mean(pf_members)
 
-    if all(t is None for t in (e0_traj, enkf_traj, pf_py_traj, ensr_traj, pf_traj)):
+    if all(t is None for t in (e0_traj, enkf_traj, enkf_ad_traj, pf_py_traj, ensr_traj, pf_traj)):
         raise RuntimeError("No trajectory data found — has the assimilation been run?")
 
     obs           = load_obs(obs_path)
@@ -245,7 +255,7 @@ def visualize(args, save=False):
     obs_depths = np.sort(obs["depth"].unique())
 
     entries = [(lbl, t) for lbl, t in
-               [("ref", e0_traj), ("EnKF", enkf_traj), ("PF", pf_py_traj),
+               [("ref", e0_traj), ("EnKF", enkf_traj), ("EnKF (ad)", enkf_ad_traj), ("PF", pf_py_traj),
                 ("EnSR (oda)", ensr_traj), ("PF (oda)", pf_traj)] if t is not None]
 
     # RMSE table
@@ -261,6 +271,8 @@ def visualize(args, save=False):
     spreads = {}
     if enkf_members:
         spreads["EnKF"] = enkf_members
+    if enkf_ad_members:
+        spreads["EnKF (ad)"] = enkf_ad_members
     if ensr_members:
         spreads["EnSR (oda)"] = ensr_members
     if pf_members:

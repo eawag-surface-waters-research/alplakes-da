@@ -4,5 +4,6 @@
     "par_file": "Settings_EnKF.par",
     "sigma_obs": 0.5,
     "inflation": 1.00,
+    "adaptive": false,
     "reset": true
 }
