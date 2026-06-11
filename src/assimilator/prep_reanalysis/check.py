@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
 from ..functions import VARIABLES
-from .perturbate import _simulate_ar1
+from .ar1_apply import _simulate_ar1
 
 logger = logging.getLogger(__name__)
 

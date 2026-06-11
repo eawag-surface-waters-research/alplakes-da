@@ -104,8 +104,8 @@ warm-start snapshot**:
 │       │   ├── adapter.py             Sync inputs/forcings/warmup + build observations (run_openda)
 │       │   └── config.py              Render run.oda + every .gen.xml from the FILTERS spec
 │       └── prep_reanalysis/        ICON reanalysis -> AR(1) forcing perturbation
-│           ├── fit_perturbations.py   Part 1: acquisition + AR(1) fit -> perturbations/<lake>.json
-│           ├── perturbate.py          Part 2: simulate AR(1) -> perturbed member forcings
+│           ├── ar1_fit.py            Part 1 impl: acquisition + AR(1) fit -> perturbations/<lake>.json
+│           ├── ar1_apply.py          Part 2 impl: simulate AR(1) -> perturbed member forcings
 │           └── check.py               QA plots (acquisition + fit diagnostics)
 │
 ├── args/                    One JSON config per entry point (see Configuration)

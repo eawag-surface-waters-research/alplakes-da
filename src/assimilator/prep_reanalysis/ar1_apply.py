@@ -19,6 +19,9 @@ logger = logging.getLogger(__name__)
 PERTURB_VARS = {"U": ("U_std", False), "V": ("V_std", False), "GLOB": ("GLOB_std", True)}
 
 
+# Note: AR(1) cold-start. out[0]=0 for all members -> zero forcing spread at t=0,
+# suppressed for the first ~1/(1-phi) steps (and noise[0] is generated but unused). Negligible
+# in practice. Intended.
 def _simulate_ar1(phi: float, sigma: float, n: int, n_members: int, rng: np.random.Generator) -> np.ndarray:
     noise = rng.standard_normal((n, n_members)) * sigma
     out   = np.zeros((n, n_members))
@@ -59,7 +62,11 @@ def perturbate(args: dict, params: dict = None) -> None:
         names=["time_days", "U_std", "V_std", "T_std", "GLOB_std", "vap_std", "cloud_std", "rain_std"],
         skiprows=1,
     )
-    std["time"] = (t0 + pd.to_timedelta(std["time_days"] - 1, unit="D")).dt.round("h").dt.tz_localize("UTC")
+    # Forcing.dat time_days is 0-based (day 0 = ref_year Jan 1), the SAME axis as the par's
+    # "Start d" and T_out's "Datetime" (load_T). Verified: file spans time_days 0..16435 =
+    # 1981-01-01..2025-12-31. (Was off by one — a `- 1` here treated it as 1-based, shifting the
+    # perturbation window +1 day and dropping the first assimilation day.)
+    std["time"] = (t0 + pd.to_timedelta(std["time_days"], unit="D")).dt.round("h").dt.tz_localize("UTC")
     start = pd.Timestamp(args["start_date"]).tz_convert("UTC")
     end   = pd.Timestamp(args["end_date"]).tz_convert("UTC")
     df    = std[(std["time"] >= start) & (std["time"] <= end)].reset_index(drop=True)
@@ -67,9 +74,14 @@ def perturbate(args: dict, params: dict = None) -> None:
         raise ValueError(f"Control Forcing.dat has no rows in [{start}, {end}] for {lake}")
     n = len(df)
 
+    # Note: forcing perturbation is seeded (rng_seed) -> identical ensemble forcing every
+    # run, while the EnKF obs-perturbation rng (enkf.py) is unseeded. Mixed reproducibility... 
+    # need to choose but for now not essential. Acknowledged.
     rng   = np.random.default_rng(rng_seed)
     night = df["GLOB_std"].values < 1.0   # night mask from the control's solar (no ICON at apply time)
 
+    # Note: U and V are perturbed with independent AR(1) draws (separate phi/sigma), so
+    # their cross-correlation is ignored. Intended.
     perturbed = {}
     for name, (std_col, clip_zero) in PERTURB_VARS.items():
         p    = variables[name]
@@ -79,6 +91,8 @@ def perturbate(args: dict, params: dict = None) -> None:
         ensemble = df[std_col].values[:, None] + pert
         if clip_zero:
             ensemble[night, :] = 0.0
+            # Note: GLOB clipped at 0 only (no upper bound) -> a member's solar can be
+            # perturbed above the physical clear-sky maximum. Acknowledged.
             ensemble = np.clip(ensemble, 0.0, None)
         perturbed[name] = ensemble
 

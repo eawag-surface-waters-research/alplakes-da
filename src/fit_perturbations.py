@@ -17,7 +17,7 @@ ROOT    = os.path.dirname(SRC_DIR)
 sys.path.insert(0, SRC_DIR)
 
 from assimilator.functions                        import verify_args, resolve_src
-from assimilator.prep_reanalysis.fit_perturbations import fit_perturbations, setup_logging
+from assimilator.prep_reanalysis.ar1_fit import fit_perturbations, setup_logging
 
 REQUIRED = ["lake", "lake_bbox", "ensemble_base"]
 

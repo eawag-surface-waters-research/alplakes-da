@@ -192,6 +192,10 @@ def lake_mean(args: dict, flat_df: pd.DataFrame, contours: dict) -> pd.DataFrame
 # AR(1) fit
 # ---------------------------------------------------------------------------
 
+# Note: Simplified moment-based (Yule–Walker-type) AR(1) estimator
+# Can be improved just a first proof of concept ...
+# Why it's fine here: Large n --> estimators asymptotically equivalent, purpose is noise generation
+# and not inference, just numpy...
 def _fit_ar1(residuals: pd.Series) -> dict:
     r     = residuals.dropna().values
     phi   = float(np.corrcoef(r[:-1], r[1:])[0, 1])
@@ -207,7 +211,9 @@ def _read_control_forcing(standard_inputs_path: str, ref_year: int, start, end) 
         names=["time_days", "U", "V", "T", "GLOB", "vap", "cloud", "rain"],
         skiprows=1,
     )
-    std["time"] = (t0 + pd.to_timedelta(std["time_days"] - 1, unit="D")).dt.round("h").dt.tz_localize("UTC")
+    # 0-based time_days (day 0 = ref_year Jan 1), matching the par/T_out axis — see ar1_apply.
+    # (Was `- 1`, which misaligned the ICON-vs-control residual by one day.)
+    std["time"] = (t0 + pd.to_timedelta(std["time_days"], unit="D")).dt.round("h").dt.tz_localize("UTC")
     return std[(std["time"] >= start) & (std["time"] <= end)].reset_index(drop=True)
 
 

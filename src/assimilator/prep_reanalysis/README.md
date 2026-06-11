@@ -54,8 +54,8 @@ python src/perturbate.py        args/ensemble.json             # Part 2: apply (
 Programmatic:
 
 ```python
-from assimilator.prep_reanalysis.fit_perturbations import fit_perturbations
-from assimilator.prep_reanalysis.perturbate        import perturbate
+from assimilator.prep_reanalysis.ar1_fit   import fit_perturbations
+from assimilator.prep_reanalysis.ar1_apply import perturbate
 ```
 
 ## Args (`args/ensemble.json`)

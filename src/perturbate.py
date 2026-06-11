@@ -15,7 +15,7 @@ ROOT    = os.path.dirname(SRC_DIR)
 sys.path.insert(0, SRC_DIR)
 
 from assimilator.functions               import verify_args, resolve_src
-from assimilator.prep_reanalysis.perturbate import perturbate
+from assimilator.prep_reanalysis.ar1_apply import perturbate
 
 REQUIRED = ["lake", "n_members", "ensemble_base", "start_date", "end_date"]
 
