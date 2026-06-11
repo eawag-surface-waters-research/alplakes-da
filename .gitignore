@@ -2,7 +2,8 @@
 docs/
 
 # Ignore data folders
-data/
+observations/
+inputs/
 datasets/
 output/
 snapshot_examples/
@@ -32,7 +33,6 @@ OPENDA_MIGRATION_DIFF.md
 *.dat
 *.nml
 *.par
-*.geojson
 *.dll
 *.tgz
 *.check.xml
@@ -46,8 +46,14 @@ OPENDA_MIGRATION_DIFF.md
 .RData
 __pycache__/
 
-# OpenDA result-writer output
-openda_simstrat/enkf_results.py
+# Local refactoring notes
+REFACTORING.md
+
+# openda_simstrat/ is a fully generated working dir, created on demand by
+# openda/adapter.py (sync) + openda/config.py (render); the static wrapper source lives
+# in static/openda/. Nothing here is tracked.
+openda_simstrat/
+
 final_output/upperlugano_python_EnKF.json
 final_output/upperlugano_python_PF.json
 final_output/upperlugano_openda_EnSR.json
@@ -60,5 +66,4 @@ enkf_analysys_pres_seasonal.png
 enkf_analysys_pres_daily.png
 enkf_analysys_pres.py
 final_output/upperlugano_openda_PF.json
-openda_simstrat/pf_results.py
 

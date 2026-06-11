@@ -1,0 +1,25 @@
+{
+  "lake": "upperlugano",
+  "reanalysis_lake": "lugano",
+  "source": "ICON KENDA-CH1 - control Forcing.dat",
+  "fit_window": {
+    "start": "2025-01-01",
+    "end": "2025-12-31"
+  },
+  "n_timesteps": 8689,
+  "fitted_on": "2026-06-10",
+  "variables": {
+    "U": {
+      "phi": 0.729175,
+      "sigma": 0.751369
+    },
+    "V": {
+      "phi": 0.806684,
+      "sigma": 1.037134
+    },
+    "GLOB": {
+      "phi": 0.827456,
+      "sigma": 67.01183
+    }
+  }
+}

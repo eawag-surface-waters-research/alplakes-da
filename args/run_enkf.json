@@ -1,6 +1,5 @@
 {
     "engine":        "python",
-    "snapshot_args": "args/snapshot.json",
     "ensemble_args": "args/ensemble.json",
     "run_args":      "args/enkf.json"
 }

@@ -1,0 +1,168 @@
+{
+  "lake": "upperlugano",
+  "engine": "openda",
+  "filter": "EnKF",
+  "n_members": 20,
+  "period": {
+    "start": 16071.125,
+    "end": 16436.0
+  },
+  "scored_against": "all raw obs (model interpolated to obs depth, nearest output time); analysis fit, not withheld",
+  "bias_sign": "model - obs (+ = model too warm)",
+  "n_obs": 839647,
+  "overall": {
+    "n": 839647,
+    "bias": 0.0833,
+    "rmse": 0.7042,
+    "mae": 0.3806,
+    "mean_spread": 0.0954,
+    "coverage_1sigma": 0.2514,
+    "coverage_2sigma": 0.429
+  },
+  "by_depth": {
+    "0.5": {
+      "n": 52478,
+      "bias": -0.1672,
+      "rmse": 0.4579,
+      "mae": 0.3085,
+      "mean_spread": 0.1755,
+      "coverage_1sigma": 0.3715,
+      "coverage_2sigma": 0.6229
+    },
+    "1": {
+      "n": 52478,
+      "bias": -0.0643,
+      "rmse": 0.3709,
+      "mae": 0.2568,
+      "mean_spread": 0.1684,
+      "coverage_1sigma": 0.4198,
+      "coverage_2sigma": 0.6936
+    },
+    "3": {
+      "n": 52478,
+      "bias": 0.1067,
+      "rmse": 0.4135,
+      "mae": 0.2621,
+      "mean_spread": 0.1492,
+      "coverage_1sigma": 0.4129,
+      "coverage_2sigma": 0.6897
+    },
+    "5": {
+      "n": 52478,
+      "bias": 0.208,
+      "rmse": 0.6022,
+      "mae": 0.3389,
+      "mean_spread": 0.1321,
+      "coverage_1sigma": 0.3626,
+      "coverage_2sigma": 0.6148
+    },
+    "7": {
+      "n": 52478,
+      "bias": 0.1478,
+      "rmse": 0.8634,
+      "mae": 0.4747,
+      "mean_spread": 0.1293,
+      "coverage_1sigma": 0.3121,
+      "coverage_2sigma": 0.5267
+    },
+    "9": {
+      "n": 52478,
+      "bias": 0.0649,
+      "rmse": 1.152,
+      "mae": 0.6702,
+      "mean_spread": 0.1257,
+      "coverage_1sigma": 0.2587,
+      "coverage_2sigma": 0.4208
+    },
+    "11": {
+      "n": 52478,
+      "bias": 0.0876,
+      "rmse": 1.2345,
+      "mae": 0.7492,
+      "mean_spread": 0.1116,
+      "coverage_1sigma": 0.2207,
+      "coverage_2sigma": 0.3807
+    },
+    "13": {
+      "n": 52478,
+      "bias": 0.1112,
+      "rmse": 1.0439,
+      "mae": 0.6522,
+      "mean_spread": 0.098,
+      "coverage_1sigma": 0.2086,
+      "coverage_2sigma": 0.3578
+    },
+    "15": {
+      "n": 52478,
+      "bias": 0.1043,
+      "rmse": 0.9086,
+      "mae": 0.5692,
+      "mean_spread": 0.0895,
+      "coverage_1sigma": 0.169,
+      "coverage_2sigma": 0.3085
+    },
+    "17": {
+      "n": 52478,
+      "bias": 0.1514,
+      "rmse": 0.8287,
+      "mae": 0.513,
+      "mean_spread": 0.0792,
+      "coverage_1sigma": 0.1352,
+      "coverage_2sigma": 0.2667
+    },
+    "19": {
+      "n": 52477,
+      "bias": 0.1836,
+      "rmse": 0.6686,
+      "mae": 0.4415,
+      "mean_spread": 0.0702,
+      "coverage_1sigma": 0.1326,
+      "coverage_2sigma": 0.2464
+    },
+    "21": {
+      "n": 52478,
+      "bias": 0.147,
+      "rmse": 0.5094,
+      "mae": 0.3616,
+      "mean_spread": 0.0627,
+      "coverage_1sigma": 0.1408,
+      "coverage_2sigma": 0.2464
+    },
+    "25": {
+      "n": 52478,
+      "bias": 0.1334,
+      "rmse": 0.3109,
+      "mae": 0.2242,
+      "mean_spread": 0.0495,
+      "coverage_1sigma": 0.1573,
+      "coverage_2sigma": 0.2956
+    },
+    "30": {
+      "n": 52478,
+      "bias": 0.1164,
+      "rmse": 0.1842,
+      "mae": 0.1442,
+      "mean_spread": 0.0374,
+      "coverage_1sigma": 0.1245,
+      "coverage_2sigma": 0.2636
+    },
+    "35": {
+      "n": 52478,
+      "bias": 0.0175,
+      "rmse": 0.0943,
+      "mae": 0.0628,
+      "mean_spread": 0.0277,
+      "coverage_1sigma": 0.3029,
+      "coverage_2sigma": 0.5089
+    },
+    "40": {
+      "n": 52478,
+      "bias": -0.0151,
+      "rmse": 0.0948,
+      "mae": 0.0608,
+      "mean_spread": 0.0198,
+      "coverage_1sigma": 0.2924,
+      "coverage_2sigma": 0.42
+    }
+  }
+}
