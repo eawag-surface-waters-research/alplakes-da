@@ -42,7 +42,6 @@ def load_e0(ensemble_base, results_dir, ref_date):
     # inputs/<lake>/ref/T_out.dat is the full-year free-run reference (manually provided)
     candidates = [
         os.path.join(ROOT, "inputs", os.path.basename(ensemble_base), "ref", "T_out.dat"),
-        os.path.join(ensemble_base, "ensemble0", results_dir, "T_out_full.dat"),
         os.path.join(ensemble_base, "ensemble0", results_dir, "T_out.dat"),
         os.path.join(ensemble_base, "ensemble0", "Results", "T_out.dat"),
     ]
@@ -72,13 +71,13 @@ def load_openda_members(openda_base, subdir, label, ref_date):
 
 
 def load_enkf_members(ensemble_base, ref_date):
-    # EnKF analysis ensemble members: run/<lake>/ensemble1..N/Results_EnKF/T_out_full.dat
-    paths = sorted(glob.glob(os.path.join(ensemble_base, "ensemble*", "Results_EnKF", "T_out_full.dat")))
+    # EnKF analysis ensemble members: run/<lake>/ensemble1..N/Results_EnKF/T_out.dat
+    paths = sorted(glob.glob(os.path.join(ensemble_base, "ensemble*", "Results_EnKF", "T_out.dat")))
     members = [t for p in paths
                if os.path.basename(os.path.dirname(os.path.dirname(p))) != "ensemble0"
                and (t := load_traj(p, ref_date)) is not None]
     if members:
-        print(f"EnKF:    {len(members)} members (ensemble*/Results_EnKF/T_out_full.dat)")
+        print(f"EnKF:    {len(members)} members (ensemble*/Results_EnKF/T_out.dat)")
     return members
 
 

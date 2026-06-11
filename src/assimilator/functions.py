@@ -183,10 +183,11 @@ def load_obs(obs_path):
     return obs
 
 
-# REVIEW [M1]: the SHALLOWEST obs depth is snapped to 0.0 (surface) regardless of its true
-# depth; all others map to -depth. So a sensor at e.g. 1 m is assimilated as if at the surface.
-# Internally consistent (both EnKF build_H and PF use this, so the engines agree), but it is a
-# real depth bias if the shallowest sensor is not actually at the surface. Confirm intended.
+# Note: the SHALLOWEST obs depth is snapped to 0.0 (surface) regardless of its true
+# depth; all others map to -depth. So a sensor at e.g. 0.5 m for upperlugano is assimilated 
+# as if at the surface. Internally consistent (both EnKF build_H and PF use this, so the engines 
+# agree), but it is a real depth bias if the shallowest sensor is not actually close to the surface. 
+# It is intended.
 def obs_to_sim_col(depth, min_obs_depth):
     return 0.0 if depth == min_obs_depth else -depth
 
@@ -194,30 +195,23 @@ def obs_to_sim_col(depth, min_obs_depth):
 # ---------------------------------------------------------------------------
 # Per-window DA machinery (used by EnKF + PF):
 # ---------------------------------------------------------------------------
-def append_rows(src_path, dst_path):
-    if not os.path.exists(src_path):
-        return
-    with open(src_path) as f:
-        lines = f.readlines()
-    header, rows = lines[0], lines[1:]
-    if not rows:
-        return
-    if not os.path.exists(dst_path):
-        with open(dst_path, "w") as f:
-            f.writelines([header] + rows)
-        return
-    with open(dst_path, "rb") as f:
-        f.seek(-2, 2)
-        while f.read(1) != b"\n":
-            f.seek(-2, 1)
-        last_t = float(f.readline().decode().split(",")[0])
-    first_t = float(rows[0].split(",")[0])
-    start = 1 if first_t <= last_t else 0
-    with open(dst_path, "a") as f:
-        f.writelines(rows[start:])
+def clear_member_outputs(ensemble_base, member_ids, results_dir):
+    """Delete accumulated *_out.dat in each member's results_dir. Simstrat APPENDS to its
+    output files across the daily windows, so a fresh run must clear them once up front,
+    otherwise it would append onto stale data from a previous run. Called on reset."""
+    for i in member_ids:
+        rdir = os.path.join(ensemble_base, f"ensemble{i}", results_dir)
+        if os.path.isdir(rdir):
+            for fname in os.listdir(rdir):
+                if fname.endswith("_out.dat"):
+                    os.remove(os.path.join(rdir, fname))
 
 
 def accumulate_mean(member_ids, args):
+    """Write the ensemble-mean trajectory to args['mean_traj_path'] from each member's
+    (full, accumulated) T_out.dat. One-shot: call once after the run. Averages across
+    whatever members are present at each timestamp, so it tolerates a member missing a
+    failed window."""
     def _read(i):
         path = os.path.join(args["ensemble_base"], f"ensemble{i}", args["results_dir"], "T_out.dat")
         if not os.path.exists(path):
@@ -230,21 +224,9 @@ def accumulate_mean(member_ids, args):
         frames = [f for f in pool.map(_read, member_ids) if f is not None]
     if not frames:
         return
-    mean_df  = frames[0].copy()
-    num_cols = mean_df.columns[1:]
-    mean_df[num_cols] = np.mean([f[num_cols].values for f in frames], axis=0)
-    dst = args["mean_traj_path"]
-    if not os.path.exists(dst):
-        mean_df.to_csv(dst, index=False)
-        return
-    with open(dst, "rb") as f:
-        f.seek(-2, 2)
-        while f.read(1) != b"\n":
-            f.seek(-2, 1)
-        last_t = float(f.readline().decode().split(",")[0])
-    first_t = float(mean_df.iloc[0, 0])
-    start   = 1 if first_t <= last_t else 0
-    mean_df.iloc[start:].to_csv(dst, mode="a", index=False, header=False)
+    time_col = frames[0].columns[0]
+    mean_df  = pd.concat(frames).groupby(time_col, as_index=False).mean()
+    mean_df.to_csv(args["mean_traj_path"], index=False)
 
 
 def _container_name(i, args):
@@ -291,9 +273,9 @@ def run_one_window(i, window_start, window_end, args):
     results_dir  = os.path.join(ensemble_dir, args["results_dir"])
     os.makedirs(results_dir, exist_ok=True)
 
-    for fname in os.listdir(results_dir):
-        if fname.endswith("_out.dat"):
-            os.remove(os.path.join(results_dir, fname))
+    # Note: per-window *_out.dat are NOT cleared here. Simstrat appends across windows, so the
+    # output files accumulate into the full run trajectory by themselves. They are cleared once
+    # up front on reset (clear_member_outputs); a non-reset run continues by appending.
 
     live_snap = os.path.join(results_dir, "simulation-snapshot.dat")
     if not os.path.exists(live_snap):
@@ -358,10 +340,16 @@ def init_par(ensemble_dir, args):
 
 
 def overwrite_par_dates(par_path, window_start, window_end, ref_date):
+    # Run the exact [window_start, window_end] window. Consecutive windows share the boundary
+    # instant: window N ends at, and writes its snapshot at, window_end; window N+1 continues
+    # from that snapshot starting at the same instant. Simstrat emits its first output one
+    # interval AFTER the start (not at t=start), so there is no duplicate row at the seam and
+    # the stitched trajectory is continuous. (A former ±1h padding here created a 2h/window
+    # simulation gap and was removed.)
     with open(par_path) as f:
         par = json.load(f)
-    par["Simulation"]["Start d"] = datetime_to_simstrat_time(window_start + timedelta(hours=1), ref_date)
-    par["Simulation"]["End d"]   = datetime_to_simstrat_time(window_end   - timedelta(hours=1), ref_date)
+    par["Simulation"]["Start d"] = datetime_to_simstrat_time(window_start, ref_date)
+    par["Simulation"]["End d"]   = datetime_to_simstrat_time(window_end,   ref_date)
     with open(par_path, "w") as f:
         json.dump(par, f, indent=4)
 

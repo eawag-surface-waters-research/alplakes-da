@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from datetime import timedelta
 
-from ..functions import (load_obs, obs_to_sim_col, append_rows, accumulate_mean,
+from ..functions import (load_obs, obs_to_sim_col, accumulate_mean, clear_member_outputs,
                          start_containers, stop_containers, run_window_parallel,
                          Logger, verify_args, build_python_run_args)
 from ..snapshot import read_snapshot, write_snapshot
@@ -43,9 +43,14 @@ def write_snapshot_T(member_id, T_new, args):
 # The Python Ensemble Kalman Filter, run as a daily-window loop.
 # ---------------------------------------------------------------------------
 
-# REVIEW [L2]: this averages every depth's observations over the WHOLE daily window,
+# Note: this averages every depth's observations over the WHOLE daily window,
 # then assimilates the daily mean into the end-of-window (instantaneous) snapshot.
-# Representativeness mismatch (daily-mean obs vs instantaneous state). Confirm intended.
+# Representativeness mismatch (daily-mean obs vs instantaneous state) --> intended but suboptimal compromise.
+# Comparing against the model's daily-mean trajectory instead isn't as simple of option as for PF: the
+# EnKF needs the FULL grid state from the snapshot (~2x the output depths) to write the
+# analysis back as the next IC, and T_out.dat only holds the output depths. Future dev:
+# either output the full state from the model, or interpolate the snapshot state onto the
+# output depths for the comparison (compute-efficiency tradeoff).
 def window_obs_vector(obs_df, window_start, window_end, min_obs_depth):
     obs_win = obs_df[(obs_df["time"] >= window_start) & (obs_df["time"] < window_end)]
     if obs_win.empty:
@@ -58,6 +63,28 @@ def window_obs_vector(obs_df, window_start, window_end, min_obs_depth):
     return mean_per_depth.values, sim_depths, obs_depths
 
 
+def window_obs_vector_consistent(obs_df, window_start, window_end, min_obs_depth):
+    """Variant of window_obs_vector that picks, per depth, the single observation nearest
+    the window END instead of the daily mean. The EnKF assimilates into the end-of-window
+    snapshot (model state at ~window_end), so taking the obs nearest that instant makes the
+    obs and model temporally consistent (removes the daily-mean vs instantaneous mismatch).
+    NOTE: this aligns obs to whatever instant window_end is. To match the OpenDA reference
+    (which assimilates at NOON), the daily windows must also be shifted noon-to-noon so that
+    window_end == noon; otherwise this lands on the current window boundary (~end of day)."""
+    obs_win = obs_df[(obs_df["time"] >= window_start) & (obs_df["time"] < window_end)]
+    if obs_win.empty:
+        return None, None, None
+    nearest = (obs_win.assign(_d=(obs_win["time"] - pd.Timestamp(window_end)).abs())
+                      .sort_values("_d")
+                      .groupby("depth", sort=False).first()
+                      .sort_index())
+    if nearest.empty:
+        return None, None, None
+    obs_depths = list(nearest.index)
+    sim_depths = [obs_to_sim_col(d, min_obs_depth) for d in obs_depths]
+    return nearest["value"].values, sim_depths, obs_depths
+
+
 # inherits the surface-alignment assumption from read_snapshot_T (z_volume
 # slicing). converts "X metres below the surface" into an actual height above the bottom
 def build_H(z_volume, lake_level, sim_depths):
@@ -67,7 +94,7 @@ def build_H(z_volume, lake_level, sim_depths):
         H[row, int(np.argmin(np.abs(z_volume - z_target)))] = 1.0 # finds the model cell whose height is closest to that target
     return H
 
-
+# wikipedia cross checked
 def enkf_update(X_f, y_obs, H, sigma_obs, inflation=1.0, rng=None):
     if rng is None:
         rng = np.random.default_rng()
@@ -89,7 +116,7 @@ def enkf_update(X_f, y_obs, H, sigma_obs, inflation=1.0, rng=None):
     HA   = H_v @ A
     PHT  = A @ HA.T / (N - 1)
     HPHT = HA @ HA.T / (N - 1)
-    # Numerical decision taken by Clude Code: Kalman gain K = PHT @ inv(HPHT+R), 
+    # Numerical decision taken fully by Clude Code: Kalman gain K = PHT @ inv(HPHT+R), 
     # via solve (not inv) for stability; transposes turn the right-inverse into solve's
     # left-inverse (S symmetric, so S.T == S).
     K    = np.linalg.solve((HPHT + R).T, PHT.T).T
@@ -132,9 +159,7 @@ def run_enkf_daily(args, log):
             live = os.path.join(args["ensemble_base"], f"ensemble{i}", args["results_dir"], "simulation-snapshot.dat")
             if os.path.exists(live):
                 os.remove(live)
-            full = os.path.join(args["ensemble_base"], f"ensemble{i}", args["results_dir"], "T_out_full.dat")
-            if os.path.exists(full):
-                os.remove(full)
+        clear_member_outputs(args["ensemble_base"], member_ids, args["results_dir"])
         for p in [args["mean_traj_path"], diag_path, innov_path, kgain_path]:
             if os.path.exists(p):
                 os.remove(p)
@@ -147,14 +172,36 @@ def run_enkf_daily(args, log):
     end_date      = args["end_date"]
     rng           = np.random.default_rng()
 
+    # Observation selector per daily window (run-arg "obs_selector", default "window_end"):
+    #   "window_end" -> window_obs_vector_consistent (single reading nearest window_end;
+    #                   DEFAULT — instantaneous update at the snapshot instant. With a noon-
+    #                   anchored start_date (e.g. ...T12:00:00) window_end == noon, matching
+    #                   the OpenDA reference's instantaneous-noon assimilation.)
+    #   "mean"       -> window_obs_vector            (daily mean per depth; opt-in)
+    _OBS_SELECTORS = {"mean": window_obs_vector, "window_end": window_obs_vector_consistent}
+    obs_selector_name = args.get("obs_selector", "window_end")
+    if obs_selector_name not in _OBS_SELECTORS:
+        raise ValueError(f"unknown obs_selector '{obs_selector_name}'; choose from {sorted(_OBS_SELECTORS)}")
+    select_obs = _OBS_SELECTORS[obs_selector_name]
+
     log.info(f"Daily EnKF: {start_date.date()} → {end_date.date()} "
              f"({(end_date - start_date).days} days, {len(member_ids)} members, "
-             f"σ_obs={sigma_obs} °C, inflation={inflation})")
+             f"σ_obs={sigma_obs} °C, inflation={inflation}, obs_selector={obs_selector_name})")
     log.newline()
 
     start_containers(args, max_workers=max_workers)
     try:
-        current      = start_date
+        # Instantaneous-noon update (default obs_selector="window_end"): anchor the windows so
+        # each window_end lands on noon, matching the OpenDA reference's noon assimilation.
+        # Equivalent to a <start_date>T12:00 start, but done here so the shared start_date (also
+        # consumed by PF and the OpenDA config renderer) stays a plain date. The warmup snapshot
+        # becomes the IC at this first noon.
+        current = start_date
+        if obs_selector_name == "window_end":
+            noon    = start_date.replace(hour=12, minute=0, second=0, microsecond=0)
+            current = noon if noon >= start_date else noon + timedelta(days=1)
+            log.info(f"Noon-anchored windows: first window {current.isoformat()} → {(current + timedelta(days=1)).isoformat()}")
+            log.newline()
         days_run     = 0
         days_updated = 0
 
@@ -167,20 +214,7 @@ def run_enkf_daily(args, log):
             days_run += 1
             t_docker = time.perf_counter() - t0
 
-            t0 = time.perf_counter()
-            accumulate_mean(member_ids, args)
-            t_mean = time.perf_counter() - t0
-
-            with concurrent.futures.ThreadPoolExecutor() as pool:
-                pool.map(
-                    lambda i: append_rows(
-                        os.path.join(args["ensemble_base"], f"ensemble{i}", args["results_dir"], "T_out.dat"),
-                        os.path.join(args["ensemble_base"], f"ensemble{i}", args["results_dir"], "T_out_full.dat"),
-                    ),
-                    member_ids,
-                )
-
-            y_obs, sim_depths, obs_depths = window_obs_vector(obs, current, window_end, min_obs_depth)
+            y_obs, sim_depths, obs_depths = select_obs(obs, current, window_end, min_obs_depth)
 
             t_enkf    = 0.0
             n_updated = 0
@@ -205,7 +239,7 @@ def run_enkf_daily(args, log):
                         z_vol    = snap_data[readable[0]][1]
                         lake_lev = snap_data[readable[0]][2]
 
-                        # Note: Assuming lake levels of different members the same, T column too.
+                        # Note: Assuming lake levels of different members the same, T column too. Intentional.
                         H          = build_H(z_vol, lake_lev, sim_depths)
                         X_a, diags = enkf_update(X_f, y_obs, H, sigma_obs, inflation=inflation, rng=rng)
 
@@ -252,13 +286,14 @@ def run_enkf_daily(args, log):
                     t_enkf = time.perf_counter() - t0
 
             t_total = time.perf_counter() - t_day
-            timing  = f"docker={t_docker:.1f}s  mean={t_mean:.1f}s  enkf={t_enkf:.1f}s  total={t_total:.1f}s"
+            timing  = f"docker={t_docker:.1f}s  enkf={t_enkf:.1f}s  total={t_total:.1f}s"
             obs_str = f"n_obs={len(y_obs)}  n_updated={n_updated}" if y_obs is not None else "no obs"
             status  = f"failed={failed}" if failed else "ok"
             log.info(f"  {current.date()}  {obs_str}  [{status}]  [{timing}]")
 
             current = window_end
 
+        accumulate_mean(member_ids, args)   # one-shot: ensemble-mean trajectory from full T_out.dat
         log.end(f"Done. {days_run} days run, {days_updated} EnKF updates applied.")
 
     finally:

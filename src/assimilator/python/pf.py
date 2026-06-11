@@ -5,8 +5,8 @@ import concurrent.futures
 import numpy as np
 from datetime import timedelta
 
-from ..functions import (load_obs, obs_to_sim_col, accumulate_mean, start_containers,
-                         stop_containers, run_window_parallel, load_T,
+from ..functions import (load_obs, obs_to_sim_col, accumulate_mean, clear_member_outputs,
+                         start_containers, stop_containers, run_window_parallel, load_T,
                          Logger, verify_args, build_python_run_args)
 from ..summarize import report_summary
 
@@ -15,12 +15,11 @@ REQUIRED_RUN = ["algorithm", "results_dir", "par_file"]
 # ---------------------------------------------------------------------------
 # The Python Particle Filter (a simple "best member, resample-to-all" scheme), run as a daily-window loop.
 # ---------------------------------------------------------------------------
-# REVIEW [H1]: this is NOT a Bayesian particle filter. There are no importance weights, no
+# Note: this is NOT a real Bayesian particle filter. There are no importance weights, no
 # likelihood, and no resampling proportional to fit -- copy_best_to_all() just clones the single
 # lowest-RMSE member onto every other member each update day, collapsing ensemble spread to zero
-# (only the next day's per-member forcing perturbation re-diversifies). The README / public API
-# call this "PF / Particle Filter", which oversells it. DECISION: rename (e.g. "best-member
-# selection") or document this limitation prominently before handing to third parties.
+# (only the next day's per-member forcing perturbation re-diversifies). We call this
+# "PF", which oversells it because it is a "best-member selection". Intentional and might be changed.
 
 def compute_depth_weights(obs_df, min_obs_depth):
     depths = np.sort(obs_df["depth"].unique()).astype(float)
@@ -63,8 +62,7 @@ def rmse_in_window(sim_df, obs_df, window_start, window_end, min_obs_depth, dept
     return rmse, n_obs_raw, int(mask.sum())
 
 
-# REVIEW [H1]: the "resample" step -- clones best member's snapshot onto all others. See the
-# module-level H1 note: this is select-best-and-clone, not weighted particle resampling.
+# "resample" step -- clones best member's snapshot onto all others. Intentional.
 def copy_best_to_all(best_id, member_ids, args):
     src = os.path.join(args["ensemble_base"], f"ensemble{best_id}", args["results_dir"], "simulation-snapshot.dat")
     targets = [
@@ -84,6 +82,7 @@ def run_pf_daily(args, log):
             live = os.path.join(args["ensemble_base"], f"ensemble{i}", args["results_dir"], "simulation-snapshot.dat")
             if os.path.exists(live):
                 os.remove(live)
+        clear_member_outputs(args["ensemble_base"], member_ids, args["results_dir"])
         if os.path.exists(args["mean_traj_path"]):
             os.remove(args["mean_traj_path"])
         log.info(f"Reset: cleared {args['results_dir']}/ snapshots and trajectory files.")
@@ -115,14 +114,15 @@ def run_pf_daily(args, log):
             days_run += 1
             t_docker = time.perf_counter() - t0
 
-            t0     = time.perf_counter()
-            accumulate_mean(member_ids, args)
-            t_mean = time.perf_counter() - t0
-
             def _load_and_score(i):
                 if i in failed:
                     return i, np.nan, 0, 0
                 try:
+                    # PERF FLAG: T_out.dat now accumulates the whole run (Simstrat appends), so
+                    # load_T re-reads an ever-growing file every window — O(n) per window, O(n^2)
+                    # over the run. rmse_in_window still scores only the current window (obs-time
+                    # intersection), so it's correct, just increasingly slow on long runs. If this
+                    # bites, read only the current window's tail instead of the full file.
                     sim = load_T(os.path.join(args["ensemble_base"], f"ensemble{i}"), args)
                     rmse, n_raw, n_matched = rmse_in_window(sim, obs, current, window_end, min_obs_depth, depth_weights)
                     return i, rmse, n_raw, n_matched
@@ -140,7 +140,7 @@ def run_pf_daily(args, log):
             valid     = [(i, r) for i, r in zip(member_ids, rmses) if not np.isnan(r)]
 
             t_total = time.perf_counter() - t_day
-            timing  = f"docker={t_docker:.1f}s  mean={t_mean:.1f}s  score={t_score:.1f}s  total={t_total:.1f}s"
+            timing  = f"docker={t_docker:.1f}s  score={t_score:.1f}s  total={t_total:.1f}s"
 
             if valid:
                 best_id   = min(valid, key=lambda x: x[1])[0]
@@ -158,6 +158,7 @@ def run_pf_daily(args, log):
 
             current = window_end
 
+        accumulate_mean(member_ids, args)   # one-shot: ensemble-mean trajectory from full T_out.dat
         log.end(f"Done. {days_run} windows run, {days_copied} best-copy steps applied.")
 
     finally:
