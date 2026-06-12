@@ -15,7 +15,8 @@ import matplotlib.pyplot as plt
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # repo root
 sys.path.insert(0, os.path.join(ROOT, "src"))
 
-from assimilator.functions import verify_file, load_obs, read_ref_date
+from assimilator.functions import (verify_file, load_obs, read_ref_date,
+                                    model_output_depths, filter_obs_to_model_depths)
 
 
 # Plot colour per trajectory label
@@ -240,9 +241,10 @@ def visualize(args, save=False):
     if all(t is None for t in (e0_traj, enkf_traj, pf_py_traj, enkf_oda_traj, pf_traj)):
         raise RuntimeError("No trajectory data found — has the assimilation been run?")
 
-    obs           = load_obs(obs_path)
-    min_obs_depth = float(obs["depth"].min())
-    obs["depth"]  = obs["depth"].apply(lambda d: 0.0 if d == min_obs_depth else d)
+    obs = load_obs(obs_path)
+    # Match what the engines assimilate: drop obs depths with no matching model-output depth
+    # (e.g. 0.5 m on a whole-metre grid) rather than snapping the shallowest to the surface.
+    obs = filter_obs_to_model_depths(obs, model_output_depths(ensemble_base))
     if year is not None:
         obs = obs[obs["time"].dt.year == year]
     obs_depths = np.sort(obs["depth"].unique())

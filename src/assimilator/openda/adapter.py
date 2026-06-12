@@ -109,10 +109,11 @@ def _utc_minutes_since_midnight(iso_str):
     return dt.hour * 60 + dt.minute + dt.second / 60.0
 
 
-def _model_output_depths(openda_dir):
-    """Depths (positive metres) the model outputs, read from the template's z_out.dat.
-    Returns [] if the file is absent (then no depth filtering is applied)."""
-    path = os.path.join(openda_dir, "stochModel", "template", "z_out.dat")
+def _model_output_depths(inputs_dir):
+    """Depths (positive metres) the model outputs, read from <inputs_dir>/z_out.dat. Reads the
+    canonical source (standard_inputs) rather than the template copy, so it also works under
+    --dry-run (when the template isn't populated). Returns [] if absent (no depth filtering)."""
+    path = os.path.join(inputs_dir, "z_out.dat")
     if not os.path.isfile(path):
         return []
     depths = []
@@ -125,17 +126,15 @@ def _model_output_depths(openda_dir):
     return depths
 
 
-def _build_observations(raw, openda_dir, dry_run):
-    """Build the OpenDA stochObserver observation files from raw profile obs.
+def _build_observations(raw, openda_dir, standard_inputs, dry_run):
+    """Build the OpenDA stochObserver obs files from the raw profile CSV.
 
-    Reads the high-frequency (10-min) profile CSV (time,depth,...,value), keeps
-    for each day the reading nearest OBS_TARGET_HOUR UTC at every depth, and writes
-    one T_{depth}m_real.csv per depth into stochObserver/ — time in fractional
-    Simstrat days since 1 Jan SIMSTRAT_REF_YEAR.  Supersedes prepare_real_obs.py.
-
-    The depth list is auto-detected from the CSV (every depth present, dropping any
-    with fewer than `obs_min_days` days of data), and is returned sorted so the
-    config generator can wire the same depths into the model / formatters / wrapper.
+    For each depth/day, writes the mean of samples in the centered noon hour [11:30, 12:30) to
+    stochObserver/T_{depth}m_real.csv (time in fractional Simstrat days since 1 Jan
+    SIMSTRAT_REF_YEAR), mirroring functions.load_obs so OpenDA and the native engines assimilate
+    identical obs. Depths are auto-detected from the CSV, dropped if they have fewer than
+    `obs_min_days` days or no matching model-output depth (standard_inputs/z_out.dat), and
+    returned sorted for the config generator to wire everywhere.
     """
     lake      = raw["lake"]
     stoch_dir = os.path.join(openda_dir, "stochObserver")
@@ -151,8 +150,10 @@ def _build_observations(raw, openda_dir, dry_run):
     min_days       = raw.get("obs_min_days", 1)
     target_minutes = OBS_TARGET_HOUR * 60
 
-    # best_obs[depth][day_str] = (abs_minutes_from_target, value)
-    best_obs = defaultdict(dict)
+    # acc[depth][day_str] = [sum, count] over samples in the centered noon hour [11:30, 12:30).
+    # Mirrors functions.load_obs's centered hourly bin, so OpenDA and the native engines assimilate
+    # byte-identical obs. (A day with no sample in that hour emits no obs, like load_obs's empty bin.)
+    acc = defaultdict(lambda: defaultdict(lambda: [0.0, 0]))
     with open(obs_csv, newline="") as f:
         for row in csv.DictReader(f):
             if not row.get("value"):
@@ -161,18 +162,20 @@ def _build_observations(raw, openda_dir, dry_run):
             day = date.fromisoformat(day_str)
             if (start and day < start) or (end and day > end):
                 continue
+            minutes = _utc_minutes_since_midnight(row["time"])
+            if not (target_minutes - 30 <= minutes < target_minutes + 30):
+                continue
             depth = float(row["depth"])
-            diff  = abs(_utc_minutes_since_midnight(row["time"]) - target_minutes)
-            current = best_obs[depth].get(day_str)
-            if current is None or diff < current[0]:
-                best_obs[depth][day_str] = (diff, float(row["value"]))
+            cell = acc[depth][day_str]
+            cell[0] += float(row["value"])
+            cell[1] += 1
 
-    depths = sorted(d for d in best_obs if len(best_obs[d]) >= min_days)
+    depths = sorted(d for d in acc if len(acc[d]) >= min_days)
 
     # Keep only depths the model actually outputs (z_out.dat): an obs depth with no
     # matching model output depth (e.g. 0.5 m on a whole-metre grid) can't be
     # assimilated, since there is no model prediction to compare it against.
-    model_depths = _model_output_depths(openda_dir)
+    model_depths = _model_output_depths(standard_inputs)
     if model_depths:
         matched = [d for d in depths if any(abs(d - m) <= 1e-6 for m in model_depths)]
         dropped = [d for d in depths if d not in matched]
@@ -188,15 +191,15 @@ def _build_observations(raw, openda_dir, dry_run):
         os.makedirs(stoch_dir, exist_ok=True)
     for depth in depths:
         out_path = os.path.join(stoch_dir, f"T_{depth:g}m_real.csv")
-        records  = best_obs[depth]
+        records  = acc[depth]
         if dry_run:
             print(f"  [dry-run] T_{depth:g}m_real.csv  ({len(records)} days)")
             continue
         with open(out_path, "w", newline="") as f:
             f.write("time,value\n")
             for day_str in sorted(records):
-                _, value = records[day_str]
-                f.write(f"{_noon_simstrat_day(day_str, ref_date):.6f},{value:.6f}\n")
+                s, c = records[day_str]
+                f.write(f"{_noon_simstrat_day(day_str, ref_date):.6f},{s / c:.6f}\n")
     if not dry_run:
         print(f"  wrote {len(depths)} depth files -> {os.path.relpath(stoch_dir, ROOT)}")
     return depths
@@ -299,7 +302,7 @@ def adapt(raw, dry_run=False):
     #    (noon-snapshot per depth; formerly prepare_real_obs.py).  Returns the
     #    auto-detected depth list for the config generator to wire everywhere.
     # ------------------------------------------------------------------
-    obs_depths = _build_observations(raw, openda_dir, dry_run)
+    obs_depths = _build_observations(raw, openda_dir, standard_inputs, dry_run)
 
     print("[adapter] done." if not dry_run else "[adapter] dry-run complete (nothing written).")
     return obs_depths
@@ -327,9 +330,12 @@ def run_openda(cfg, ensemble_raw, ensemble_base, n_members, dry_run=False, skip_
         print(f"[5/5] [dry-run] would render run.oda + chain for filter={filter_type}, "
               f"then oda_run.sh run.oda")
         return
+    # Note: obs error std comes from the shared ensemble.json "sigma_obs" (the same key the native
+    # EnKF reads), so the two engines can't silently diverge. (config.py's internal param is still
+    # named obs_std.)
     oda_file = render_oda(openda_dir, filter_type, n_members, obs_depths,
                           ensemble_raw["start_date"], ensemble_raw["end_date"],
-                          obs_std=ensemble_raw.get("obs_std", 0.5))
+                          obs_std=ensemble_raw.get("sigma_obs", 0.5))
     print(f"[5/5] rendered {oda_file} + chain for filter={filter_type} "
           f"(work_{filter_type.lower()}, {len(obs_depths)} obs depths)")
     if skip_oda:

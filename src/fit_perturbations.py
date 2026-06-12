@@ -12,11 +12,9 @@ import sys
 import json
 import argparse
 
-SRC_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT    = os.path.dirname(SRC_DIR)
-sys.path.insert(0, SRC_DIR)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # put src/ on the path
 
-from assimilator.functions                        import verify_args, resolve_src
+from assimilator.functions                 import verify_args, resolve_src, ROOT
 from assimilator.prep_reanalysis.ar1_fit import fit_perturbations, setup_logging
 
 REQUIRED = ["lake", "lake_bbox", "ensemble_base"]

@@ -6,6 +6,7 @@ import numpy as np
 from datetime import timedelta
 
 from ..functions import (load_obs, obs_to_sim_col, accumulate_mean, clear_member_outputs,
+                         model_output_depths, filter_obs_to_model_depths,
                          start_containers, stop_containers, run_window_parallel, load_T,
                          Logger, verify_args, build_python_run_args)
 from ..summarize import report_summary
@@ -21,7 +22,7 @@ REQUIRED_RUN = ["algorithm", "results_dir", "par_file"]
 # (only the next day's per-member forcing perturbation re-diversifies). We call this
 # "PF", which oversells it because it is a "best-member selection". Intentional and might be changed.
 
-def compute_depth_weights(obs_df, min_obs_depth):
+def compute_depth_weights(obs_df):
     depths = np.sort(obs_df["depth"].unique()).astype(float)
     n = len(depths)
     w = np.empty(n)
@@ -31,17 +32,17 @@ def compute_depth_weights(obs_df, min_obs_depth):
         w[0]    = (depths[1]  - depths[0])  / 2
         w[-1]   = (depths[-1] - depths[-2]) / 2
         w[1:-1] = (depths[2:] - depths[:-2]) / 2
-    return {obs_to_sim_col(d, min_obs_depth): float(wt) for d, wt in zip(depths, w)}
+    return {obs_to_sim_col(d): float(wt) for d, wt in zip(depths, w)}
 
 
-def rmse_in_window(sim_df, obs_df, window_start, window_end, min_obs_depth, depth_weights):
+def rmse_in_window(sim_df, obs_df, window_start, window_end, depth_weights):
     obs_win = obs_df[(obs_df["time"] >= window_start) & (obs_df["time"] < window_end)]
     n_obs_raw = len(obs_win)
     if obs_win.empty:
         return np.nan, 0, 0
 
     obs_win = obs_win.copy()
-    obs_win["sim_col"] = obs_win["depth"].map(lambda d: obs_to_sim_col(d, min_obs_depth))
+    obs_win["sim_col"] = obs_win["depth"].map(obs_to_sim_col)
 
     obs_pivot    = obs_win.pivot_table(index="time", columns="sim_col", values="value", aggfunc="mean")
     common_times = sim_df.index.intersection(obs_pivot.index)
@@ -89,8 +90,8 @@ def run_pf_daily(args, log):
         log.newline()
 
     obs           = load_obs(args["obs_path"])
-    min_obs_depth = float(obs["depth"].min())
-    depth_weights = compute_depth_weights(obs, min_obs_depth)
+    obs           = filter_obs_to_model_depths(obs, model_output_depths(args["ensemble_base"]), log)
+    depth_weights = compute_depth_weights(obs)
     start_date    = args["start_date"]
     end_date      = args["end_date"]
 
@@ -124,7 +125,7 @@ def run_pf_daily(args, log):
                     # intersection), so it's correct, just increasingly slow on long runs. If this
                     # bites, read only the current window's tail instead of the full file.
                     sim = load_T(os.path.join(args["ensemble_base"], f"ensemble{i}"), args)
-                    rmse, n_raw, n_matched = rmse_in_window(sim, obs, current, window_end, min_obs_depth, depth_weights)
+                    rmse, n_raw, n_matched = rmse_in_window(sim, obs, current, window_end, depth_weights)
                     return i, rmse, n_raw, n_matched
                 except Exception:
                     return i, np.nan, 0, 0

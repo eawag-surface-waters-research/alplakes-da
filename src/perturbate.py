@@ -8,13 +8,10 @@ import os
 import sys
 import json
 import argparse
-from datetime import datetime, timezone
 
-SRC_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT    = os.path.dirname(SRC_DIR)
-sys.path.insert(0, SRC_DIR)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # put src/ on the path
 
-from assimilator.functions               import verify_args, resolve_src
+from assimilator.functions               import verify_args, resolve_src, to_utc, ROOT
 from assimilator.prep_reanalysis.ar1_apply import perturbate
 
 REQUIRED = ["lake", "n_members", "ensemble_base", "start_date", "end_date"]
@@ -29,9 +26,8 @@ def build_args(raw: dict) -> dict:
     args.setdefault("rng_seed",    42)
     args.setdefault("sigma_scale", 1.0)
 
-    tz = timezone.utc
-    args["start_date"] = datetime.fromisoformat(args["start_date"]).replace(tzinfo=tz)
-    args["end_date"]   = datetime.fromisoformat(args["end_date"]).replace(tzinfo=tz)
+    args["start_date"] = to_utc(args["start_date"])
+    args["end_date"]   = to_utc(args["end_date"])
     return args
 
 

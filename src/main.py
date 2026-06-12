@@ -19,12 +19,10 @@ import os
 import sys
 import argparse
 
-SRC_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT    = os.path.dirname(SRC_DIR)
-sys.path.insert(0, SRC_DIR)
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # put src/ on the path
 
 from perturbate                  import perturbator
-from assimilator.functions       import (resolve_src, load_json, standard_inputs_ready,
+from assimilator.functions       import (ROOT, resolve_src, load_json, standard_inputs_ready,
                                          instances_ready, copy_standard_inputs)
 from assimilator.python.enkf    import run_enkf
 from assimilator.python.pf      import run_pf

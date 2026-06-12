@@ -173,23 +173,57 @@ def discover_n_members(ensemble_base):
     ])
 
 
+# Hourly mean, centered on the label: the value at HH:00 is the mean of samples in
+# [HH-30min, HH+30min), computed by flooring (time + 30min) to the hour. Centering aligns the
+# obs with Simstrat's instantaneous hourly output, so the noon assimilation pairs the noon obs
+# with the noon state. Labels stay on the hour, so the PF's obs<->T_out time intersection
+# (rmse_in_window) is unaffected.
 def load_obs(obs_path):
     obs = pd.read_csv(obs_path, parse_dates=["time"])
     obs["time"] = pd.to_datetime(obs["time"], utc=True)
-    obs = (
-        obs.groupby(["depth", pd.Grouper(key="time", freq="1h")])["value"]
-           .mean().reset_index()
-    )
+    obs["time"] = (obs["time"] + pd.Timedelta(minutes=30)).dt.floor("1h")
+    obs = obs.groupby(["depth", "time"])["value"].mean().reset_index()
     return obs
 
 
-# Note: the SHALLOWEST obs depth is snapped to 0.0 (surface) regardless of its true
-# depth; all others map to -depth. So a sensor at e.g. 0.5 m for upperlugano is assimilated 
-# as if at the surface. Internally consistent (both EnKF build_H and PF use this, so the engines 
-# agree), but it is a real depth bias if the shallowest sensor is not actually close to the surface. 
-# It is intended.
-def obs_to_sim_col(depth, min_obs_depth):
-    return 0.0 if depth == min_obs_depth else -depth
+# Depth convention: an obs "X metres below the surface" maps to model column height -X
+# (negative = below surface). No surface snapping — obs depths with no matching model-output
+# depth are dropped upstream (filter_obs_to_model_depths), so the native and OpenDA engines
+# assimilate the identical depth set.
+def obs_to_sim_col(depth):
+    return -depth
+
+
+def model_output_depths(ensemble_base):
+    """Depths (positive metres) the model outputs, read from a member's z_out.dat.
+    Mirrors openda/adapter._model_output_depths so the two engines filter obs against the
+    same grid. Returns [] if the file is absent (then no depth filtering is applied)."""
+    path = os.path.join(ensemble_base, "ensemble1", "z_out.dat")
+    if not os.path.isfile(path):
+        return []
+    depths = []
+    with open(path) as f:
+        for line in f:
+            try:
+                depths.append(abs(float(line.strip())))
+            except ValueError:
+                continue  # header line ("Depths [m]")
+    return depths
+
+
+def filter_obs_to_model_depths(obs_df, model_depths, log=None):
+    """Drop obs whose depth has no matching model-output depth (abs diff <= 1e-6), so the
+    Python engines assimilate the same depths OpenDA does. No-op if model_depths is empty."""
+    if not model_depths:
+        return obs_df
+    obs_depths = sorted(obs_df["depth"].unique())
+    matched = {d for d in obs_depths if any(abs(d - m) <= 1e-6 for m in model_depths)}
+    dropped = [d for d in obs_depths if d not in matched]
+    if dropped:
+        msg = (f"dropping obs depths with no matching model output depth (z_out.dat): "
+               f"{[f'{d:g}' for d in dropped]} m")
+        (log.info(f"  {msg}") if log is not None else print(f"[obs] {msg}"))
+    return obs_df[obs_df["depth"].isin(matched)]
 
 
 # ---------------------------------------------------------------------------
@@ -319,6 +353,11 @@ def datetime_to_simstrat_time(dt, ref_date):
     return delta.days + delta.seconds / 86400
 
 
+def to_utc(iso_str):
+    """Parse an ISO date/datetime string to a tz-aware UTC datetime (assumes naive input)."""
+    return datetime.fromisoformat(iso_str).replace(tzinfo=timezone.utc)
+
+
 def read_ref_date(ensemble_base):
     par_path = os.path.join(ensemble_base, "ensemble1", "Settings.par")
     with open(par_path) as f:
@@ -387,9 +426,14 @@ def build_python_run_args(run_raw, ensemble_raw, ensemble_base, n_members):
     args["container_tag"] = args["algorithm"].lower()
     args["ref_date"]      = read_ref_date(ensemble_base)
 
-    tz = timezone.utc
-    args["start_date"] = datetime.fromisoformat(ensemble_raw["start_date"]).replace(tzinfo=tz)
-    args["end_date"]   = datetime.fromisoformat(ensemble_raw["end_date"]).replace(tzinfo=tz)
+    args["start_date"] = to_utc(ensemble_raw["start_date"])
+    args["end_date"]   = to_utc(ensemble_raw["end_date"])
+
+    # Observation error std lives in ensemble.json (shared single source with OpenDA, which
+    # reads the same key); inflation stays per-run in enkf.json (Python-EnKF-only — OpenDA has
+    # no inflation param). Carried into args here so the EnKF code reads it uniformly.
+    if "sigma_obs" in ensemble_raw:
+        args["sigma_obs"] = ensemble_raw["sigma_obs"]
 
     algo = args["algorithm"].lower()
     args.setdefault("mean_traj_path", os.path.join(ensemble_base, f"T_out_{algo}_mean.dat"))

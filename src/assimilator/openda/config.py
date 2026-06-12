@@ -43,12 +43,14 @@ from datetime import date, datetime
 
 from assimilator.functions import SIMSTRAT_REF_YEAR
 
-# Per-filter algorithm spec: OpenDA class, plus the config-file root element and
-# schema (the only things that differ between filters' algorithm configs).  Add an
-# "extra" string for variant body (e.g. a localized EnKF: root "EnkfConfig",
-# schema "enkf.xsd", extra="\n\t<localization>Hamill</localization>\n\t<distance>10</distance>").
+# Per-filter algorithm spec: OpenDA class, plus the config-file root element and schema (the
+# only things that differ between filters' algorithm configs). root/schema are OpenDA's canonical
+# names (verified against the OpenDA 3.4.0 examples): the enkf.xsd family (EnKF + DEnKF) uses root
+# "EnkfConfig", ensr.xsd uses "EnsrConfig". OpenDA dispatches by "class" and does not enforce the
+# root name, but we keep it canonical so EnKF and DEnKF stay consistent. Add an "extra" string for
+# a variant body (e.g. localization: extra="\n\t<localization>Hamill</localization>\n\t<distance>10</distance>").
 FILTERS = {
-    "EnKF":  {"class": "org.openda.algorithms.kalmanFilter.EnKF",  "root": "EnKFConfig", "schema": "enkf.xsd"},
+    "EnKF":  {"class": "org.openda.algorithms.kalmanFilter.EnKF",  "root": "EnkfConfig", "schema": "enkf.xsd"},
     "DEnKF": {"class": "org.openda.algorithms.kalmanFilter.DEnKF", "root": "EnkfConfig", "schema": "enkf.xsd"},
     "EnSR":  {"class": "org.openda.algorithms.kalmanFilter.EnSR",  "root": "EnsrConfig", "schema": "ensr.xsd"},
     # SIR particle filter (residual resampling). samplingMethod is optional + fixed in
@@ -344,6 +346,10 @@ def render(openda_dir, filter_type, n_members, obs_depths, start_date, end_date,
         os.makedirs(d, exist_ok=True)   # openda_simstrat/ is generated on demand
 
     algo_file = f"{filter_type}.gen.xml"
+    # end_day = end_date + 1 (midnight after end_date) so the last day's noon obs (end_date + 0.5)
+    # falls inside the window. Note: the native EnKF instead clamps its last window to end_date
+    # midnight, so OpenDA may run one extra noon assimilation at the very end — a small span
+    # difference to keep in mind when comparing the two engines, not a defect here.
     start_day, end_day = _simstrat_day(start_date), _simstrat_day(end_date) + 1
 
     oda = _ODA.format(

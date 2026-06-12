@@ -6,13 +6,15 @@ import pandas as pd
 from datetime import timedelta
 
 from ..functions import (load_obs, obs_to_sim_col, accumulate_mean, clear_member_outputs,
+                         model_output_depths, filter_obs_to_model_depths,
                          start_containers, stop_containers, run_window_parallel,
                          Logger, verify_args, build_python_run_args)
 from ..snapshot import read_snapshot, write_snapshot
 from ..summarize import report_summary
 
 REQUIRED_RUN  = ["algorithm", "results_dir", "par_file"]
-REQUIRED_ENKF = ["sigma_obs", "inflation"]
+REQUIRED_ENKF = ["inflation"]               # run-args (enkf.json); Python-EnKF-only
+REQUIRED_ENKF_ENSEMBLE = ["sigma_obs"]      # ensemble-args (ensemble.json); shared with OpenDA
 
 
 def read_snapshot_T(member_id, args):
@@ -51,7 +53,7 @@ def write_snapshot_T(member_id, T_new, args):
 # analysis back as the next IC, and T_out.dat only holds the output depths. Future dev:
 # either output the full state from the model, or interpolate the snapshot state onto the
 # output depths for the comparison (compute-efficiency tradeoff).
-def window_obs_vector(obs_df, window_start, window_end, min_obs_depth):
+def window_obs_vector(obs_df, window_start, window_end):
     obs_win = obs_df[(obs_df["time"] >= window_start) & (obs_df["time"] < window_end)]
     if obs_win.empty:
         return None, None, None
@@ -59,19 +61,21 @@ def window_obs_vector(obs_df, window_start, window_end, min_obs_depth):
     if mean_per_depth.empty:
         return None, None, None
     obs_depths = list(mean_per_depth.index)
-    sim_depths = [obs_to_sim_col(d, min_obs_depth) for d in obs_depths]
+    sim_depths = [obs_to_sim_col(d) for d in obs_depths]
     return mean_per_depth.values, sim_depths, obs_depths
 
 
-def window_obs_vector_consistent(obs_df, window_start, window_end, min_obs_depth):
-    """Variant of window_obs_vector that picks, per depth, the single observation nearest
-    the window END instead of the daily mean. The EnKF assimilates into the end-of-window
-    snapshot (model state at ~window_end), so taking the obs nearest that instant makes the
-    obs and model temporally consistent (removes the daily-mean vs instantaneous mismatch).
-    NOTE: this aligns obs to whatever instant window_end is. To match the OpenDA reference
-    (which assimilates at NOON), the daily windows must also be shifted noon-to-noon so that
-    window_end == noon; otherwise this lands on the current window boundary (~end of day)."""
-    obs_win = obs_df[(obs_df["time"] >= window_start) & (obs_df["time"] < window_end)]
+def window_obs_vector_consistent(obs_df, window_start, window_end):
+    """Pick, per depth, the single observation nearest the window END (vs window_obs_vector's
+    daily mean). The EnKF assimilates into the end-of-window snapshot, so the obs nearest that
+    instant is temporally consistent with the model state. window_end must be noon to match the
+    OpenDA reference, which the daily loop ensures by anchoring the windows noon-to-noon.
+
+    Window is (window_start, window_end]: the inclusive upper bound selects the bin labeled
+    exactly window_end (the centered noon bin from load_obs) — a half-open `<` would drop it and
+    pick the hour before; the exclusive lower bound keeps each boundary bin owned by a single
+    window, so it can't be assimilated on two consecutive days."""
+    obs_win = obs_df[(obs_df["time"] > window_start) & (obs_df["time"] <= window_end)]
     if obs_win.empty:
         return None, None, None
     nearest = (obs_win.assign(_d=(obs_win["time"] - pd.Timestamp(window_end)).abs())
@@ -81,7 +85,7 @@ def window_obs_vector_consistent(obs_df, window_start, window_end, min_obs_depth
     if nearest.empty:
         return None, None, None
     obs_depths = list(nearest.index)
-    sim_depths = [obs_to_sim_col(d, min_obs_depth) for d in obs_depths]
+    sim_depths = [obs_to_sim_col(d) for d in obs_depths]
     return nearest["value"].values, sim_depths, obs_depths
 
 
@@ -166,11 +170,11 @@ def run_enkf_daily(args, log):
         log.info(f"Reset: cleared {args['results_dir']}/ snapshots and trajectory files.")
         log.newline()
 
-    obs           = load_obs(args["obs_path"])
-    min_obs_depth = float(obs["depth"].min())
-    start_date    = args["start_date"]
-    end_date      = args["end_date"]
-    rng           = np.random.default_rng()
+    obs        = load_obs(args["obs_path"])
+    obs        = filter_obs_to_model_depths(obs, model_output_depths(args["ensemble_base"]), log)
+    start_date = args["start_date"]
+    end_date   = args["end_date"]
+    rng        = np.random.default_rng()
 
     # Observation selector per daily window (run-arg "obs_selector", default "window_end"):
     #   "window_end" -> window_obs_vector_consistent (single reading nearest window_end;
@@ -214,7 +218,7 @@ def run_enkf_daily(args, log):
             days_run += 1
             t_docker = time.perf_counter() - t0
 
-            y_obs, sim_depths, obs_depths = select_obs(obs, current, window_end, min_obs_depth)
+            y_obs, sim_depths, obs_depths = select_obs(obs, current, window_end)
 
             t_enkf    = 0.0
             n_updated = 0
@@ -308,6 +312,7 @@ def run_enkf(run_raw, ensemble_raw, ensemble_base, n_members):
     """Native EnKF engine driver: validate run args, build the merged args, run the
     daily EnKF loop, then write the posterior summary + skill report to final_output/."""
     verify_args(run_raw, REQUIRED_RUN + REQUIRED_ENKF)
+    verify_args(ensemble_raw, REQUIRED_ENKF_ENSEMBLE)
     args = build_python_run_args(run_raw, ensemble_raw, ensemble_base, n_members)
 
     log = Logger()

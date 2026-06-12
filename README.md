@@ -25,8 +25,9 @@ needed. The OpenDA engine additionally requires an OpenDA installation (see
 
 ## Workflow
 
-You **provide the model inputs + warm-start snapshot manually** in
-`inputs/<lake>/` (see [Providing standard_inputs](#providing-standard_inputs)).
+You provide two things manually: the **model inputs + warm-start snapshot** in `inputs/<lake>/`
+(see [Providing standard_inputs](#providing-standard_inputs)) and the **observations** in
+`observations/<lake>/temperature.csv` (see [Providing observations](#providing-observations)).
 `src/main.py` then orchestrates the chain end‑to‑end, skipping any step already done:
 
 ```
@@ -47,8 +48,8 @@ python src/main.py args/run_pf.json       # native PF
 python src/main.py args/run_openda.json   # OpenDA
 ```
 
-Add `--dry-run` to preview, or `--force-copy` / `--force-perturbate` to re‑run a preprocessing
-step that otherwise looks done.
+Add `--dry-run` to preview, or `--force-copy` to re‑run the copy step that otherwise looks done.
+(Step 3 perturbate always runs — it fits `perturbations/<lake>.json` from ICON first if missing.)
 
 Shared facts (`lake`, `start_date`, `end_date`, `n_members`) live only in `ensemble.json`; the
 run args (`enkf.json`/`pf.json`) carry just the engine‑specific knobs.
@@ -81,6 +82,32 @@ warm-start snapshot**:
   `InitialConditions.dat`, `Absorption.dat`, inflows/outflow, `aed2.nml`, …).
 
 `main.py` step 1 just verifies a `simulation-snapshot_*.dat` + `Forcing.dat` are present.
+
+The depths listed in **`z_out.dat`** (the model's output depths) also determine which observation
+depths can be assimilated: an obs depth with no matching `z_out.dat` depth is dropped (see
+[Providing observations](#providing-observations)).
+
+### Providing observations
+
+Place the in-situ temperature profiles at **`observations/<lake>/temperature.csv`** — a long-format
+CSV with one row per (time, depth) reading. Only these columns are required (any others, e.g.
+`latitude`/`longitude`/`weight`, are ignored):
+
+| column | meaning |
+|---|---|
+| `time`  | ISO-8601 timestamp **with UTC offset**, e.g. `2025-06-01T11:55:00+00:00` |
+| `depth` | depth below the surface in **metres, positive** (e.g. `0.5`, `1`, `3`, …) |
+| `value` | water temperature in **°C** |
+
+Any sampling rate is fine (the upperlugano file is ~5-minute); the framework handles the rest:
+
+- **Time:** for each day it assimilates the **mean of the samples in the noon hour [11:30, 12:30) UTC**
+  (one value per depth), identically for the native and OpenDA engines.
+- **Depth:** obs depths are auto-detected and kept only if they match a `inputs/<lake>/z_out.dat`
+  output depth (within 1e-6 m); unmatched depths (e.g. a 0.5 m sensor on a whole-metre grid) are dropped
+  so every assimilated depth has a model prediction.
+
+No fixed depth list or time grid needs to be declared — both are read from the file.
 
 ## Repository layout
 
@@ -139,8 +166,8 @@ per‑step arg files below.
 |---|---|---|
 | `run_enkf.json` / `run_pf.json` | `main.py` | `engine:"python"`, `ensemble_args`, `run_args` |
 | `run_openda.json` / `run_openda_pf.json` | `main.py` | `engine:"openda"`, `ensemble_args`, `filter` (EnKF\|DEnKF\|EnSR\|PF), `openda_dir` |
-| `ensemble.json` | steps 2–3 + fit | `lake`, `n_members`, `start_date`, `end_date`, `lake_bbox`, `lake_key`, `reanalysis_lake` |
-| `enkf.json` | python `run_args` | `algorithm:"EnKF"`, `results_dir`, `par_file`, `sigma_obs`, `inflation`, `reset` |
+| `ensemble.json` | steps 2–3 + fit + **both engines** | `lake`, `n_members`, `start_date`, `end_date`, `sigma_obs` (obs error σ — shared by native EnKF + OpenDA), `lake_bbox`, `lake_key`, `reanalysis_lake` |
+| `enkf.json` | python `run_args` | `algorithm:"EnKF"`, `results_dir`, `par_file`, `inflation` (native-EnKF only), `reset` |
 | `pf.json` | python `run_args` | `algorithm:"PF"`, `results_dir`, `par_file`, `reset` |
 
 The `lake` field resolves data and run paths by convention: observations from
