@@ -2,7 +2,6 @@
 docs/
 
 # Ignore data folders
-observations/
 inputs/
 datasets/
 output/
