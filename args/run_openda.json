@@ -1,6 +1,5 @@
 {
     "engine":        "openda",
     "ensemble_args": "args/ensemble.json",
-    "filter":        "EnKF",
-    "openda_dir":    "openda_simstrat"
+    "filter":        "EnSR"
 }

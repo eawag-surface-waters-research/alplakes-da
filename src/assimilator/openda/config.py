@@ -85,12 +85,6 @@ def _simstrat_day(d):
     return (d - date(SIMSTRAT_REF_YEAR, 1, 1)).days
 
 
-def work_dir_name(filter_type):
-    """Per-filter scratch dir under run/openda/ (kept separate so the analysis
-    scripts can compare filters side by side)."""
-    return f"work_{filter_type.lower()}"
-
-
 def results_filename(filter_type):
     return f"{filter_type.lower()}_results.py"
 
@@ -323,7 +317,7 @@ def _write(path, text, dry_run):
 
 
 def render(openda_dir, filter_type, n_members, obs_depths, start_date, end_date,
-           obs_std=DEFAULT_OBS_STD, results_subdir=".", dry_run=False):
+           obs_std=DEFAULT_OBS_STD, results_subdir="Results", dry_run=False):
     """Render the full lake-specific OpenDA config for `filter_type` into `openda_dir`.
 
     `obs_depths` is the list of assimilated depths (e.g. auto-detected from the obs
@@ -364,11 +358,13 @@ def render(openda_dir, filter_type, n_members, obs_depths, start_date, end_date,
     # model run dir is ABSOLUTE — a relative getModelRunDir() gets re-rooted under the stoch
     # configRootDir, doubling the path (.../stochModel/stochModel/...).  config.py is generated in
     # the OpenDA runtime (WSL, see main.py), so abspath yields the /mnt/... form OpenDA sees.
-    work = work_dir_name(filter_type)
+    # Per-member work dirs live inside this run's own dir at Results/work0..N (instanceDir is the
+    # prefix OpenDA appends the instance number to). The relative form is resolved from the stoch
+    # configRootDir (openda_dir/stochModel), hence ../Results/work; PF needs it ABSOLUTE (restart token).
     if spec.get("needs_restart"):
-        instance_dir = os.path.abspath(os.path.join(openda_dir, "..", "run", "openda", work, "work"))
+        instance_dir = os.path.abspath(os.path.join(openda_dir, "Results", "work"))
     else:
-        instance_dir = f"../../run/openda/{work}/work"
+        instance_dir = "../Results/work"
     model      = _MODEL.format(filter=filter_type, instance_dir=instance_dir,
                                ref_year=SIMSTRAT_REF_YEAR, outputs=_output_lines(depths),
                                restart_info=_RESTART_INFO if spec.get("needs_restart") else "")

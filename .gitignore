@@ -16,6 +16,7 @@ run/openda/
 assimilation/
 old/
 bu/
+openda_simstrat/
 
 # Local diagnostic scripts
 plot_ensemble.py
@@ -49,10 +50,10 @@ __pycache__/
 # Local refactoring notes
 REFACTORING.md
 
-# openda_simstrat/ is a fully generated working dir, created on demand by
+# run/openda_<model>_<lake>_<filter>/ are fully generated working dirs, created on demand by
 # openda/adapter.py (sync) + openda/config.py (render); the static wrapper source lives
-# in static/openda/. Nothing here is tracked.
-openda_simstrat/
+# in static/openda/. Nothing here is tracked. (run/openda/ — the work dirs — is ignored above.)
+run/openda_*/
 
 final_output/upperlugano_python_EnKF.json
 final_output/upperlugano_python_PF.json

@@ -4,7 +4,7 @@
   "filter": "EnKF",
   "n_members": 20,
   "period": {
-    "start": 16071.125,
+    "start": 16071.0417,
     "end": 16436.0
   },
   "scored_against": "all raw obs (model interpolated to obs depth, nearest output time); analysis fit, not withheld",
@@ -12,157 +12,157 @@
   "n_obs": 839647,
   "overall": {
     "n": 839647,
-    "bias": 0.0833,
-    "rmse": 0.7042,
-    "mae": 0.3806,
-    "mean_spread": 0.0954,
-    "coverage_1sigma": 0.2514,
-    "coverage_2sigma": 0.429
+    "bias": 0.112,
+    "rmse": 0.7115,
+    "mae": 0.3962,
+    "mean_spread": 0.0648,
+    "coverage_1sigma": 0.1473,
+    "coverage_2sigma": 0.2706
   },
   "by_depth": {
     "0.5": {
       "n": 52478,
-      "bias": -0.1672,
-      "rmse": 0.4579,
-      "mae": 0.3085,
-      "mean_spread": 0.1755,
-      "coverage_1sigma": 0.3715,
-      "coverage_2sigma": 0.6229
+      "bias": -0.0981,
+      "rmse": 0.5481,
+      "mae": 0.3826,
+      "mean_spread": 0.0958,
+      "coverage_1sigma": 0.1752,
+      "coverage_2sigma": 0.3224
     },
     "1": {
       "n": 52478,
-      "bias": -0.0643,
-      "rmse": 0.3709,
-      "mae": 0.2568,
-      "mean_spread": 0.1684,
-      "coverage_1sigma": 0.4198,
-      "coverage_2sigma": 0.6936
+      "bias": 0.0052,
+      "rmse": 0.4903,
+      "mae": 0.3478,
+      "mean_spread": 0.0905,
+      "coverage_1sigma": 0.1901,
+      "coverage_2sigma": 0.3351
     },
     "3": {
       "n": 52478,
-      "bias": 0.1067,
-      "rmse": 0.4135,
-      "mae": 0.2621,
-      "mean_spread": 0.1492,
-      "coverage_1sigma": 0.4129,
-      "coverage_2sigma": 0.6897
+      "bias": 0.1767,
+      "rmse": 0.5369,
+      "mae": 0.3649,
+      "mean_spread": 0.0848,
+      "coverage_1sigma": 0.1819,
+      "coverage_2sigma": 0.3268
     },
     "5": {
       "n": 52478,
-      "bias": 0.208,
-      "rmse": 0.6022,
-      "mae": 0.3389,
-      "mean_spread": 0.1321,
-      "coverage_1sigma": 0.3626,
-      "coverage_2sigma": 0.6148
+      "bias": 0.2679,
+      "rmse": 0.6778,
+      "mae": 0.4185,
+      "mean_spread": 0.0858,
+      "coverage_1sigma": 0.1731,
+      "coverage_2sigma": 0.3137
     },
     "7": {
       "n": 52478,
-      "bias": 0.1478,
-      "rmse": 0.8634,
-      "mae": 0.4747,
-      "mean_spread": 0.1293,
-      "coverage_1sigma": 0.3121,
-      "coverage_2sigma": 0.5267
+      "bias": 0.1789,
+      "rmse": 0.8546,
+      "mae": 0.4849,
+      "mean_spread": 0.094,
+      "coverage_1sigma": 0.173,
+      "coverage_2sigma": 0.3128
     },
     "9": {
       "n": 52478,
-      "bias": 0.0649,
-      "rmse": 1.152,
-      "mae": 0.6702,
-      "mean_spread": 0.1257,
-      "coverage_1sigma": 0.2587,
-      "coverage_2sigma": 0.4208
+      "bias": 0.0781,
+      "rmse": 1.1153,
+      "mae": 0.65,
+      "mean_spread": 0.0922,
+      "coverage_1sigma": 0.1556,
+      "coverage_2sigma": 0.285
     },
     "11": {
       "n": 52478,
-      "bias": 0.0876,
-      "rmse": 1.2345,
-      "mae": 0.7492,
-      "mean_spread": 0.1116,
-      "coverage_1sigma": 0.2207,
-      "coverage_2sigma": 0.3807
+      "bias": 0.0926,
+      "rmse": 1.192,
+      "mae": 0.7241,
+      "mean_spread": 0.0887,
+      "coverage_1sigma": 0.1293,
+      "coverage_2sigma": 0.2509
     },
     "13": {
       "n": 52478,
-      "bias": 0.1112,
-      "rmse": 1.0439,
-      "mae": 0.6522,
-      "mean_spread": 0.098,
-      "coverage_1sigma": 0.2086,
-      "coverage_2sigma": 0.3578
+      "bias": 0.1395,
+      "rmse": 1.0171,
+      "mae": 0.6365,
+      "mean_spread": 0.0744,
+      "coverage_1sigma": 0.1183,
+      "coverage_2sigma": 0.237
     },
     "15": {
       "n": 52478,
-      "bias": 0.1043,
-      "rmse": 0.9086,
-      "mae": 0.5692,
-      "mean_spread": 0.0895,
-      "coverage_1sigma": 0.169,
-      "coverage_2sigma": 0.3085
+      "bias": 0.1365,
+      "rmse": 0.9254,
+      "mae": 0.5625,
+      "mean_spread": 0.0694,
+      "coverage_1sigma": 0.1336,
+      "coverage_2sigma": 0.235
     },
     "17": {
       "n": 52478,
-      "bias": 0.1514,
-      "rmse": 0.8287,
-      "mae": 0.513,
-      "mean_spread": 0.0792,
-      "coverage_1sigma": 0.1352,
-      "coverage_2sigma": 0.2667
+      "bias": 0.1646,
+      "rmse": 0.8443,
+      "mae": 0.5106,
+      "mean_spread": 0.062,
+      "coverage_1sigma": 0.0941,
+      "coverage_2sigma": 0.1806
     },
     "19": {
       "n": 52477,
-      "bias": 0.1836,
-      "rmse": 0.6686,
-      "mae": 0.4415,
-      "mean_spread": 0.0702,
-      "coverage_1sigma": 0.1326,
-      "coverage_2sigma": 0.2464
+      "bias": 0.1821,
+      "rmse": 0.6431,
+      "mae": 0.4244,
+      "mean_spread": 0.0551,
+      "coverage_1sigma": 0.0827,
+      "coverage_2sigma": 0.1655
     },
     "21": {
       "n": 52478,
-      "bias": 0.147,
-      "rmse": 0.5094,
-      "mae": 0.3616,
-      "mean_spread": 0.0627,
-      "coverage_1sigma": 0.1408,
-      "coverage_2sigma": 0.2464
+      "bias": 0.1491,
+      "rmse": 0.4876,
+      "mae": 0.343,
+      "mean_spread": 0.0492,
+      "coverage_1sigma": 0.0966,
+      "coverage_2sigma": 0.1826
     },
     "25": {
       "n": 52478,
-      "bias": 0.1334,
-      "rmse": 0.3109,
-      "mae": 0.2242,
-      "mean_spread": 0.0495,
-      "coverage_1sigma": 0.1573,
-      "coverage_2sigma": 0.2956
+      "bias": 0.1583,
+      "rmse": 0.3285,
+      "mae": 0.2353,
+      "mean_spread": 0.037,
+      "coverage_1sigma": 0.0934,
+      "coverage_2sigma": 0.1991
     },
     "30": {
       "n": 52478,
-      "bias": 0.1164,
-      "rmse": 0.1842,
-      "mae": 0.1442,
-      "mean_spread": 0.0374,
-      "coverage_1sigma": 0.1245,
-      "coverage_2sigma": 0.2636
+      "bias": 0.1391,
+      "rmse": 0.1951,
+      "mae": 0.1576,
+      "mean_spread": 0.0268,
+      "coverage_1sigma": 0.0522,
+      "coverage_2sigma": 0.1108
     },
     "35": {
       "n": 52478,
-      "bias": 0.0175,
-      "rmse": 0.0943,
-      "mae": 0.0628,
-      "mean_spread": 0.0277,
-      "coverage_1sigma": 0.3029,
-      "coverage_2sigma": 0.5089
+      "bias": 0.0305,
+      "rmse": 0.0832,
+      "mae": 0.053,
+      "mean_spread": 0.0188,
+      "coverage_1sigma": 0.2645,
+      "coverage_2sigma": 0.4385
     },
     "40": {
       "n": 52478,
-      "bias": -0.0151,
-      "rmse": 0.0948,
-      "mae": 0.0608,
-      "mean_spread": 0.0198,
-      "coverage_1sigma": 0.2924,
-      "coverage_2sigma": 0.42
+      "bias": -0.0089,
+      "rmse": 0.0856,
+      "mae": 0.0442,
+      "mean_spread": 0.0125,
+      "coverage_1sigma": 0.2426,
+      "coverage_2sigma": 0.4343
     }
   }
 }

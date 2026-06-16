@@ -1,6 +1,6 @@
 """Comparison plots + an RMSE table across the reference free-run, the Python
-EnKF and PF posteriors, and the OpenDA EnKF and PF ensembles. Ensemble members
-(Python EnKF, OpenDA EnKF/PF) are shown as a mean with min/max spread; the
+EnKF and PF posteriors, and the OpenDA EnKF, EnSR and PF ensembles. Ensemble members
+(Python EnKF, OpenDA EnKF/EnSR/PF) are shown as a mean with min/max spread; the
 Python PF is shown as its posterior-mean trajectory only (no per-member spread)."""
 import os
 import sys
@@ -21,7 +21,7 @@ from assimilator.functions import (verify_file, load_obs, read_ref_date,
 
 # Plot colour per trajectory label
 COLORS = {"ref": "dimgrey", "EnKF": "steelblue", "PF": "darkorange",
-          "EnKF (oda)": "seagreen", "PF (oda)": "crimson"}
+          "EnKF (oda)": "seagreen", "EnSR (oda)": "mediumpurple", "PF (oda)": "crimson"}
 
 
 # ── Data loading ───────────────────────────────────────────────────────────────
@@ -55,17 +55,18 @@ def load_e0(ensemble_base, results_dir, ref_date):
     return None
 
 
-def load_openda_members(openda_base, subdir, label, ref_date):
-    # OpenDA analysis ensemble members: openda/<subdir>/work1..workN/Results/T_out.dat
-    # (work0 is the central estimate and is excluded from the spread).
-    if not openda_base or not os.path.isdir(openda_base):
+def load_openda_members(filter_dir, label, ref_date):
+    # OpenDA analysis ensemble members for one run/filter:
+    #   <filter_dir>/Results/work1..workN/Results/T_out.dat
+    # (work0 is the free/central run and is excluded from the spread).
+    if not filter_dir or not os.path.isdir(filter_dir):
         print(f"{label:>7}: NOT FOUND")
         return []
-    paths = [p for p in glob.glob(os.path.join(openda_base, subdir, "work*", "Results", "T_out.dat"))
+    paths = [p for p in glob.glob(os.path.join(filter_dir, "Results", "work*", "Results", "T_out.dat"))
              if os.path.basename(os.path.dirname(os.path.dirname(p))) != "work0"]
     members = [t for p in sorted(paths) if (t := load_traj(p, ref_date)) is not None]
     if members:
-        print(f"{label:>7}: {len(members)} members (openda/{subdir}/work*/Results/T_out.dat)")
+        print(f"{label:>7}: {len(members)} members ({os.path.basename(filter_dir)}/Results/work*/Results/T_out.dat)")
     else:
         print(f"{label:>7}: NOT FOUND")
     return members
@@ -188,14 +189,16 @@ def plot_rmse_bar(entries, obs, obs_depths, lake_label, year):
         bottoms += vals
 
     ref_total = totals.get("ref")
+    n_depths  = len(obs_depths)
     for xi, lbl in enumerate(labels):
         total = bottoms[xi]
+        avg   = total / n_depths                              # mean RMSE across the depths
         ax.bar(xi, total, bottom=0, color="none", edgecolor=COLORS.get(lbl, "k"), lw=2, width=0.6)
         if ref_total and lbl != "ref":
             gain = (total - ref_total) / ref_total * 100      # negative = gain
-            ann  = f"{total:.3f}°C\n{gain:+.1f}%"
+            ann  = f"avg {avg:.3f}°C\nΣ {total:.3f}°C  {gain:+.1f}%"
         else:
-            ann = f"{total:.3f}°C"
+            ann = f"avg {avg:.3f}°C\nΣ {total:.3f}°C"
         ax.text(xi, total + 0.01 * (ref_total or total), ann, ha="center", va="bottom", fontsize=9)
 
     ax.set_xticks(x)
@@ -219,7 +222,10 @@ def visualize(args, save=False):
     lake_label     = args["lake"].capitalize()
     year           = args.get("year")
 
-    openda_base    = args.get("openda_base")
+    # OpenDA runs live in self-contained, per-run dirs: run/openda_<model>_<lake>_<filter>/
+    run_dir    = os.path.dirname(ensemble_base)          # .../run  (ensemble_base = run/<lake>)
+    model      = args.get("model", "simstrat")
+    oda_dir    = lambda filt: os.path.join(run_dir, f"openda_{model}_{args['lake']}_{filt}")
 
     e0_traj = load_e0(ensemble_base, results_dir, ref_date)
 
@@ -232,18 +238,24 @@ def visualize(args, save=False):
     pf_py_traj = load_traj(pf_py_path, ref_date)
     print(f"     PF: {pf_py_path if pf_py_traj is not None else 'NOT FOUND'}")
 
-    # OpenDA EnKF + PF: mean + spread from the analysis ensemble members
-    enkf_oda_members = load_openda_members(openda_base, "work_enkf", "EnKF (oda)", ref_date)
+    # OpenDA EnKF + EnSR + PF: mean + spread from each run's analysis ensemble members
+    enkf_oda_members = load_openda_members(oda_dir("enkf"), "EnKF (oda)", ref_date)
     enkf_oda_traj    = ensemble_mean(enkf_oda_members)
-    pf_members   = load_openda_members(openda_base, "work_pf", "PF (oda)", ref_date)
+    ensr_oda_members = load_openda_members(oda_dir("ensr"), "EnSR (oda)", ref_date)
+    ensr_oda_traj    = ensemble_mean(ensr_oda_members)
+    pf_members   = load_openda_members(oda_dir("pf"), "PF (oda)", ref_date)
     pf_traj      = ensemble_mean(pf_members)
 
-    if all(t is None for t in (e0_traj, enkf_traj, pf_py_traj, enkf_oda_traj, pf_traj)):
+    if all(t is None for t in (e0_traj, enkf_traj, pf_py_traj, enkf_oda_traj, ensr_oda_traj, pf_traj)):
         raise RuntimeError("No trajectory data found — has the assimilation been run?")
 
     obs = load_obs(obs_path)
-    # Match what the engines assimilate: drop obs depths with no matching model-output depth
-    # (e.g. 0.5 m on a whole-metre grid) rather than snapping the shallowest to the surface.
+    # For plotting, snap the shallowest sensor to the surface (0 m) so it still shows as a 0 m
+    # reference bar/series against the model surface output. NOTE: the engines do NOT assimilate it
+    # (it has no exact model-output depth and is dropped) — this is a diagnostic comparison only.
+    # All other depths must still match a model-output depth.
+    min_obs_depth = float(obs["depth"].min())
+    obs["depth"]  = obs["depth"].apply(lambda d: 0.0 if d == min_obs_depth else d)
     obs = filter_obs_to_model_depths(obs, model_output_depths(ensemble_base))
     if year is not None:
         obs = obs[obs["time"].dt.year == year]
@@ -251,7 +263,8 @@ def visualize(args, save=False):
 
     entries = [(lbl, t) for lbl, t in
                [("ref", e0_traj), ("EnKF", enkf_traj), ("PF", pf_py_traj),
-                ("EnKF (oda)", enkf_oda_traj), ("PF (oda)", pf_traj)] if t is not None]
+                ("EnKF (oda)", enkf_oda_traj), ("EnSR (oda)", ensr_oda_traj),
+                ("PF (oda)", pf_traj)] if t is not None]
 
     # RMSE table
     print(f"\nAnnual RMSE (°C) — {lake_label}" + (f" {year}" if year else ""))
@@ -268,6 +281,8 @@ def visualize(args, save=False):
         spreads["EnKF"] = enkf_members
     if enkf_oda_members:
         spreads["EnKF (oda)"] = enkf_oda_members
+    if ensr_oda_members:
+        spreads["EnSR (oda)"] = ensr_oda_members
     if pf_members:
         spreads["PF (oda)"] = pf_members
     plot_timeseries(entries, obs, obs_depths, lake_label, year, spreads=spreads)
@@ -319,7 +334,6 @@ if __name__ == "__main__":
     # normalise it so loads/saves don't depend on the shell's working directory.
     raw["ensemble_base"] = resolve_src(raw["ensemble_base"])
     raw.setdefault("obs_path",      os.path.join(ROOT, "observations", raw["lake"], "temperature.csv"))
-    raw.setdefault("openda_base",   os.path.join(ROOT, "run", "openda"))
     raw["ref_date"]       = read_ref_date(raw["ensemble_base"])
     if cli.year:
         raw["year"] = cli.year

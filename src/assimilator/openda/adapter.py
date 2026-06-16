@@ -58,7 +58,7 @@ import subprocess
 from assimilator.functions import verify_args, resolve_src, resolve_root, SIMSTRAT_REF_YEAR
 from assimilator.snapshot import read_snapshot
 from assimilator.summarize import report_summary
-from .config import FILTERS, render as render_oda, work_dir_name
+from .config import FILTERS, render as render_oda
 
 REQUIRED = ["lake", "n_members", "ensemble_base"]
 
@@ -216,7 +216,7 @@ def adapt(raw, dry_run=False):
         else os.path.join(ROOT, "inputs", lake)
 
     openda_dir   = resolve_src(raw["openda_dir"]) if raw.get("openda_dir") \
-        else os.path.join(ROOT, "openda_simstrat")
+        else os.path.join(ROOT, "run", "openda_simstrat")
     forcings_dir = os.path.join(openda_dir, "forcings")
     template_dir = os.path.join(openda_dir, "stochModel", "template")
 
@@ -312,18 +312,40 @@ def adapt(raw, dry_run=False):
 # End-to-end OpenDA run (adapt -> render config -> launch oda_run.sh -> summarise)
 # ---------------------------------------------------------------------------
 
-def run_openda(cfg, ensemble_raw, ensemble_base, n_members, dry_run=False, skip_oda=False):
+def run_openda(cfg, ensemble_raw, ensemble_base, n_members, dry_run=False, skip_oda=False,
+               model_cfg=None, model_name="simstrat"):
     """OpenDA engine driver: sync inputs/forcings/warmup + build observations (adapt),
-    render run.oda + the .gen.xml chain, launch oda_run.sh, then summarise."""
-    openda_dir  = resolve_root(cfg.get("openda_dir", "openda_simstrat"))
+    render run.oda + the .gen.xml chain, launch oda_run.sh, then summarise.
+
+    `model_cfg` is the selected model's runtime config (from main.py's -m/--model, i.e.
+    models.MODELS). Its Docker image is written to template/model.json so the standalone
+    OpenDA wrapper — a separate WSL subprocess that can't receive Python args — reads it
+    from there instead of hardcoding the version.
+
+    The generated working dir is named per run — run/openda_<model>_<lake>_<filter> (e.g.
+    run/openda_simstrat_upperlugano_enkf) — so runs are self-describing and don't clash.
+    Override with cfg["openda_dir"]. The per-member work dirs stay at run/openda/work_<filter>
+    (a sibling), shared across filters so visualize.py can compare them side by side."""
     filter_type = cfg.get("filter", "EnKF")
     if filter_type not in FILTERS:
         raise ValueError(f"unknown filter '{filter_type}'; choose from {sorted(FILTERS)}")
+    default_dir = f"run/openda_{model_name}_{ensemble_raw['lake']}_{filter_type.lower()}"
+    openda_dir  = resolve_root(cfg.get("openda_dir") or default_dir)
 
     # --- 4. adapter (always): sync inputs/forcings/warmup + build observations,
     #         returning the auto-detected obs depth list for the render below ----
     print(f"[4/5] adapt framework -> {os.path.relpath(openda_dir, ROOT)}")
     obs_depths = adapt({**ensemble_raw, "openda_dir": openda_dir}, dry_run=dry_run)
+
+    # Bridge the model's Docker image to the (separate-process) wrapper via a generated
+    # file. Single source of truth: models.py. Version-only base "eawag/simstrat" mirrors
+    # functions.py; the wrapper falls back to the same default if the file is absent.
+    if model_cfg and not dry_run:
+        image = f"eawag/simstrat:{model_cfg.get('simstrat_version', '3.0.4')}"
+        model_json = os.path.join(openda_dir, "stochModel", "template", "model.json")
+        with open(model_json, "w") as f:
+            json.dump({"image": image}, f)
+        print(f"      wrote {os.path.relpath(model_json, openda_dir)} (image={image})")
 
     # --- 5. render filter config + run OpenDA ------------------------------
     if dry_run:
@@ -337,18 +359,30 @@ def run_openda(cfg, ensemble_raw, ensemble_base, n_members, dry_run=False, skip_
                           ensemble_raw["start_date"], ensemble_raw["end_date"],
                           obs_std=ensemble_raw.get("sigma_obs", 0.5))
     print(f"[5/5] rendered {oda_file} + chain for filter={filter_type} "
-          f"(work_{filter_type.lower()}, {len(obs_depths)} obs depths)")
+          f"(Results/work0..N, {len(obs_depths)} obs depths)")
     if skip_oda:
         print(f"      --skip-oda: run manually: "
               f"cd {os.path.relpath(openda_dir, ROOT)} && oda_run.sh {oda_file}")
         return
+    # Results/ holds both the per-member work dirs (Results/work0..N) and the PythonResultWriter
+    # output; create it up front so OpenDA's result writer has somewhere to write.
+    os.makedirs(os.path.join(openda_dir, "Results"), exist_ok=True)
     print(f"      oda_run.sh {oda_file}  (cwd={os.path.relpath(openda_dir, ROOT)})")
     try:
         subprocess.run(["oda_run.sh", oda_file], cwd=openda_dir, check=True)
     except FileNotFoundError:
         raise RuntimeError("oda_run.sh not found on PATH - source the OpenDA environment first")
 
-    work_base = os.path.join(os.path.dirname(openda_dir), "run", "openda", work_dir_name(filter_type))
+    # Tidy the run dir: OpenDA writes its run log into the .oda cwd — move it into log/.
+    log_src = os.path.join(openda_dir, "openda_logfile.txt")
+    if os.path.isfile(log_src):
+        log_dir = os.path.join(openda_dir, "log")
+        os.makedirs(log_dir, exist_ok=True)
+        shutil.move(log_src, os.path.join(log_dir, "openda_logfile.txt"))
+        print(f"      moved openda_logfile.txt -> {os.path.relpath(os.path.join(log_dir, 'openda_logfile.txt'), ROOT)}")
+
+    # Per-member work dirs live inside this run's dir at Results/work0..N.
+    work_base = os.path.join(openda_dir, "Results")
     member_files = [os.path.join(work_base, f"work{i}", "Results", "T_out.dat")
                     for i in range(1, n_members + 1)]
     obs_csv = ensemble_raw.get("obs_csv")

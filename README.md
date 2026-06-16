@@ -147,12 +147,15 @@ No fixed depth list or time grid needs to be declared — both are read from the
 │       └── ref/T_out.dat        optional free-run reference, used only by visualize.py (not cloned)
 ├── run/                     Working area (git-ignored per lake)
 │   ├── <lake>/ensemble0..N/      control (0) + perturbed members; DA writes Results_* here
-│   └── openda/work_<filter>/work0..N/   OpenDA per-member scratch (Results/T_out.dat)
+│   └── openda_<model>_<lake>_<filter>/   self-contained OpenDA run dir, e.g. openda_simstrat_upperlugano_enkf
+│       │                              (generated, git-ignored):
+│       ├── Results/work0..N/           per-member scratch (each: Results/T_out.dat + simstrat_wrapper log)
+│       ├── Results/<filter>_results.py OpenDA PythonResultWriter output
+│       └── log/openda_logfile.txt      OpenDA run log
 ├── final_output/            Per-run summaries, named <lake>_<engine>_<label>:
 │                            .csv  = posterior mean + std (time, depth, T_mean, T_std)
 │                            .json = skill/bias report vs observations (bias, rmse, mae, …)
 ├── scripts/                 Non-essential tooling (visualize.py + local analysis scripts)
-├── openda_simstrat/         OpenDA working dir — fully generated on demand, git-ignored
 ├── logs/                    Timestamped pipeline logs
 └── docs/ + mkdocs.yml       Documentation site
 ```
@@ -173,13 +176,14 @@ per‑step arg files below.
 The `lake` field resolves data and run paths by convention: observations from
 `observations/<lake>/temperature.csv`, ensemble from `run/<lake>/`, calibration from `perturbations/<lake>.json`.
 
-## The OpenDA engine (`openda_simstrat/`)
+## The OpenDA engine (`run/openda_<model>_<lake>_<filter>/`)
 
 OpenDA runs Simstrat as a "black box": it clones a template directory once per ensemble member,
 calls a wrapper script that runs Simstrat in Docker, and applies the Kalman update to each
 member's temperature state at every analysis (observation) time.
 
-`openda_simstrat/` is a **fully generated working directory** (git-ignored, built on demand):
+`run/openda_<model>_<lake>_<filter>/` (e.g. `run/openda_simstrat_upperlugano_enkf/`) is a
+**fully generated working directory** (git-ignored, built on demand):
 
 - `src/assimilator/openda/config.py` renders `run.oda`, `parallel.gen.xml`,
   `algorithms/<filter>.gen.xml`, `stochModel/simstrat{Model,StochModel}.gen.xml`,
@@ -219,8 +223,8 @@ python src/main.py args/run_openda.json --skip-oda # generate config, don't laun
 
 Set `"filter"` in `args/run_openda.json` to `EnKF`, `DEnKF`, or `EnSR`, or use the
 `args/run_openda_pf.json` preset for `PF`. Output for each filter goes to
-`run/openda/work_<filter>/workN/Results/T_out.dat` (hourly, full water column) plus
-`openda_simstrat/<filter>_results.py` (OpenDA `PythonResultWriter`), and a posterior summary +
+`run/openda_<model>_<lake>_<filter>/Results/workN/Results/T_out.dat` (hourly, full water column) plus
+`run/openda_<model>_<lake>_<filter>/Results/<filter>_results.py` (OpenDA `PythonResultWriter`), and a posterior summary +
 skill/bias report are auto‑written to `final_output/<lake>_openda_<filter>.{csv,json}`.
 
 > **Output convention:** in `<filter>_results.py`, `pred_a_central` is `H·x_f` (the forecast

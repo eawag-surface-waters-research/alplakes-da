@@ -40,13 +40,13 @@ import time
 # Anchor paths off this script's location, not the cwd.  OpenDA runs the wrapper
 # with cwd = the instance dir (e.g. run/openda/work_enkf/workN), whose depth can
 # change, but this file always lives at <openda_dir>/stochModel/bin/:
-#   bin/ -> stochModel/ -> <openda_dir> (run/openda_simstrat) -> run/ -> alplakes-da (root)
+#   bin/ -> stochModel/ -> <openda_dir> -> alplakes-da (root)
 # snapshot lives in the assimilator package (alplakes-da/src/); perturbed
 # forcings in <openda_dir>/forcings/.
 # ---------------------------------------------------------------------------
 _BIN_DIR    = os.path.dirname(os.path.abspath(__file__))
 _OPENDA_DIR = os.path.dirname(os.path.dirname(_BIN_DIR))
-_ROOT_DIR   = os.path.dirname(os.path.dirname(_OPENDA_DIR))   # run/openda_simstrat -> run -> repo root
+_ROOT_DIR   = os.path.dirname(_OPENDA_DIR)
 sys.path.insert(0, os.path.join(_ROOT_DIR, "src"))
 from assimilator.snapshot import read_snapshot, write_snapshot
 
@@ -206,14 +206,7 @@ if __name__ == '__main__':
     # ------------------------------------------------------------------
     # 5. Run Simstrat
     # ------------------------------------------------------------------
-    # Image comes from the generated template/model.json (single source of truth:
-    # src/models.py, written by the openda adapter), with a fallback for standalone runs.
-    _model_file = os.path.join(_OPENDA_DIR, "stochModel", "template", "model.json")
-    try:
-        with open(_model_file) as f:
-            SIMSTRAT_IMAGE = json.load(f).get("image", "eawag/simstrat:3.0.4")
-    except FileNotFoundError:
-        SIMSTRAT_IMAGE = "eawag/simstrat:3.0.4"
+    SIMSTRAT_IMAGE = "eawag/simstrat:3.0.4"
     work_dir = os.path.abspath(os.getcwd()).replace("\\", "/")
 
     logger.info("Running Simstrat via Docker image %s in %s", SIMSTRAT_IMAGE, work_dir)

@@ -1,6 +1,5 @@
 {
     "engine":        "openda",
     "ensemble_args": "args/ensemble.json",
-    "filter":        "PF",
-    "openda_dir":    "openda_simstrat"
+    "filter":        "PF"
 }

@@ -102,7 +102,14 @@ def run_pf_daily(args, log):
 
     start_containers(args, max_workers=max_workers)
     try:
-        current     = start_date
+        # Noon-anchor the daily windows so PF scores noon-to-noon, matching the EnKF
+        # reference (whose default window_end lands on noon) instead of the midnight-to-
+        # midnight a plain-date start_date would give. start_date stays a plain date
+        # (shared with EnKF and the OpenDA renderer); the shift is applied locally here.
+        noon        = start_date.replace(hour=12, minute=0, second=0, microsecond=0)
+        current     = noon if noon >= start_date else noon + timedelta(days=1)
+        log.info(f"Noon-anchored windows: first window {current.isoformat()} → {(current + timedelta(days=1)).isoformat()}")
+        log.newline()
         days_run    = 0
         days_copied = 0
 
