@@ -1,5 +1,6 @@
 {
     "engine":        "python",
+    "model":         "simstrat",
     "ensemble_args": "args/ensemble.json",
     "run_args":      "args/enkf.json"
 }

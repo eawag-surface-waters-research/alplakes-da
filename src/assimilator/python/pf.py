@@ -5,9 +5,7 @@ import concurrent.futures
 import numpy as np
 from datetime import timedelta
 
-from ..functions import (load_obs, obs_to_sim_col, accumulate_mean, clear_member_outputs,
-                         model_output_depths, filter_obs_to_model_depths,
-                         start_containers, stop_containers, run_window_parallel, load_T,
+from ..functions import (load_obs, obs_to_sim_col, filter_obs_to_model_depths,
                          Logger, verify_args, build_python_run_args)
 from ..summarize import report_summary
 
@@ -74,7 +72,7 @@ def copy_best_to_all(best_id, member_ids, args):
         pool.map(lambda dst: shutil.copy2(src, dst), targets)
 
 
-def run_pf_daily(args, log):
+def run_pf_daily(args, log, model):
     member_ids  = args["member_ids"]
     max_workers = args.get("max_workers")
 
@@ -83,14 +81,14 @@ def run_pf_daily(args, log):
             live = os.path.join(args["ensemble_base"], f"ensemble{i}", args["results_dir"], "simulation-snapshot.dat")
             if os.path.exists(live):
                 os.remove(live)
-        clear_member_outputs(args["ensemble_base"], member_ids, args["results_dir"])
+        model.clear_member_outputs(args["ensemble_base"], member_ids, args["results_dir"])
         if os.path.exists(args["mean_traj_path"]):
             os.remove(args["mean_traj_path"])
         log.info(f"Reset: cleared {args['results_dir']}/ snapshots and trajectory files.")
         log.newline()
 
     obs           = load_obs(args["obs_path"])
-    obs           = filter_obs_to_model_depths(obs, model_output_depths(args["ensemble_base"]), log)
+    obs           = filter_obs_to_model_depths(obs, model.model_output_depths(args["ensemble_base"]), log)
     depth_weights = compute_depth_weights(obs)
     start_date    = args["start_date"]
     end_date      = args["end_date"]
@@ -100,7 +98,7 @@ def run_pf_daily(args, log):
     log.info(f"Depth weights: { {d: round(w, 2) for d, w in depth_weights.items()} }")
     log.newline()
 
-    start_containers(args, max_workers=max_workers)
+    model.start_containers(args, max_workers=max_workers)
     try:
         # Noon-anchor the daily windows so PF scores noon-to-noon, matching the EnKF
         # reference (whose default window_end lands on noon) instead of the midnight-to-
@@ -118,7 +116,7 @@ def run_pf_daily(args, log):
             t_day      = time.perf_counter()
 
             t0       = time.perf_counter()
-            failed   = run_window_parallel(current, window_end, args, max_workers=max_workers)
+            failed   = model.run_window(current, window_end, args, max_workers=max_workers)
             days_run += 1
             t_docker = time.perf_counter() - t0
 
@@ -131,7 +129,7 @@ def run_pf_daily(args, log):
                     # over the run. rmse_in_window still scores only the current window (obs-time
                     # intersection), so it's correct, just increasingly slow on long runs. If this
                     # bites, read only the current window's tail instead of the full file.
-                    sim = load_T(os.path.join(args["ensemble_base"], f"ensemble{i}"), args)
+                    sim = model.load_T(os.path.join(args["ensemble_base"], f"ensemble{i}"), args)
                     rmse, n_raw, n_matched = rmse_in_window(sim, obs, current, window_end, depth_weights)
                     return i, rmse, n_raw, n_matched
                 except Exception:
@@ -166,27 +164,28 @@ def run_pf_daily(args, log):
 
             current = window_end
 
-        accumulate_mean(member_ids, args)   # one-shot: ensemble-mean trajectory from full T_out.dat
+        model.accumulate_mean(member_ids, args)   # one-shot: ensemble-mean trajectory from full T_out.dat
         log.end(f"Done. {days_run} windows run, {days_copied} best-copy steps applied.")
 
     finally:
-        stop_containers(args)
+        model.stop_containers(args)
 
 
 # ---------------------------------------------------------------------------
 # End-to-end PF run (validate -> build args -> daily loop -> summarise)
 # ---------------------------------------------------------------------------
 
-def run_pf(run_raw, ensemble_raw, ensemble_base, n_members):
+def run_pf(run_raw, ensemble_raw, ensemble_base, n_members, model):
     """Native PF engine driver: validate run args, build the merged args, run the
-    daily PF loop, then write the posterior summary + skill report to final_output/."""
+    daily PF loop, then write the posterior summary + skill report to the run folder (run/<lake>/).
+    `model` is the selected forward model (see assimilator.models)."""
     verify_args(run_raw, REQUIRED_RUN)
-    args = build_python_run_args(run_raw, ensemble_raw, ensemble_base, n_members)
+    args = build_python_run_args(run_raw, ensemble_raw, ensemble_base, n_members, model)
 
     log = Logger()
     log.initialise(f"Alplakes DA — PF — {args['lake']}")
-    run_pf_daily(args, log)
+    run_pf_daily(args, log, model)
 
     member_files = [os.path.join(ensemble_base, f"ensemble{i}", args["results_dir"], "T_out.dat")
                     for i in args["member_ids"]]
-    report_summary("python", "PF", member_files, args["lake"], args["obs_path"])
+    report_summary("python", "PF", member_files, args["lake"], args["obs_path"], ensemble_base)

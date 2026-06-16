@@ -37,7 +37,7 @@ You provide two things manually: the **model inputs + warm-start snapshot** in `
                                               -> perturbed Forcing.dat in ensemble1..N
 4. run                       engine=python:  native EnKF/PF daily updates (run_args = enkf.json|pf.json)
                              engine=openda:  render the OpenDA config + launch the filter
-5. summarize                 posterior ensemble -> final_output/
+5. summarize                 posterior mean+std + skill report -> the run's own folder (under run/)
 ```
 
 Run either engine with one command — it re‑uses any already‑completed preprocessing:
@@ -146,15 +146,17 @@ No fixed depth list or time grid needs to be declared — both are read from the
 │   └── <lake>/                  Simstrat input set + dated warmup snapshot (cloned into ensembles)
 │       └── ref/T_out.dat        optional free-run reference, used only by visualize.py (not cloned)
 ├── run/                     Working area (git-ignored per lake)
-│   ├── <lake>/ensemble0..N/      control (0) + perturbed members; DA writes Results_* here
+│   ├── <lake>/                  native-engine run folder: ensemble0..N (control + members; DA writes
+│   │                            Results_* here) + the posterior summary <lake>_python_<algo>.{csv,json}
 │   └── openda_<model>_<lake>_<filter>/   self-contained OpenDA run dir, e.g. openda_simstrat_upperlugano_enkf
 │       │                              (generated, git-ignored):
 │       ├── Results/work0..N/           per-member scratch (each: Results/T_out.dat + simstrat_wrapper log)
 │       ├── Results/<filter>_results.py OpenDA PythonResultWriter output
-│       └── log/openda_logfile.txt      OpenDA run log
-├── final_output/            Per-run summaries, named <lake>_<engine>_<label>:
-│                            .csv  = posterior mean + std (time, depth, T_mean, T_std)
-│                            .json = skill/bias report vs observations (bias, rmse, mae, …)
+│       ├── log/openda_logfile.txt      OpenDA run log
+│       └── <lake>_openda_<filter>.{csv,json}   posterior summary (mean+std) + skill/bias report
+│
+│   Summaries (.csv = posterior mean + std per time/depth; .json = skill/bias report vs obs)
+│   are written into each run's own folder above — no top-level final_output/.
 ├── scripts/                 Non-essential tooling (visualize.py + local analysis scripts)
 ├── logs/                    Timestamped pipeline logs
 └── docs/ + mkdocs.yml       Documentation site
@@ -201,8 +203,13 @@ So the **only OpenDA source of truth** is `src/assimilator/openda/config.py` + t
 
 ### Running the OpenDA engine
 
-Requires WSL/Linux with Docker running and an OpenDA 3.4.0 install. Source the OpenDA environment
-once per shell:
+Requires WSL/Linux with Docker running and an OpenDA 3.4.0 install. Set `"openda_bin"` in the run
+config (`args/run_openda*.json`) to the OpenDA `bin/` dir, e.g. `"~/openda_3.4.0/bin"`; `run_openda`
+then builds the full OpenDA environment (OPENDADIR/OPENDALIB, the bundled JRE + bin on PATH,
+LD_LIBRARY_PATH) for the `oda_run.sh` subprocess only — no shell sourcing needed, and nothing leaks
+into your shell. (Override the native tag with `"openda_native"`, default `linux64_gnu`.)
+
+Alternatively, omit `"openda_bin"` and source the environment yourself once per shell:
 
 ```bash
 export ROOT="$(pwd)"
@@ -225,7 +232,7 @@ Set `"filter"` in `args/run_openda.json` to `EnKF`, `DEnKF`, or `EnSR`, or use t
 `args/run_openda_pf.json` preset for `PF`. Output for each filter goes to
 `run/openda_<model>_<lake>_<filter>/Results/workN/Results/T_out.dat` (hourly, full water column) plus
 `run/openda_<model>_<lake>_<filter>/Results/<filter>_results.py` (OpenDA `PythonResultWriter`), and a posterior summary +
-skill/bias report are auto‑written to `final_output/<lake>_openda_<filter>.{csv,json}`.
+skill/bias report are auto‑written to `run/openda_<model>_<lake>_<filter>/<lake>_openda_<filter>.{csv,json}`.
 
 > **Output convention:** in `<filter>_results.py`, `pred_a_central` is `H·x_f` (the forecast
 > prediction), not `H·x_a`. To see the true analysis correction at observation depths, read the
@@ -245,7 +252,7 @@ python src/main.py args/run_enkf.json     # or args/run_pf.json
 Per‑member results are written to `run/<lake>/ensemble{i}/Results_<algo>/`, with the ensemble‑mean
 trajectory and diagnostics alongside in `run/<lake>/`. On completion a posterior summary (ensemble
 mean + 1σ per time/depth) and a skill/bias report are auto‑written to
-`final_output/<lake>_python_<algo>.{csv,json}`.
+`run/<lake>/<lake>_python_<algo>.{csv,json}`.
 
 ## Prerequisites
 

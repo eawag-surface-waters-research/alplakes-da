@@ -5,7 +5,8 @@ Both engines — the native EnKF/PF (`assimilate.py`) and the OpenDA black-box
 `T_out.dat` format ("Datetime" = Simstrat day, then one column per depth).
 
 For each run this reads ensemble members 1..N (the control, member 0, is
-excluded) and writes two files into `final_output/`:
+excluded) and writes two files into the run's own folder (`out_dir`, under run/ — the
+native engines use run/<lake>/, OpenDA its run/openda_<model>_<lake>_<filter>/ dir):
 
   <lake>_<engine>_<label>.csv   posterior ensemble mean + std per (time, depth):
                                 time,depth,T_mean,T_std  (hourly, full column)
@@ -124,7 +125,7 @@ def _score(times, depths, mean, std, obs_csv):
 
 
 def summarize_run(final_dir, lake, engine, label, member_files, obs_csv=None):
-    """Write final_output/<lake>_<engine>_<label>.{csv,json} from members 1..N.
+    """Write <final_dir>/<lake>_<engine>_<label>.{csv,json} from members 1..N.
 
     The CSV is always written; the JSON skill report is written when `obs_csv`
     exists.  Returns (csv_path, n_members, n_timesteps, n_depths)."""
@@ -156,10 +157,10 @@ def summarize_run(final_dir, lake, engine, label, member_files, obs_csv=None):
     return out_csv, len(member_files), mean.shape[0], mean.shape[1]
 
 
-def report_summary(engine, label, member_files, lake, obs_csv):
-    """Write the posterior summary + skill report into final_output/ and print a one-line recap.
-    Shared tail for both native (run_enkf/run_pf) and OpenDA (run_openda) runs."""
-    _, n_mem, T, D = summarize_run(os.path.join(ROOT, "final_output"),
-                                   lake, engine, label, member_files, obs_csv=obs_csv)
+def report_summary(engine, label, member_files, lake, obs_csv, out_dir):
+    """Write the posterior summary + skill report into `out_dir` (the run's own folder under run/)
+    and print a one-line recap. Shared tail for both native (run_enkf/run_pf) and OpenDA
+    (run_openda) runs."""
+    _, n_mem, T, D = summarize_run(out_dir, lake, engine, label, member_files, obs_csv=obs_csv)
     print(f"[summary] {n_mem} members, {T} steps x {D} depths "
-          f"-> final_output/{lake}_{engine}_{label}.csv")
+          f"-> {os.path.relpath(out_dir, ROOT)}/{lake}_{engine}_{label}.csv")

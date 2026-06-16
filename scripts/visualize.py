@@ -15,8 +15,8 @@ import matplotlib.pyplot as plt
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # repo root
 sys.path.insert(0, os.path.join(ROOT, "src"))
 
-from assimilator.functions import (verify_file, load_obs, read_ref_date,
-                                    model_output_depths, filter_obs_to_model_depths)
+from assimilator.functions import verify_file, load_obs, filter_obs_to_model_depths
+from assimilator.models import get_model
 
 
 # Plot colour per trajectory label
@@ -225,6 +225,7 @@ def visualize(args, save=False):
     # OpenDA runs live in self-contained, per-run dirs: run/openda_<model>_<lake>_<filter>/
     run_dir    = os.path.dirname(ensemble_base)          # .../run  (ensemble_base = run/<lake>)
     model      = args.get("model", "simstrat")
+    model_obj  = get_model(model)
     oda_dir    = lambda filt: os.path.join(run_dir, f"openda_{model}_{args['lake']}_{filt}")
 
     e0_traj = load_e0(ensemble_base, results_dir, ref_date)
@@ -256,7 +257,7 @@ def visualize(args, save=False):
     # All other depths must still match a model-output depth.
     min_obs_depth = float(obs["depth"].min())
     obs["depth"]  = obs["depth"].apply(lambda d: 0.0 if d == min_obs_depth else d)
-    obs = filter_obs_to_model_depths(obs, model_output_depths(ensemble_base))
+    obs = filter_obs_to_model_depths(obs, model_obj.model_output_depths(ensemble_base))
     if year is not None:
         obs = obs[obs["time"].dt.year == year]
     obs_depths = np.sort(obs["depth"].unique())
@@ -302,7 +303,7 @@ def visualize(args, save=False):
 
 
 if __name__ == "__main__":
-    from assimilator.functions import discover_n_members, read_ref_date, resolve_src
+    from assimilator.functions import discover_n_members, resolve_src
 
     parser = argparse.ArgumentParser(description="Visualize assimilation results")
     parser.add_argument("arg_file", help="Path to JSON arguments file")
@@ -334,7 +335,7 @@ if __name__ == "__main__":
     # normalise it so loads/saves don't depend on the shell's working directory.
     raw["ensemble_base"] = resolve_src(raw["ensemble_base"])
     raw.setdefault("obs_path",      os.path.join(ROOT, "observations", raw["lake"], "temperature.csv"))
-    raw["ref_date"]       = read_ref_date(raw["ensemble_base"])
+    raw["ref_date"]       = get_model(raw.get("model", "simstrat")).read_ref_date(raw["ensemble_base"])
     if cli.year:
         raw["year"] = cli.year
 

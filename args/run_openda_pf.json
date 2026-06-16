@@ -1,5 +1,7 @@
 {
     "engine":        "openda",
+    "model":         "simstrat",
     "ensemble_args": "args/ensemble.json",
-    "filter":        "PF"
+    "filter":        "PF",
+    "openda_bin":    "~/openda_3.4.0/bin"
 }

@@ -56,7 +56,7 @@ sys.path.insert(0, SRC_DIR)
 import subprocess
 
 from assimilator.functions import verify_args, resolve_src, resolve_root, SIMSTRAT_REF_YEAR
-from assimilator.snapshot import read_snapshot
+from assimilator.models.snapshot import read_snapshot
 from assimilator.summarize import report_summary
 from .config import FILTERS, render as render_oda
 
@@ -324,8 +324,13 @@ def run_openda(cfg, ensemble_raw, ensemble_base, n_members, dry_run=False, skip_
 
     The generated working dir is named per run — run/openda_<model>_<lake>_<filter> (e.g.
     run/openda_simstrat_upperlugano_enkf) — so runs are self-describing and don't clash.
-    Override with cfg["openda_dir"]. The per-member work dirs stay at run/openda/work_<filter>
-    (a sibling), shared across filters so visualize.py can compare them side by side."""
+    Override with cfg["openda_dir"].
+
+    cfg["openda_bin"] (the dir holding the OpenDA binaries, e.g. .../openda_3.4.0/bin) is used to
+    build the full OpenDA environment (OPENDADIR/OPENDALIB, the bundled JRE + bin on PATH,
+    LD_LIBRARY_PATH) for the oda_run.sh subprocess only, so it need not be sourced in the shell; the
+    env is temporary to the run. Omit it (or set cfg["openda_native"], default linux64_gnu) to use an
+    externally-sourced environment."""
     filter_type = cfg.get("filter", "EnKF")
     if filter_type not in FILTERS:
         raise ValueError(f"unknown filter '{filter_type}'; choose from {sorted(FILTERS)}")
@@ -360,18 +365,44 @@ def run_openda(cfg, ensemble_raw, ensemble_base, n_members, dry_run=False, skip_
                           obs_std=ensemble_raw.get("sigma_obs", 0.5))
     print(f"[5/5] rendered {oda_file} + chain for filter={filter_type} "
           f"(Results/work0..N, {len(obs_depths)} obs depths)")
+    # OpenDA launch: build the full OpenDA environment in-process from cfg["openda_bin"] (the dir
+    # holding the OpenDA binaries, e.g. .../openda_3.4.0/bin) so it does NOT need sourcing in the
+    # shell first. Everything is derived from that one path — OPENDADIR/OPENDALIB, the bundled JRE
+    # and bin on PATH, LD_LIBRARY_PATH — mirroring the manual `export`s in the README. The env lives
+    # only in this subprocess (temporary to the run; the parent process/shell is untouched). Omit
+    # "openda_bin" to fall back to an externally-sourced environment.
+    openda_bin = cfg.get("openda_bin")
+    env = os.environ.copy()
+    if openda_bin:
+        openda_bin  = os.path.expanduser(openda_bin)
+        openda_root = os.path.dirname(openda_bin)                 # e.g. .../openda_3.4.0
+        native      = cfg.get("openda_native", "linux64_gnu")
+        openda_lib  = os.path.join(openda_bin, native)
+        jre_bin     = os.path.join(openda_root, "jre", "bin")
+        env["OPENDADIR"]       = openda_bin
+        env["OPENDA_NATIVE"]   = native
+        env["OPENDALIB"]       = openda_lib
+        env["PATH"]            = os.pathsep.join([jre_bin, openda_bin, env.get("PATH", "")])
+        env["LD_LIBRARY_PATH"] = os.pathsep.join([os.path.join(openda_lib, "lib"),
+                                                  env.get("LD_LIBRARY_PATH", "")])
+        oda_exe = os.path.join(openda_bin, "oda_run.sh")
+    else:
+        oda_exe = "oda_run.sh"
+
     if skip_oda:
         print(f"      --skip-oda: run manually: "
-              f"cd {os.path.relpath(openda_dir, ROOT)} && oda_run.sh {oda_file}")
+              f"cd {os.path.relpath(openda_dir, ROOT)} && {oda_exe} {oda_file}")
         return
     # Results/ holds both the per-member work dirs (Results/work0..N) and the PythonResultWriter
     # output; create it up front so OpenDA's result writer has somewhere to write.
     os.makedirs(os.path.join(openda_dir, "Results"), exist_ok=True)
-    print(f"      oda_run.sh {oda_file}  (cwd={os.path.relpath(openda_dir, ROOT)})")
+    print(f"      {oda_exe} {oda_file}  (cwd={os.path.relpath(openda_dir, ROOT)})")
     try:
-        subprocess.run(["oda_run.sh", oda_file], cwd=openda_dir, check=True)
+        subprocess.run([oda_exe, oda_file], cwd=openda_dir, check=True, env=env)
     except FileNotFoundError:
-        raise RuntimeError("oda_run.sh not found on PATH - source the OpenDA environment first")
+        raise RuntimeError(
+            "oda_run.sh not found — set \"openda_bin\" in the arg file to the OpenDA bin dir, "
+            "or source the OpenDA environment so oda_run.sh is on PATH")
 
     # Tidy the run dir: OpenDA writes its run log into the .oda cwd — move it into log/.
     log_src = os.path.join(openda_dir, "openda_logfile.txt")
@@ -387,7 +418,7 @@ def run_openda(cfg, ensemble_raw, ensemble_base, n_members, dry_run=False, skip_
                     for i in range(1, n_members + 1)]
     obs_csv = ensemble_raw.get("obs_csv")
     obs_csv = resolve_root(obs_csv) if obs_csv else os.path.join(ROOT, "observations", ensemble_raw["lake"], "temperature.csv")
-    report_summary("openda", filter_type, member_files, ensemble_raw["lake"], obs_csv)
+    report_summary("openda", filter_type, member_files, ensemble_raw["lake"], obs_csv, openda_dir)
 
 
 if __name__ == "__main__":

@@ -5,41 +5,14 @@ import numpy as np
 import pandas as pd
 from datetime import timedelta
 
-from ..functions import (load_obs, obs_to_sim_col, accumulate_mean, clear_member_outputs,
-                         model_output_depths, filter_obs_to_model_depths,
-                         start_containers, stop_containers, run_window_parallel,
+from ..functions import (load_obs, obs_to_sim_col, filter_obs_to_model_depths,
                          Logger, verify_args, build_python_run_args)
-from ..snapshot import read_snapshot, write_snapshot
 from ..summarize import report_summary
 
 REQUIRED_RUN  = ["algorithm", "results_dir", "par_file"]
 REQUIRED_ENKF = ["inflation"]               # run-args (enkf.json); Python-EnKF-only
 REQUIRED_ENKF_ENSEMBLE = ["sigma_obs"]      # ensemble-args (ensemble.json); shared with OpenDA
 
-
-def read_snapshot_T(member_id, args):
-    """Read member `member_id`'s warmup snapshot -> (T column, z_volume, lake_level)."""
-    snap_path = os.path.join(args["ensemble_base"], f"ensemble{member_id}", args["results_dir"], "simulation-snapshot.dat")
-    par_path  = os.path.join(args["ensemble_base"], f"ensemble{member_id}", args["par_file"])
-    snap  = read_snapshot(snap_path, par_path=par_path)
-    T     = snap.model["T"]
-    # VERIFIED: there is a vertical-alignment assumption. This takes the TOP len(T) cells of
-    # z_volume, i.e. it assumes T is surface-aligned (z_volume[-1] == surface). If T is
-    # bottom-aligned in the Fortran grid this silently maps every obs to the wrong depth.
-    # Verified on inputs/upperlugano
-    z_vol = snap.grid["z_volume"][-len(T):]
-    return T.copy(), z_vol.copy(), float(snap.grid["lake_level"])
-
-
-def write_snapshot_T(member_id, T_new, args):
-    """Write the analysis temperature column back into member `member_id`'s snapshot."""
-    snap_path = os.path.join(args["ensemble_base"], f"ensemble{member_id}", args["results_dir"], "simulation-snapshot.dat")
-    par_path  = os.path.join(args["ensemble_base"], f"ensemble{member_id}", args["par_file"])
-    snap = read_snapshot(snap_path, par_path=par_path)
-    snap.model["T"][:] = T_new
-    tmp = snap_path + ".tmp"
-    write_snapshot(tmp, snap)
-    os.replace(tmp, snap_path)
 
 # ---------------------------------------------------------------------------
 # The Python Ensemble Kalman Filter, run as a daily-window loop.
@@ -149,7 +122,7 @@ def enkf_update(X_f, y_obs, H, sigma_obs, inflation=1.0, rng=None):
     return X_a, diags
 
 
-def run_enkf_daily(args, log):
+def run_enkf_daily(args, log, model):
     member_ids  = args["member_ids"]
     sigma_obs   = args["sigma_obs"]
     inflation   = args["inflation"]
@@ -163,7 +136,7 @@ def run_enkf_daily(args, log):
             live = os.path.join(args["ensemble_base"], f"ensemble{i}", args["results_dir"], "simulation-snapshot.dat")
             if os.path.exists(live):
                 os.remove(live)
-        clear_member_outputs(args["ensemble_base"], member_ids, args["results_dir"])
+        model.clear_member_outputs(args["ensemble_base"], member_ids, args["results_dir"])
         for p in [args["mean_traj_path"], diag_path, innov_path, kgain_path]:
             if os.path.exists(p):
                 os.remove(p)
@@ -171,7 +144,7 @@ def run_enkf_daily(args, log):
         log.newline()
 
     obs        = load_obs(args["obs_path"])
-    obs        = filter_obs_to_model_depths(obs, model_output_depths(args["ensemble_base"]), log)
+    obs        = filter_obs_to_model_depths(obs, model.model_output_depths(args["ensemble_base"]), log)
     start_date = args["start_date"]
     end_date   = args["end_date"]
     rng        = np.random.default_rng()
@@ -193,7 +166,7 @@ def run_enkf_daily(args, log):
              f"σ_obs={sigma_obs} °C, inflation={inflation}, obs_selector={obs_selector_name})")
     log.newline()
 
-    start_containers(args, max_workers=max_workers)
+    model.start_containers(args, max_workers=max_workers)
     try:
         # Instantaneous-noon update (default obs_selector="window_end"): anchor the windows so
         # each window_end lands on noon, matching the OpenDA reference's noon assimilation.
@@ -214,7 +187,7 @@ def run_enkf_daily(args, log):
             t_day      = time.perf_counter()
 
             t0       = time.perf_counter()
-            failed   = run_window_parallel(current, window_end, args, max_workers=max_workers)
+            failed   = model.run_window(current, window_end, args, max_workers=max_workers)
             days_run += 1
             t_docker = time.perf_counter() - t0
 
@@ -229,7 +202,7 @@ def run_enkf_daily(args, log):
 
                     def _read_T(i):
                         try:
-                            return i, *read_snapshot_T(i, args)
+                            return i, *model.read_snapshot_T(i, args)
                         except Exception as e:
                             print(f"[ensemble{i:02d}] snapshot read failed: {e}")
                             return i, None, None, None
@@ -250,7 +223,7 @@ def run_enkf_daily(args, log):
                         def _write_T(col_i):
                             col, i = col_i
                             try:
-                                write_snapshot_T(i, X_a[:, col], args)
+                                model.write_snapshot_T(i, X_a[:, col], args)
                             except Exception as e:
                                 print(f"[ensemble{i:02d}] snapshot write failed: {e}")
 
@@ -297,28 +270,29 @@ def run_enkf_daily(args, log):
 
             current = window_end
 
-        accumulate_mean(member_ids, args)   # one-shot: ensemble-mean trajectory from full T_out.dat
+        model.accumulate_mean(member_ids, args)   # one-shot: ensemble-mean trajectory from full T_out.dat
         log.end(f"Done. {days_run} days run, {days_updated} EnKF updates applied.")
 
     finally:
-        stop_containers(args)
+        model.stop_containers(args)
 
 
 # ---------------------------------------------------------------------------
 # End-to-end EnKF run (validate -> build args -> daily loop -> summarise)
 # ---------------------------------------------------------------------------
 
-def run_enkf(run_raw, ensemble_raw, ensemble_base, n_members):
+def run_enkf(run_raw, ensemble_raw, ensemble_base, n_members, model):
     """Native EnKF engine driver: validate run args, build the merged args, run the
-    daily EnKF loop, then write the posterior summary + skill report to final_output/."""
+    daily EnKF loop, then write the posterior summary + skill report to the run folder (run/<lake>/).
+    `model` is the selected forward model (see assimilator.models)."""
     verify_args(run_raw, REQUIRED_RUN + REQUIRED_ENKF)
     verify_args(ensemble_raw, REQUIRED_ENKF_ENSEMBLE)
-    args = build_python_run_args(run_raw, ensemble_raw, ensemble_base, n_members)
+    args = build_python_run_args(run_raw, ensemble_raw, ensemble_base, n_members, model)
 
     log = Logger()
     log.initialise(f"Alplakes DA — EnKF — {args['lake']}")
-    run_enkf_daily(args, log)
+    run_enkf_daily(args, log, model)
 
     member_files = [os.path.join(ensemble_base, f"ensemble{i}", args["results_dir"], "T_out.dat")
                     for i in args["member_ids"]]
-    report_summary("python", "EnKF", member_files, args["lake"], args["obs_path"])
+    report_summary("python", "EnKF", member_files, args["lake"], args["obs_path"], ensemble_base)

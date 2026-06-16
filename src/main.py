@@ -24,9 +24,8 @@ import argparse
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # put src/ on the path
 
 from perturbate                  import perturbator
-from models                       import get_model
-from assimilator.functions       import (ROOT, resolve_src, load_json, standard_inputs_ready,
-                                         instances_ready, copy_standard_inputs)
+from assimilator.models          import get_model
+from assimilator.functions       import ROOT, resolve_src, load_json
 from assimilator.python.enkf    import run_enkf
 from assimilator.python.pf      import run_pf
 from assimilator.openda.adapter import run_openda
@@ -38,7 +37,7 @@ def run(cfg, model="simstrat", dry_run=False, skip_oda=False, force=None):
     `model` selects the forward model (see models.MODELS); its runtime config is
     merged into the Python engine's run args."""
     force  = force or {}
-    model_cfg = get_model(model)   # validates -m/--model against the registry
+    model_obj = get_model(model)   # instance of the selected forward model (validates -m/--model)
     engine = cfg.get("engine", "python")
     if engine not in ("python", "openda"):
         raise ValueError(f"unknown engine '{engine}'; choose 'python' or 'openda'")
@@ -59,7 +58,7 @@ def run(cfg, model="simstrat", dry_run=False, skip_oda=False, force=None):
           f"  model={model}  engine={engine}{tag} ===")
 
     # --- 1. standard inputs (provided manually) ---------------------------
-    if not standard_inputs_ready(standard_inputs):
+    if not model_obj.standard_inputs_ready(standard_inputs):
         raise FileNotFoundError(
             f"standard_inputs not ready at {os.path.relpath(standard_inputs, ROOT)}: "
             f"provide it manually — a dated simulation-snapshot_*.dat, Forcing.dat, "
@@ -67,11 +66,11 @@ def run(cfg, model="simstrat", dry_run=False, skip_oda=False, force=None):
     print(f"[1/5] standard inputs present -> {os.path.relpath(standard_inputs, ROOT)}")
 
     # --- 2. copy into instances -------------------------------------------
-    if force.get("copy") or not instances_ready(ensemble_base, n_members):
+    if force.get("copy") or not model_obj.instances_ready(ensemble_base, n_members):
         why = "forced" if force.get("copy") else "missing instances"
         print(f"[2/5] copy standard inputs -> ensemble0..{n_members} ({why})")
         if not dry_run:
-            copy_standard_inputs(ensemble_raw)
+            model_obj.copy_standard_inputs(ensemble_raw)
     else:
         print(f"[2/5] ensemble0..{n_members} present - skip")
 
@@ -92,18 +91,18 @@ def run(cfg, model="simstrat", dry_run=False, skip_oda=False, force=None):
             print(f"[4/5] [dry-run] would run {engine} assimilation + summarize")
             return
         run_raw = load_json(cfg["run_args"])
-        for k, v in model_cfg.items():       # model's Docker/runtime defaults (e.g. simstrat_version)
+        for k, v in model_obj.run_config().items():   # model's Docker/runtime defaults (e.g. simstrat_version)
             run_raw.setdefault(k, v)
         algo    = run_raw.get("algorithm")
         if algo == "EnKF":
-            run_enkf(run_raw, ensemble_raw, ensemble_base, n_members)
+            run_enkf(run_raw, ensemble_raw, ensemble_base, n_members, model_obj)
         elif algo == "PF":
-            run_pf(run_raw, ensemble_raw, ensemble_base, n_members)
+            run_pf(run_raw, ensemble_raw, ensemble_base, n_members, model_obj)
         else:
             raise ValueError(f"Unknown algorithm: '{algo}'. Use 'PF' or 'EnKF'.")
     else:
         run_openda(cfg, ensemble_raw, ensemble_base, n_members, dry_run, skip_oda,
-                   model_cfg=model_cfg, model_name=model)
+                   model_cfg=model_obj.run_config(), model_name=model)
 
     print("=== pipeline complete ===")
 
@@ -113,14 +112,17 @@ if __name__ == "__main__":
     parser.add_argument("arg_file", help="Pipeline config JSON (e.g. args/run_enkf.json)")
     parser.add_argument("--dry-run", action="store_true", help="Preview the plan, execute nothing")
     parser.add_argument("--skip-oda", action="store_true", help="OpenDA only: run setup + adapter, but not OpenDA")
-    parser.add_argument("-m", "--model", default="simstrat",
-                        help="Forward model to run (default: simstrat; see models.MODELS)")
+    parser.add_argument("-m", "--model", default=None,
+                        help="Forward model to run; overrides the arg file's \"model\" field "
+                             "(default: simstrat; see models.MODELS)")
     parser.add_argument("--force-copy",       action="store_true", help="Re-run step 2 even if present")
     cli = parser.parse_args()
 
     cfg = load_json(cli.arg_file)
+    # Model selection: CLI -m wins, else the arg file's "model" field, else simstrat.
+    model = cli.model or cfg.get("model") or "simstrat"
     run(cfg,
-        model=cli.model,
+        model=model,
         dry_run=cli.dry_run,
         skip_oda=cli.skip_oda,
         force={"copy": cli.force_copy})
