@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# this file lives at <repo>/scripts/visualize.py; add src/ so assimilator imports
+# this file lives at <repo>/notebooks/visualize.py; add src/ so assimilator imports
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # repo root
 sys.path.insert(0, os.path.join(ROOT, "src"))
 
@@ -303,10 +303,11 @@ def visualize(args, save=False):
 
 
 if __name__ == "__main__":
-    from assimilator.functions import discover_n_members, resolve_src
+    from assimilator.functions import discover_n_members, resolve_src, merge_lake_args
 
     parser = argparse.ArgumentParser(description="Visualize assimilation results")
     parser.add_argument("arg_file", help="Path to JSON arguments file")
+    parser.add_argument("--lake", default=None, help="Lake to plot from the config's \"lakes\" block")
     parser.add_argument("--year", type=int, default=None, help="Filter to a specific year")
     parser.add_argument("--save", action="store_true", help="Save plots to run/{lake}/ instead of displaying")
     cli = parser.parse_args()
@@ -318,17 +319,7 @@ if __name__ == "__main__":
         raise ValueError(f"Args file not found: {cli.arg_file}")
 
     with open(arg_file) as f:
-        raw = json.load(f)
-
-    # run_*.json wrappers carry the lake config in a referenced ensemble_args file
-    if "lake" not in raw and "ensemble_args" in raw:
-        ens_path = raw["ensemble_args"]
-        if not os.path.isfile(ens_path):
-            ens_path = os.path.join(ROOT, ens_path)
-        with open(ens_path) as f:
-            for k, v in json.load(f).items():
-                if k != "ensemble_base":   # keep the absolute ROOT/run/<lake> default below
-                    raw.setdefault(k, v)
+        raw = merge_lake_args(json.load(f), lake=cli.lake)   # pick the --lake block, flatten
 
     raw.setdefault("ensemble_base", os.path.join(ROOT, "run", raw["lake"]))
     # ensemble_base may be a relative path ('../run/<lake>') resolved against src/ —

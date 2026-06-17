@@ -1,21 +1,34 @@
-"""Part 2 — apply AR(1) forcing perturbations from perturbations/<lake>.json.
+"""Apply AR(1) forcing perturbations from perturbations/<lake>.json.
 
 Reads the fitted (phi, sigma) per variable, simulates fresh AR(1) noise for each
 ensemble member, adds it to the control Forcing.dat, and writes the perturbed
-Forcing.dat into ensemble1..N. Needs only numpy/pandas + the committed JSON + the
-control forcing — no ICON, no residual fitting (that is fit_perturbations.py).
+Forcing.dat into ensemble1..N. Light, runs every pipeline pass — numpy/pandas + the
+committed JSON only (no ICON). This is what main.py runs as step 3 (perturbator):
+
+    python src/assimilator/perturbate.py args/run_enkf.json
+
+Fitting the AR(1) stats from ICON (the heavy, once-per-lake step that produces the
+JSON) lives in notebooks/perturbations_from_icon.py.
 """
+import os
+import sys
 import json
 import logging
-import os
+import argparse
+
 import numpy as np
 import pandas as pd
 
-from ..functions import ROOT, FORCING_HEADER, SIMSTRAT_REF_YEAR
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))   # put src/ on the path
+from assimilator.functions import (
+    ROOT, verify_args, resolve_src, resolve_root, to_utc, merge_lake_args,
+)
+from assimilator.models.simstrat import SIMSTRAT_REF_YEAR, FORCING_HEADER
 
 logger = logging.getLogger(__name__)
 
-# variable -> (control column, clip-to-zero at night?)
+# variable -> (control Forcing.dat column, clip-to-zero at night?). The channels
+# perturbed; T/vap/cloud/rain pass through unperturbed.
 PERTURB_VARS = {"U": ("U_std", False), "V": ("V_std", False), "GLOB": ("GLOB_std", True)}
 
 
@@ -30,34 +43,54 @@ def _simulate_ar1(phi: float, sigma: float, n: int, n_members: int, rng: np.rand
     return out
 
 
-def _load_params(lake: str, perturb_dir: str) -> dict:
-    json_path = os.path.join(perturb_dir, f"{lake}.json")
+def perturbations_path(args: dict) -> str:
+    """AR(1) calibration JSON for the run: the 'perturbations_file' override (path relative to the
+    repo root, or absolute) if given, else perturbations/<lake>.json (under perturbations_dir)."""
+    override = args.get("perturbations_file")
+    if override:
+        return resolve_root(override)
+    perturb_dir = args.get("perturbations_dir", os.path.join(ROOT, "perturbations"))
+    return os.path.join(perturb_dir, f"{args['lake']}.json")
+
+
+def load_perturbations(args: dict) -> dict:
+    """Load and validate the AR(1) calibration for the lake. Errors if the file is missing
+    or its content is malformed (each of U/V/GLOB needs phi + sigma)."""
+    json_path = perturbations_path(args)
     if not os.path.isfile(json_path):
         raise FileNotFoundError(
-            f"{json_path} not found — run fit_perturbations.py (needs the ICON API / EAWAG VPN) "
-            f"or provide perturbations/{lake}.json")
+            f"{json_path} not found — fit it with notebooks/perturbations_from_icon.py "
+            f"(needs the ICON API / EAWAG VPN).")
     with open(json_path, encoding="utf-8") as f:
-        return json.load(f)
+        params = json.load(f)
+
+    variables = params.get("variables")
+    if not isinstance(variables, dict):
+        raise ValueError(f"{json_path}: malformed calibration — missing 'variables' object")
+    bad = [v for v in PERTURB_VARS
+           if not (isinstance(variables.get(v), dict) and {"phi", "sigma"} <= variables[v].keys())]
+    if bad:
+        raise ValueError(f"{json_path}: malformed calibration — {bad} each need 'phi' and 'sigma'")
+    return params
 
 
 def perturbate(args: dict, params: dict = None) -> None:
     lake                 = args["lake"]
-    standard_inputs_path = args["standard_inputs_path"]
+    model_inputs_path = args["model_inputs_path"]
     ensemble_base        = args["ensemble_base"]
     n_members            = args["n_members"]
     rng_seed             = args.get("rng_seed", 42)
     sigma_scale          = args.get("sigma_scale", 1.0)
     ref_year             = args.get("ref_year", SIMSTRAT_REF_YEAR)
-    perturb_dir          = args.get("perturbations_dir", os.path.join(ROOT, "perturbations"))
 
     if params is None:
-        params = _load_params(lake, perturb_dir)
+        params = load_perturbations(args)
     variables = params["variables"]
 
     # Control Forcing.dat as the base signal, over the assimilation window
     t0  = pd.Timestamp(f"{ref_year}-01-01")
     std = pd.read_csv(
-        os.path.join(standard_inputs_path, "Forcing.dat"),
+        os.path.join(model_inputs_path, "Forcing.dat"),
         sep=r"\s+",
         names=["time_days", "U_std", "V_std", "T_std", "GLOB_std", "vap_std", "cloud_std", "rain_std"],
         skiprows=1,
@@ -75,7 +108,7 @@ def perturbate(args: dict, params: dict = None) -> None:
     n = len(df)
 
     # Note: forcing perturbation is seeded (rng_seed) -> identical ensemble forcing every
-    # run, while the EnKF obs-perturbation rng (enkf.py) is unseeded. Mixed reproducibility... 
+    # run, while the EnKF obs-perturbation rng (enkf.py) is unseeded. Mixed reproducibility...
     # need to choose but for now not essential. Acknowledged.
     rng   = np.random.default_rng(rng_seed)
     night = df["GLOB_std"].values < 1.0   # night mask from the control's solar (no ICON at apply time)
@@ -121,3 +154,43 @@ def perturbate(args: dict, params: dict = None) -> None:
         )
 
     logger.info(f"{lake}: perturbed Forcing.dat written to ensemble1..{n_members} -> {ensemble_base}")
+
+
+# ---------------------------------------------------------------------------
+# CLI wrapper — what main.py runs as step 3 (no ICON access)
+# ---------------------------------------------------------------------------
+
+REQUIRED = ["lake", "n_members", "ensemble_base", "start_date", "end_date"]
+
+
+def build_args(raw: dict) -> dict:
+    args = dict(raw)
+    ensemble_base = resolve_src(args["ensemble_base"])
+    args["ensemble_base"] = ensemble_base
+    args.setdefault("model_inputs_path", os.path.join(ROOT, "inputs", args["lake"]))
+    args.setdefault("perturbations_dir",    os.path.join(ROOT, "perturbations"))
+    args.setdefault("rng_seed",    42)
+    args.setdefault("sigma_scale", 1.0)
+
+    args["start_date"] = to_utc(args["start_date"])
+    args["end_date"]   = to_utc(args["end_date"])
+    return args
+
+
+def perturbator(raw_args: dict, params: dict = None) -> None:
+    verify_args(raw_args, REQUIRED)
+    perturbate(build_args(raw_args), params=params)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Apply AR(1) forcing perturbations")
+    parser.add_argument("arg_file", help="Path to a run config JSON (e.g. args/run_enkf.json)")
+    parser.add_argument("--lake", default=None, help="Lake to apply from the config's \"lakes\" block")
+    cli = parser.parse_args()
+
+    arg_file = cli.arg_file if os.path.isfile(cli.arg_file) else os.path.join(ROOT, cli.arg_file)
+    if not os.path.isfile(arg_file):
+        raise ValueError(f"Args file not found: {cli.arg_file}")
+
+    with open(arg_file) as f:
+        perturbator(merge_lake_args(json.load(f), lake=cli.lake))

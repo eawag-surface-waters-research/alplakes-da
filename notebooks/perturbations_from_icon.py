@@ -1,18 +1,22 @@
-"""Part 1 — fit AR(1) forcing-noise statistics from ICON reanalysis.
+"""Fit AR(1) forcing-noise statistics from ICON reanalysis -> perturbations/<lake>.json.
 
-Downloads ICON KENDA-CH1 over a fixed fit window, reduces it to a lake-mean
-timeseries, computes residuals against the control Forcing.dat, fits an AR(1)
-model (phi, sigma) per perturbed variable (U, V, GLOB), and writes the fitted
-params to ``perturbations/<lake>.json``.
+Downloads ICON KENDA-CH1 over a fixed window, reduces it to a lake-mean meteo series,
+computes residuals against the control Forcing.dat, fits an AR(1) model (phi, sigma) per
+perturbed variable (U, V, GLOB), and writes the calibration to perturbations/<lake>.json.
 
-Heavy and rarely run (needs the ICON API / EAWAG VPN). The cheap apply step
-(``perturbate.py``) reuses the committed JSON and needs none of these deps.
+Heavy and rarely run (needs the ICON API / EAWAG VPN); run once per lake or to recalibrate.
+The apply step (src/assimilator/perturbate.py, run by main.py) reuses the committed JSON
+and needs none of these deps.
 
 Folds the former fetch_contours / retrieve / parse_json / lake_mean / logging_utils.
+
+Usage:  python notebooks/perturbations_from_icon.py args/run_enkf.json [--check]
 """
+import os
+import sys
 import json
 import logging
-import os
+import argparse
 from datetime import datetime, timedelta, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -22,8 +26,14 @@ import geopandas as gpd
 import requests
 from tqdm import tqdm
 
-from ..functions import ROOT, API_BASE, VARIABLES, SIMSTRAT_REF_YEAR
-from .check import check
+# this file lives at <repo>/notebooks/; add src/ so assimilator imports resolve
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(_ROOT, "src"))
+
+from assimilator.functions import (
+    ROOT, API_BASE, VARIABLES, verify_args, resolve_src, merge_lake_args,
+)
+from assimilator.models.simstrat import SIMSTRAT_REF_YEAR
 
 logger = logging.getLogger(__name__)
 
@@ -203,15 +213,15 @@ def _fit_ar1(residuals: pd.Series) -> dict:
     return {"phi": round(phi, 6), "sigma": round(sigma, 6)}
 
 
-def _read_control_forcing(standard_inputs_path: str, ref_year: int, start, end) -> pd.DataFrame:
+def _read_control_forcing(model_inputs_path: str, ref_year: int, start, end) -> pd.DataFrame:
     t0  = pd.Timestamp(f"{ref_year}-01-01")
     std = pd.read_csv(
-        os.path.join(standard_inputs_path, "Forcing.dat"),
+        os.path.join(model_inputs_path, "Forcing.dat"),
         sep=r"\s+",
         names=["time_days", "U", "V", "T", "GLOB", "vap", "cloud", "rain"],
         skiprows=1,
     )
-    # 0-based time_days (day 0 = ref_year Jan 1), matching the par/T_out axis — see ar1_apply.
+    # 0-based time_days (day 0 = ref_year Jan 1), matching the par/T_out axis — see perturbate().
     # (Was `- 1`, which misaligned the ICON-vs-control residual by one day.)
     std["time"] = (t0 + pd.to_timedelta(std["time_days"], unit="D")).dt.round("h").dt.tz_localize("UTC")
     return std[(std["time"] >= start) & (std["time"] <= end)].reset_index(drop=True)
@@ -257,7 +267,7 @@ def fit_perturbations(args: dict, run_check: bool = False) -> dict:
     icon["T_2M"] -= 273.15
 
     # residuals (ICON - control) over the fit window
-    ctrl = _read_control_forcing(args["standard_inputs_path"], ref_year, start, end)
+    ctrl = _read_control_forcing(args["model_inputs_path"], ref_year, start, end)
     df = pd.merge(
         icon.rename(columns={"U": "U_icon", "V": "V_icon", "GLOB": "GLOB_icon"}),
         ctrl, on="time", how="inner",
@@ -287,8 +297,10 @@ def fit_perturbations(args: dict, run_check: bool = False) -> dict:
         variables[v] = _fit_ar1(residual[v])
         logger.info(f"  AR(1) {v:4s}  phi={variables[v]['phi']:+.3f}  sigma={variables[v]['sigma']:.4f}")
 
-    # QA plots (acquisition: check.png; fit: residual ACF/distribution + preview ensemble: check_fit.png)
+    # QA plots (acquisition: check.png; fit: residual ACF/distribution + preview ensemble: check_fit.png).
+    # Lazy import: check pulls matplotlib and is only needed with --check.
     if run_check:
+        from check_perturbations import check
         check(args, flat_df=flat_df, mean_df=mean_df, contours=contours, fit_df=df, params=variables)
 
     out = {
@@ -306,3 +318,56 @@ def fit_perturbations(args: dict, run_check: bool = False) -> dict:
         json.dump(out, f, indent=2)
     logger.info(f"{lake}: wrote {os.path.relpath(out_path, ROOT)}")
     return out
+
+
+# ---------------------------------------------------------------------------
+# CLI wrapper
+# ---------------------------------------------------------------------------
+
+REQUIRED = ["lake", "lake_bbox", "ensemble_base"]
+
+
+def build_args(raw: dict) -> dict:
+    args = dict(raw)
+
+    lake     = args["lake"]
+    lake_cfg = {"bbox": tuple(args["lake_bbox"])}
+    if "lake_key"     in args:
+        lake_cfg["key"]     = args["lake_key"]
+    if "lake_contour" in args:
+        lake_cfg["contour"] = args["lake_contour"]
+
+    reanalysis_lake         = args.get("reanalysis_lake", lake)
+    args["reanalysis_lake"] = reanalysis_lake
+    args["lakes"]           = {reanalysis_lake: lake_cfg}
+
+    args.setdefault("contours_geojson", os.path.join(ROOT, "static", "lakes.geojson"))
+
+    ensemble_base = resolve_src(args["ensemble_base"])
+    args["ensemble_base"] = ensemble_base
+    args.setdefault("model_inputs_path", os.path.join(ROOT, "inputs", args["lake"]))
+    args.setdefault("perturbations_dir",    os.path.join(ROOT, "perturbations"))
+    args.setdefault("log_dir",              os.path.join(ROOT, "logs"))
+    return args
+
+
+def fit(raw_args: dict, run_check: bool = False) -> dict:
+    verify_args(raw_args, REQUIRED)
+    args = build_args(raw_args)
+    setup_logging(args["log_dir"])
+    return fit_perturbations(args, run_check=run_check)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Fit AR(1) forcing-noise stats from ICON")
+    parser.add_argument("arg_file", help="Path to a run config JSON (e.g. args/run_enkf.json)")
+    parser.add_argument("--lake", default=None, help="Lake to fit from the config's \"lakes\" block")
+    parser.add_argument("--check", action="store_true", help="Also write the QA check.png")
+    cli = parser.parse_args()
+
+    arg_file = cli.arg_file if os.path.isfile(cli.arg_file) else os.path.join(ROOT, cli.arg_file)
+    if not os.path.isfile(arg_file):
+        raise ValueError(f"Args file not found: {cli.arg_file}")
+
+    with open(arg_file) as f:
+        fit(merge_lake_args(json.load(f), lake=cli.lake), run_check=cli.check)

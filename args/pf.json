@@ -1,6 +1,0 @@
-{
-    "algorithm": "PF",
-    "results_dir": "Results_PF",
-    "par_file": "Settings_PF.par",
-    "reset": true
-}

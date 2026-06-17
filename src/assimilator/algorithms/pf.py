@@ -5,9 +5,13 @@ import concurrent.futures
 import numpy as np
 from datetime import timedelta
 
-from ..functions import (load_obs, obs_to_sim_col, filter_obs_to_model_depths,
-                         Logger, verify_args, build_python_run_args)
+import logging
+
+from ..functions import (load_obs, filter_obs_to_model_depths,
+                         verify_args, build_python_run_args)
 from ..summarize import report_summary
+
+logger = logging.getLogger(__name__)
 
 REQUIRED_RUN = ["algorithm", "results_dir", "par_file"]
 
@@ -20,7 +24,7 @@ REQUIRED_RUN = ["algorithm", "results_dir", "par_file"]
 # (only the next day's per-member forcing perturbation re-diversifies). We call this
 # "PF", which oversells it because it is a "best-member selection". Intentional and might be changed.
 
-def compute_depth_weights(obs_df):
+def compute_depth_weights(obs_df, model):
     depths = np.sort(obs_df["depth"].unique()).astype(float)
     n = len(depths)
     w = np.empty(n)
@@ -30,17 +34,17 @@ def compute_depth_weights(obs_df):
         w[0]    = (depths[1]  - depths[0])  / 2
         w[-1]   = (depths[-1] - depths[-2]) / 2
         w[1:-1] = (depths[2:] - depths[:-2]) / 2
-    return {obs_to_sim_col(d): float(wt) for d, wt in zip(depths, w)}
+    return {model.obs_to_sim_col(d): float(wt) for d, wt in zip(depths, w)}
 
 
-def rmse_in_window(sim_df, obs_df, window_start, window_end, depth_weights):
+def rmse_in_window(sim_df, obs_df, window_start, window_end, depth_weights, model):
     obs_win = obs_df[(obs_df["time"] >= window_start) & (obs_df["time"] < window_end)]
     n_obs_raw = len(obs_win)
     if obs_win.empty:
         return np.nan, 0, 0
 
     obs_win = obs_win.copy()
-    obs_win["sim_col"] = obs_win["depth"].map(obs_to_sim_col)
+    obs_win["sim_col"] = obs_win["depth"].map(model.obs_to_sim_col)
 
     obs_pivot    = obs_win.pivot_table(index="time", columns="sim_col", values="value", aggfunc="mean")
     common_times = sim_df.index.intersection(obs_pivot.index)
@@ -72,7 +76,7 @@ def copy_best_to_all(best_id, member_ids, args):
         pool.map(lambda dst: shutil.copy2(src, dst), targets)
 
 
-def run_pf_daily(args, log, model):
+def run_pf_daily(args, model):
     member_ids  = args["member_ids"]
     max_workers = args.get("max_workers")
 
@@ -84,19 +88,17 @@ def run_pf_daily(args, log, model):
         model.clear_member_outputs(args["ensemble_base"], member_ids, args["results_dir"])
         if os.path.exists(args["mean_traj_path"]):
             os.remove(args["mean_traj_path"])
-        log.info(f"Reset: cleared {args['results_dir']}/ snapshots and trajectory files.")
-        log.newline()
+        logger.info(f"Reset: cleared {args['results_dir']}/ snapshots and trajectory files.")
 
     obs           = load_obs(args["obs_path"])
-    obs           = filter_obs_to_model_depths(obs, model.model_output_depths(args["ensemble_base"]), log)
-    depth_weights = compute_depth_weights(obs)
+    obs           = filter_obs_to_model_depths(obs, model.model_output_depths(args["ensemble_base"]))
+    depth_weights = compute_depth_weights(obs, model)
     start_date    = args["start_date"]
     end_date      = args["end_date"]
 
-    log.info(f"Daily PF: {start_date.date()} → {end_date.date()} "
-             f"({(end_date - start_date).days} days, {len(member_ids)} members)")
-    log.info(f"Depth weights: { {d: round(w, 2) for d, w in depth_weights.items()} }")
-    log.newline()
+    logger.info(f"Daily PF: {start_date.date()} → {end_date.date()} "
+                f"({(end_date - start_date).days} days, {len(member_ids)} members)")
+    logger.info(f"Depth weights: { {d: round(w, 2) for d, w in depth_weights.items()} }")
 
     model.start_containers(args, max_workers=max_workers)
     try:
@@ -106,8 +108,7 @@ def run_pf_daily(args, log, model):
         # (shared with EnKF and the OpenDA renderer); the shift is applied locally here.
         noon        = start_date.replace(hour=12, minute=0, second=0, microsecond=0)
         current     = noon if noon >= start_date else noon + timedelta(days=1)
-        log.info(f"Noon-anchored windows: first window {current.isoformat()} → {(current + timedelta(days=1)).isoformat()}")
-        log.newline()
+        logger.info(f"Noon-anchored windows: first window {current.isoformat()} → {(current + timedelta(days=1)).isoformat()}")
         days_run    = 0
         days_copied = 0
 
@@ -130,7 +131,7 @@ def run_pf_daily(args, log, model):
                     # intersection), so it's correct, just increasingly slow on long runs. If this
                     # bites, read only the current window's tail instead of the full file.
                     sim = model.load_T(os.path.join(args["ensemble_base"], f"ensemble{i}"), args)
-                    rmse, n_raw, n_matched = rmse_in_window(sim, obs, current, window_end, depth_weights)
+                    rmse, n_raw, n_matched = rmse_in_window(sim, obs, current, window_end, depth_weights, model)
                     return i, rmse, n_raw, n_matched
                 except Exception:
                     return i, np.nan, 0, 0
@@ -154,18 +155,18 @@ def run_pf_daily(args, log, model):
                 copy_best_to_all(best_id, member_ids, args)
                 days_copied += 1
                 status = f"failed={failed}" if failed else "ok"
-                log.info(f"  {current.date()}  best=ensemble{best_id:02d}  RMSE={best_rmse:.4f} °C  "
-                         f"obs_raw={n_obs_raw}  matched={n_matched}  [{status}]  [{timing}]")
+                logger.info(f"  {current.date()}  best=ensemble{best_id:02d}  RMSE={best_rmse:.4f} °C  "
+                            f"obs_raw={n_obs_raw}  matched={n_matched}  [{status}]  [{timing}]")
             else:
                 obs_win = obs[(obs["time"] >= current) & (obs["time"] < window_end)]
                 status  = f"  failed={failed}" if failed else ""
-                log.info(f"  {current.date()}  no obs — snapshots unchanged  "
-                         f"obs_raw={len(obs_win)}  matched={n_matched}{status}  [{timing}]")
+                logger.info(f"  {current.date()}  no obs — snapshots unchanged  "
+                            f"obs_raw={len(obs_win)}  matched={n_matched}{status}  [{timing}]")
 
             current = window_end
 
         model.accumulate_mean(member_ids, args)   # one-shot: ensemble-mean trajectory from full T_out.dat
-        log.end(f"Done. {days_run} windows run, {days_copied} best-copy steps applied.")
+        logger.info(f"Done. {days_run} windows run, {days_copied} best-copy steps applied.")
 
     finally:
         model.stop_containers(args)
@@ -182,9 +183,8 @@ def run_pf(run_raw, ensemble_raw, ensemble_base, n_members, model):
     verify_args(run_raw, REQUIRED_RUN)
     args = build_python_run_args(run_raw, ensemble_raw, ensemble_base, n_members, model)
 
-    log = Logger()
-    log.initialise(f"Alplakes DA — PF — {args['lake']}")
-    run_pf_daily(args, log, model)
+    logger.info(f"=== Alplakes DA — PF — {args['lake']} ===")
+    run_pf_daily(args, model)
 
     member_files = [os.path.join(ensemble_base, f"ensemble{i}", args["results_dir"], "T_out.dat")
                     for i in args["member_ids"]]

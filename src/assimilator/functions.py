@@ -1,25 +1,26 @@
 import os
 import json
-import traceback
+import logging
 import pandas as pd
 from datetime import datetime, timezone
+
+logger = logging.getLogger(__name__)
 
 # Repo paths, from this file at src/assimilator/functions.py
 SRC_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # …/src
 ROOT    = os.path.dirname(SRC_DIR)                                      # …/alplakes-da
 
-# General config (Simstrat epoch, forcing format, ICON acquisition) — see static/general.json.
-# Loaded at import; the file is committed, so every module that imports functions gets these.
+# General config — see static/general.json. Loaded at import (the file is committed). Exposes the
+# ICON acquisition settings (forcing fit); the model-specific values (Simstrat epoch, forcing-file
+# header) are read from GENERAL by assimilator.models.simstrat, not surfaced here.
 with open(os.path.join(ROOT, "static", "general.json"), encoding="utf-8") as _f:
     GENERAL = json.load(_f)
-SIMSTRAT_REF_YEAR = GENERAL["simstrat_ref_year"]
-FORCING_HEADER    = GENERAL["forcing_header"]
-API_BASE          = GENERAL["icon_api_base"]
-VARIABLES         = GENERAL["icon_variables"]
+API_BASE  = GENERAL["icon_api_base"]
+VARIABLES = GENERAL["icon_variables"]
 
 # Model-specific behaviour (Docker run, Settings.par editing, snapshot I/O, z_out/T_out formats,
-# input layout) lives in assimilator.models.<model>; this module keeps only generic, model-agnostic
-# helpers shared across the pipeline.
+# the day-since-reference-year epoch, the forcing-file format, input layout) lives in
+# assimilator.models.<model>; this module keeps only generic, model-agnostic helpers.
 
 # ---------------------------------------------------------------------------
 # Path / config helpers
@@ -44,53 +45,32 @@ def load_json(path):
         return json.load(f)
 
 
+def merge_lake_args(cfg, lake=None):
+    """Flatten a run config that carries per-lake blocks under "lakes": pick the selected lake's
+    block and overlay it on the top-level engine knobs. The lake is the explicit `lake` arg, else
+    cfg['lake'], else — when there is exactly one block — that one. Add a lake = add a block.
+    Sets 'lake' and defaults ensemble_base to ../run/<lake>. A config without "lakes" (already
+    flat) is returned unchanged."""
+    lakes = cfg.get("lakes")
+    if not lakes:
+        return cfg
+    lake = lake or cfg.get("lake")
+    if lake is None:
+        if len(lakes) != 1:
+            raise ValueError(f"no lake selected — pass --lake (choices: {sorted(lakes)})")
+        lake = next(iter(lakes))
+    if lake not in lakes:
+        raise ValueError(f"lake '{lake}' not in this config's \"lakes\"; choices: {sorted(lakes)}")
+    merged = {k: v for k, v in cfg.items() if k != "lakes"}
+    merged.update(lakes[lake])
+    merged["lake"] = lake
+    merged.setdefault("ensemble_base", f"../run/{lake}")
+    return merged
+
+
 # ---------------------------------------------------------------------------
 # General helpers
 # ---------------------------------------------------------------------------
-class Logger:
-    def __init__(self, path=False):
-        self.path = path
-        if path:
-            os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-
-    def info(self, string, indent=0):
-        out = datetime.now().strftime("%H:%M:%S") + "   " * (indent + 1) + string
-        print(out)
-        self._write(out)
-
-    def warning(self, string):
-        out = datetime.now().strftime("%H:%M:%S") + "   WARNING: " + string
-        print("\033[93m" + out + "\033[0m")
-        self._write(out)
-
-    def error(self):
-        out = datetime.now().strftime("%H:%M:%S") + "   ERROR"
-        print("\033[91m" + out + "\033[0m")
-        if self.path:
-            with open(self.path, "a") as f:
-                f.write(out + "\n")
-                traceback.print_exc(file=f)
-
-    def initialise(self, string):
-        out = "****** " + string + " " + datetime.now().strftime("%H:%M:%S %d.%m.%Y") + " ******"
-        print("\033[1m" + out + "\033[0m")
-        self._write(out)
-
-    def end(self, string):
-        out = "****** " + string + " ******"
-        print("\033[92m" + out + "\033[0m")
-        self._write(out)
-
-    def newline(self):
-        print("")
-        self._write("")
-
-    def _write(self, out):
-        if self.path:
-            with open(self.path, "a") as f:
-                f.write(out + "\n")
-
-
 def verify_args(args, required):
     for key in required:
         if key not in args:
@@ -128,15 +108,7 @@ def load_obs(obs_path):
     return obs
 
 
-# Depth convention: an obs "X metres below the surface" maps to model column height -X
-# (negative = below surface). No surface snapping — obs depths with no matching model-output
-# depth are dropped upstream (filter_obs_to_model_depths), so the native and OpenDA engines
-# assimilate the identical depth set.
-def obs_to_sim_col(depth):
-    return -depth
-
-
-def filter_obs_to_model_depths(obs_df, model_depths, log=None):
+def filter_obs_to_model_depths(obs_df, model_depths):
     """Drop obs whose depth has no matching model-output depth (abs diff <= 1e-6), so the
     Python engines assimilate the same depths OpenDA does. No-op if model_depths is empty."""
     if not model_depths:
@@ -145,10 +117,16 @@ def filter_obs_to_model_depths(obs_df, model_depths, log=None):
     matched = {d for d in obs_depths if any(abs(d - m) <= 1e-6 for m in model_depths)}
     dropped = [d for d in obs_depths if d not in matched]
     if dropped:
-        msg = (f"dropping obs depths with no matching model output depth (z_out.dat): "
-               f"{[f'{d:g}' for d in dropped]} m")
-        (log.info(f"  {msg}") if log is not None else print(f"[obs] {msg}"))
+        logger.warning(f"[obs] dropping obs depths with no matching model output depth (z_out.dat): "
+                       f"{[f'{d:g}' for d in dropped]} m")
     return obs_df[obs_df["depth"].isin(matched)]
+
+
+def resolve_obs_path(cfg):
+    """Observation CSV for the run: the 'obs_file' override (path relative to the repo root, or
+    absolute) if given, else observations/<lake>/temperature.csv."""
+    override = cfg.get("obs_file")
+    return resolve_root(override) if override else os.path.join(ROOT, "observations", cfg["lake"], "temperature.csv")
 
 
 def to_utc(iso_str):
@@ -162,32 +140,30 @@ def to_utc(iso_str):
 
 def build_python_run_args(run_raw, ensemble_raw, ensemble_base, n_members, model):
     """Merge run-specific knobs with shared ensemble facts; fill defaults (obs path,
-    model runtime config), set container_tag, parse UTC dates, derive ref_date (from the
-    selected `model`), and (for EnKF) the diagnostics output paths."""
+    model runtime config), parse UTC dates, derive ref_date + the mean-trajectory path
+    (from the selected `model`), and (for EnKF) the diagnostics output paths."""
     args = dict(run_raw)
     args["lake"]          = ensemble_raw["lake"]
     args["ensemble_base"] = ensemble_base
     args["n_members"]     = n_members
     args["member_ids"]    = list(range(1, n_members + 1))
 
-    args.setdefault("obs_path", os.path.join(ROOT, "observations", args["lake"], "temperature.csv"))
+    args["obs_path"] = resolve_obs_path(args)   # 'obs_file' override, else observations/<lake>/temperature.csv
     for k, v in model.run_config().items():   # model's Docker/runtime defaults (fallback)
         args.setdefault(k, v)
 
-    args["container_tag"] = args["algorithm"].lower()
-    args["ref_date"]      = model.read_ref_date(ensemble_base)
+    args["ref_date"] = model.read_ref_date(ensemble_base)
 
     args["start_date"] = to_utc(ensemble_raw["start_date"])
     args["end_date"]   = to_utc(ensemble_raw["end_date"])
 
-    # Observation error std lives in ensemble.json (shared single source with OpenDA, which
-    # reads the same key); inflation stays per-run in enkf.json (Python-EnKF-only — OpenDA has
-    # no inflation param). Carried into args here so the EnKF code reads it uniformly.
+    # Observation error std (sigma_obs) is shared with OpenDA (the same key in the run config);
+    # inflation is Python-EnKF-only (OpenDA has no inflation param). Carried into args here so
+    # the EnKF code reads it uniformly.
     if "sigma_obs" in ensemble_raw:
         args["sigma_obs"] = ensemble_raw["sigma_obs"]
 
-    algo = args["algorithm"].lower()
-    args.setdefault("mean_traj_path", os.path.join(ensemble_base, f"T_out_{algo}_mean.dat"))
+    args.setdefault("mean_traj_path", model.mean_traj_path(ensemble_base, args["algorithm"]))
     if args["algorithm"] == "EnKF":
         args.setdefault("diag_path",        os.path.join(ensemble_base, "enkf_diagnostics.csv"))
         args.setdefault("innov_depth_path", os.path.join(ensemble_base, "enkf_innov_by_depth.csv"))

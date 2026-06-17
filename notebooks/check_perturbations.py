@@ -1,5 +1,14 @@
-import logging
+"""QA plots for the AR(1) forcing perturbations.
+
+`check.png`       — grid-point selection map + lake-mean meteo series (acquisition QA).
+`check_fit.png`   — per perturbed variable: residual ACF vs fitted phi^k, residual
+                    distribution vs fitted Gaussian, and a preview perturbed ensemble.
+
+Called by notebooks/perturbations_from_icon.py when run with --check; not a standalone CLI.
+"""
 import os
+import sys
+import logging
 import numpy as np
 import pandas as pd
 import geopandas as gpd
@@ -8,8 +17,12 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-from ..functions import VARIABLES
-from .ar1_apply import _simulate_ar1
+# this file lives at <repo>/notebooks/; add src/ so assimilator imports resolve
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(_ROOT, "src"))
+
+from assimilator.functions import VARIABLES
+from assimilator.perturbate import _simulate_ar1
 
 logger = logging.getLogger(__name__)
 
@@ -149,7 +162,7 @@ def _fit_check(args: dict, fit_df, params: dict) -> str:
 def check(args: dict, flat_df=None, mean_df=None, contours=None, fit_df=None, params=None):
     """QA plots. Acquisition QA (grid mask + lake-mean series -> check.png) whenever the
     acquisition data is given; fit QA (residual ACF / distribution / preview ensemble ->
-    check_fit.png) whenever fit_df + params are given (from fit_perturbations)."""
+    check_fit.png) whenever fit_df + params are given (from perturbations_from_icon)."""
     paths = []
     if flat_df is not None and mean_df is not None and contours is not None:
         paths.append(_acquisition_check(args, flat_df, mean_df, contours))

@@ -1,7 +1,0 @@
-{
-    "algorithm": "EnKF",
-    "results_dir": "Results_EnKF",
-    "par_file": "Settings_EnKF.par",
-    "inflation": 1.00,
-    "reset": true
-}

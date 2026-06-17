@@ -39,9 +39,12 @@ Kept as-is: the wrappers and the Simstrat model template (stochModel/template/).
 
 import os
 import json
+import logging
 from datetime import date, datetime
 
-from assimilator.functions import SIMSTRAT_REF_YEAR
+from assimilator.models.simstrat import SIMSTRAT_REF_YEAR
+
+logger = logging.getLogger(__name__)
 
 # Per-filter algorithm spec: OpenDA class, plus the config-file root element and schema (the
 # only things that differ between filters' algorithm configs). root/schema are OpenDA's canonical
@@ -307,17 +310,14 @@ def _model_formatter_rows(depths):
     )
 
 
-def _write(path, text, dry_run):
-    if dry_run:
-        print(f"  [dry-run] would write {os.path.relpath(path)}")
-        return
+def _write(path, text):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8", newline="\n") as f:
         f.write(text)
 
 
 def render(openda_dir, filter_type, n_members, obs_depths, start_date, end_date,
-           obs_std=DEFAULT_OBS_STD, results_subdir="Results", dry_run=False):
+           obs_std=DEFAULT_OBS_STD, results_subdir="Results"):
     """Render the full lake-specific OpenDA config for `filter_type` into `openda_dir`.
 
     `obs_depths` is the list of assimilated depths (e.g. auto-detected from the obs
@@ -375,13 +375,13 @@ def render(openda_dir, filter_type, n_members, obs_depths, start_date, end_date,
     algo_cfg   = _ALGORITHM.format(root=spec["root"], schema=spec["schema"], filter=filter_type,
                                    n_members=n_members, extra=spec.get("extra", ""))
 
-    _write(os.path.join(openda_dir, "run.oda"), oda, dry_run)
-    _write(os.path.join(openda_dir, "parallel.gen.xml"), parallel, dry_run)
-    _write(os.path.join(stoch_dir, "simstratStochModel.gen.xml"), stochmodel, dry_run)
-    _write(os.path.join(stoch_dir, "simstratModel.gen.xml"), model, dry_run)
-    _write(os.path.join(obs_cfg_dir, "timeSeriesFormatter.gen.xml"), obs_fmt, dry_run)
-    _write(os.path.join(template_dir, "timeSeriesFormatter.gen.xml"), model_fmt, dry_run)
-    _write(os.path.join(template_dir, "time_control.yaml"), time_ctrl, dry_run)
-    _write(os.path.join(template_dir, "obs_depths.json"), json.dumps(depths), dry_run)
-    _write(os.path.join(algo_dir, algo_file), algo_cfg, dry_run)
+    _write(os.path.join(openda_dir, "run.oda"), oda)
+    _write(os.path.join(openda_dir, "parallel.gen.xml"), parallel)
+    _write(os.path.join(stoch_dir, "simstratStochModel.gen.xml"), stochmodel)
+    _write(os.path.join(stoch_dir, "simstratModel.gen.xml"), model)
+    _write(os.path.join(obs_cfg_dir, "timeSeriesFormatter.gen.xml"), obs_fmt)
+    _write(os.path.join(template_dir, "timeSeriesFormatter.gen.xml"), model_fmt)
+    _write(os.path.join(template_dir, "time_control.yaml"), time_ctrl)
+    _write(os.path.join(template_dir, "obs_depths.json"), json.dumps(depths))
+    _write(os.path.join(algo_dir, algo_file), algo_cfg)
     return "run.oda"

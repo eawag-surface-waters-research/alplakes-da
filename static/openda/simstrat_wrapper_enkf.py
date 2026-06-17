@@ -48,7 +48,7 @@ _BIN_DIR    = os.path.dirname(os.path.abspath(__file__))
 _OPENDA_DIR = os.path.dirname(os.path.dirname(_BIN_DIR))
 _ROOT_DIR   = os.path.dirname(os.path.dirname(_OPENDA_DIR))   # run/openda_simstrat -> run -> repo root
 sys.path.insert(0, os.path.join(_ROOT_DIR, "src"))
-from assimilator.models.snapshot import read_snapshot, write_snapshot
+from assimilator.models.simstrat import read_snapshot, write_snapshot
 
 # ---------------------------------------------------------------------------
 # IC depth levels (kept for legacy size detection only)

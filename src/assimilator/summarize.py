@@ -24,11 +24,15 @@ native engines use run/<lake>/, OpenDA its run/openda_<model>_<lake>_<filter>/ d
 
 import os
 import json
+import logging
 import numpy as np
 import pandas as pd
 from datetime import datetime, timezone
 
-from .functions import ROOT, SIMSTRAT_REF_YEAR
+from .functions import ROOT
+from .models.simstrat import SIMSTRAT_REF_YEAR
+
+logger = logging.getLogger(__name__)
 
 
 def _read_t_out(path):
@@ -162,5 +166,5 @@ def report_summary(engine, label, member_files, lake, obs_csv, out_dir):
     and print a one-line recap. Shared tail for both native (run_enkf/run_pf) and OpenDA
     (run_openda) runs."""
     _, n_mem, T, D = summarize_run(out_dir, lake, engine, label, member_files, obs_csv=obs_csv)
-    print(f"[summary] {n_mem} members, {T} steps x {D} depths "
-          f"-> {os.path.relpath(out_dir, ROOT)}/{lake}_{engine}_{label}.csv")
+    logger.info(f"[summary] {n_mem} members, {T} steps x {D} depths "
+                f"-> {os.path.relpath(out_dir, ROOT)}/{lake}_{engine}_{label}.csv")

@@ -1,39 +1,48 @@
 """End-to-end data-assimilation orchestrator. One front door for both engines:
 
-  1. require standard_inputs (provided manually)  -> inputs/<lake>/
-  2. copy_standard_inputs -> ensemble0..N   3. perturbate -> Forcing.dat in 1..N
+  1. require model_inputs (provided manually)  -> inputs/<lake>/
+  2. copy_model_inputs -> ensemble0..N   3. perturbate -> Forcing.dat in 1..N
   4-5. run + summarize:  python -> run_enkf / run_pf   |   openda -> run_openda
 
 Step 2 is skipped when already done (override: --force-copy); step 3 (perturbate)
-always runs - it fits perturbations/<lake>.json from ICON first if it is missing.
-The config selects the engine and points at the arg files:
+requires a committed perturbations/<lake>.json and errors if it is missing.
+Each run config is one JSON: engine/model selection + engine knobs + the run window
+(n_members, dates, sigma_obs, ...) at top level, plus a "lakes" map of lake-identity
+blocks. --lake picks one block (the only one by default) and merges it on top:
 
-  {"engine": "python|openda", "ensemble_args": ..., "run_args": ...,  # run_args: python
-   "filter": "EnKF|DEnKF|EnSR|PF"}                                    # filter: openda
+  {"engine": "python|openda", "model": "simstrat",
+   "algorithm": "EnKF|PF",           # python: + par_file / results_dir / inflation
+   "filter": "EnKF|DEnKF|EnSR|PF",   # openda:  + openda_bin
+   "n_members": ..., "start_date": ..., "end_date": ..., "sigma_obs": ...,
+   "lakes": {"<lake>": {"reanalysis_lake": ..., "lake_bbox": ..., "lake_key": ...}}}
 
-    python src/main.py args/run_enkf.json   [-m simstrat] [--dry-run] [--force-*]
-    python src/main.py args/run_openda.json [-m simstrat] [--dry-run] [--skip-oda]  # openda: WSL + Docker
+    python src/main.py args/run_enkf.json   [--lake <name>] [-m simstrat] [--force-*]
+    python src/main.py args/run_openda.json [--lake <name>] [--skip-oda]  # openda: WSL + Docker
 
 The forward model is selected with -m/--model (default: simstrat; see models.MODELS).
 """
 
 import os
 import sys
+import logging
 import argparse
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # put src/ on the path
 
-from perturbate                  import perturbator
+from assimilator.perturbate      import perturbator, load_perturbations
 from assimilator.models          import get_model
-from assimilator.functions       import ROOT, resolve_src, load_json
-from assimilator.python.enkf    import run_enkf
-from assimilator.python.pf      import run_pf
+from assimilator.functions       import ROOT, resolve_src, load_json, load_obs, resolve_obs_path, merge_lake_args
+from assimilator.algorithms.enkf import run_enkf
+from assimilator.algorithms.pf   import run_pf
 from assimilator.openda.adapter import run_openda
 
-def run(cfg, model="simstrat", dry_run=False, skip_oda=False, force=None):
-    """Run the pipeline: require standard_inputs, then copy -> perturbate -> engine run.
-    Step 2 skips when already done (unless --force-copy); step 3 always perturbates,
-    fitting perturbations/<lake>.json from scratch first if it does not exist.
+logger = logging.getLogger(__name__)
+
+
+def run(cfg, model="simstrat", skip_oda=False, force=None):
+    """Run the pipeline: require model_inputs, then copy -> perturbate -> engine run.
+    Step 2 skips when already done (unless --force-copy); step 3 perturbates and
+    errors if perturbations/<lake>.json is missing (fit it offline beforehand).
     `model` selects the forward model (see models.MODELS); its runtime config is
     merged into the Python engine's run args."""
     force  = force or {}
@@ -42,55 +51,57 @@ def run(cfg, model="simstrat", dry_run=False, skip_oda=False, force=None):
     if engine not in ("python", "openda"):
         raise ValueError(f"unknown engine '{engine}'; choose 'python' or 'openda'")
 
-    ensemble_raw = load_json(cfg["ensemble_args"])
+    ensemble_raw = cfg   # one flat config: ensemble facts + engine knobs in the same JSON
 
     lake          = ensemble_raw["lake"]
     n_members     = ensemble_raw["n_members"]
     ensemble_base = resolve_src(ensemble_raw["ensemble_base"])
-    standard_inputs = os.path.join(ROOT, "inputs", lake)
+    model_inputs = os.path.join(ROOT, "inputs", lake)
 
     # Pin every step to the same absolute ensemble_base (avoids cwd-dependent
     # resolution differences between the sub-scripts).
     ensemble_raw["ensemble_base"] = ensemble_base
 
-    tag = "  (dry-run)" if dry_run else ""
-    print(f"=== DA pipeline - lake={lake}  base={os.path.relpath(ensemble_base, ROOT)}"
-          f"  model={model}  engine={engine}{tag} ===")
+    logger.info(f"=== DA pipeline - lake={lake}  base={os.path.relpath(ensemble_base, ROOT)}"
+                f"  model={model}  engine={engine} ===")
 
-    # --- 1. standard inputs (provided manually) ---------------------------
-    if not model_obj.standard_inputs_ready(standard_inputs):
+    # --- 1. model inputs (provided manually) ---------------------------
+    if not model_obj.model_inputs_ready(model_inputs):
         raise FileNotFoundError(
-            f"standard_inputs not ready at {os.path.relpath(standard_inputs, ROOT)}: "
+            f"model_inputs not ready at {os.path.relpath(model_inputs, ROOT)}: "
             f"provide it manually — a dated simulation-snapshot_*.dat, Forcing.dat, "
             f"Settings.par and the remaining Simstrat inputs.")
-    print(f"[1/5] standard inputs present -> {os.path.relpath(standard_inputs, ROOT)}")
+    logger.info(f"[1/5] model inputs present -> {os.path.relpath(model_inputs, ROOT)}")
 
     # --- 2. copy into instances -------------------------------------------
     if force.get("copy") or not model_obj.instances_ready(ensemble_base, n_members):
         why = "forced" if force.get("copy") else "missing instances"
-        print(f"[2/5] copy standard inputs -> ensemble0..{n_members} ({why})")
-        if not dry_run:
-            model_obj.copy_standard_inputs(ensemble_raw)
+        logger.info(f"[2/5] copy model inputs -> ensemble0..{n_members} ({why})")
+        model_obj.copy_model_inputs(ensemble_raw)
     else:
-        print(f"[2/5] ensemble0..{n_members} present - skip")
+        logger.info(f"[2/5] ensemble0..{n_members} present - skip")
+
+    # --- 2b. align model output depths to the observations ----------------
+    #   Overwrite z_out.dat (inputs + every member) with the superset of its depths and the
+    #   observation depths, so no observation is dropped just for falling between the default
+    #   outputs. Runs whether or not step 2 copied, so a skipped copy still gets the update.
+    obs_path = resolve_obs_path(ensemble_raw)
+    if os.path.isfile(obs_path):
+        obs_depths = sorted(load_obs(obs_path)["depth"].unique())
+        n = model_obj.set_output_depths(model_inputs, ensemble_base, n_members, obs_depths)
+        if n:
+            logger.info(f"      z_out.dat <- model + obs depth superset ({len(obs_depths)} obs depths; {n} files updated)")
 
     # --- 3. perturbate forcings (always) ----------------------------------
-    #   Source the AR(1) calibration from perturbations/<lake>.json; if it does
-    #   not exist yet, fit it from scratch (ICON / EAWAG VPN) first, then apply.
-    print(f"[3/5] perturbate Forcing.dat in ensemble1..{n_members}")
-    if not dry_run:
-        if not os.path.isfile(os.path.join(ROOT, "perturbations", f"{lake}.json")):
-            print(f"      no perturbations/{lake}.json - fitting from scratch (ICON / EAWAG VPN)")
-            from fit_perturbations import fit   # lazy: pulls in geopandas/requests only when fitting
-            fit(ensemble_raw)
-        perturbator(ensemble_raw)
+    #   Source the AR(1) calibration from perturbations/<lake>.json. It must already
+    #   exist (committed); fit it once with notebooks/perturbations_from_icon.py.
+    logger.info(f"[3/5] perturbate Forcing.dat in ensemble1..{n_members}")
+    params = load_perturbations(ensemble_raw)   # fail fast: errors if missing or malformed
+    perturbator(ensemble_raw, params=params)
 
     # --- 4-5. engine-specific run + summary --------------------------------
     if engine == "python":
-        if dry_run:
-            print(f"[4/5] [dry-run] would run {engine} assimilation + summarize")
-            return
-        run_raw = load_json(cfg["run_args"])
+        run_raw = ensemble_raw   # same flat config; build_python_run_args reads the run-side keys
         for k, v in model_obj.run_config().items():   # model's Docker/runtime defaults (e.g. simstrat_version)
             run_raw.setdefault(k, v)
         algo    = run_raw.get("algorithm")
@@ -101,28 +112,44 @@ def run(cfg, model="simstrat", dry_run=False, skip_oda=False, force=None):
         else:
             raise ValueError(f"Unknown algorithm: '{algo}'. Use 'PF' or 'EnKF'.")
     else:
-        run_openda(cfg, ensemble_raw, ensemble_base, n_members, dry_run, skip_oda,
+        run_openda(cfg, ensemble_raw, ensemble_base, n_members, skip_oda,
                    model_cfg=model_obj.run_config(), model_name=model)
 
-    print("=== pipeline complete ===")
+    logger.info("=== pipeline complete ===")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="End-to-end data-assimilation pipeline (Python or OpenDA)")
     parser.add_argument("arg_file", help="Pipeline config JSON (e.g. args/run_enkf.json)")
-    parser.add_argument("--dry-run", action="store_true", help="Preview the plan, execute nothing")
     parser.add_argument("--skip-oda", action="store_true", help="OpenDA only: run setup + adapter, but not OpenDA")
     parser.add_argument("-m", "--model", default=None,
                         help="Forward model to run; overrides the arg file's \"model\" field "
                              "(default: simstrat; see models.MODELS)")
+    parser.add_argument("--lake", default=None,
+                        help="Lake to run from the config's \"lakes\" block "
+                             "(default: the only block, if there is just one)")
+    parser.add_argument("--obs-file", default=None,
+                        help="Observation CSV, overriding the config's \"obs_file\" "
+                             "(default: observations/<lake>/temperature.csv)")
+    parser.add_argument("--perturbations-file", default=None,
+                        help="AR(1) calibration JSON, overriding the config's \"perturbations_file\" "
+                             "(default: perturbations/<lake>.json)")
     parser.add_argument("--force-copy",       action="store_true", help="Re-run step 2 even if present")
     cli = parser.parse_args()
 
-    cfg = load_json(cli.arg_file)
+    logging.basicConfig(level=logging.INFO,
+                        format="%(asctime)s | %(levelname)-8s | %(name)-16s | %(message)s",
+                        datefmt="%H:%M:%S")
+
+    cfg = merge_lake_args(load_json(cli.arg_file), lake=cli.lake)   # pick the --lake block, flatten
+    # CLI file overrides win over the config keys (resolved downstream against the repo root).
+    if cli.obs_file:
+        cfg["obs_file"] = cli.obs_file
+    if cli.perturbations_file:
+        cfg["perturbations_file"] = cli.perturbations_file
     # Model selection: CLI -m wins, else the arg file's "model" field, else simstrat.
     model = cli.model or cfg.get("model") or "simstrat"
     run(cfg,
         model=model,
-        dry_run=cli.dry_run,
         skip_oda=cli.skip_oda,
         force={"copy": cli.force_copy})

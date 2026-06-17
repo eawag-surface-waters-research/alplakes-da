@@ -58,6 +58,7 @@ run/openda_*/
 final_output/upperlugano_python_EnKF.json
 final_output/upperlugano_python_PF.json
 final_output/upperlugano_openda_EnSR.json
+notebooks/perturbations.md
 
 # varia
 analyze_pf_process.png

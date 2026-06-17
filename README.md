@@ -26,16 +26,16 @@ needed. The OpenDA engine additionally requires an OpenDA installation (see
 ## Workflow
 
 You provide two things manually: the **model inputs + warm-start snapshot** in `inputs/<lake>/`
-(see [Providing standard_inputs](#providing-standard_inputs)) and the **observations** in
+(see [Providing model_inputs](#providing-model_inputs)) and the **observations** in
 `observations/<lake>/temperature.csv` (see [Providing observations](#providing-observations)).
 `src/main.py` then orchestrates the chain end‑to‑end, skipping any step already done:
 
 ```
-1. require standard_inputs   (provided manually)   -> inputs/<lake>/                [error if missing]
-2. copy_standard_inputs      ensemble.json   clone -> run/<lake>/ensemble0..N       (0 = control)
-3. perturbate                ensemble.json   AR(1) noise from perturbations/<lake>.json
+1. require model_inputs   (provided manually)   -> inputs/<lake>/                [error if missing]
+2. copy_model_inputs      run_*.json      clone -> run/<lake>/ensemble0..N       (0 = control)
+3. perturbate                run_*.json      AR(1) noise from perturbations/<lake>.json
                                               -> perturbed Forcing.dat in ensemble1..N
-4. run                       engine=python:  native EnKF/PF daily updates (run_args = enkf.json|pf.json)
+4. run                       engine=python:  native EnKF/PF daily updates (algorithm: EnKF|PF)
                              engine=openda:  render the OpenDA config + launch the filter
 5. summarize                 posterior mean+std + skill report -> the run's own folder (under run/)
 ```
@@ -43,16 +43,18 @@ You provide two things manually: the **model inputs + warm-start snapshot** in `
 Run either engine with one command — it re‑uses any already‑completed preprocessing:
 
 ```bash
-python src/main.py args/run_enkf.json     # native EnKF
-python src/main.py args/run_pf.json       # native PF
-python src/main.py args/run_openda.json   # OpenDA
+python src/main.py args/run_enkf.json                # native EnKF (single-lake config: auto-selected)
+python src/main.py args/run_pf.json    --lake geneva  # native PF on a chosen lake
+python src/main.py args/run_openda.json               # OpenDA
 ```
 
-Add `--dry-run` to preview, or `--force-copy` to re‑run the copy step that otherwise looks done.
-(Step 3 perturbate always runs — it fits `perturbations/<lake>.json` from ICON first if missing.)
+Add `--force-copy` to re‑run the copy step that otherwise looks done.
+(Step 3 perturbate always runs — it requires a committed `perturbations/<lake>.json` and errors if missing.)
 
-Shared facts (`lake`, `start_date`, `end_date`, `n_members`) live only in `ensemble.json`; the
-run args (`enkf.json`/`pf.json`) carry just the engine‑specific knobs.
+Each `run_*.json` carries the engine knobs and the run window (`start_date`, `end_date`,
+`n_members`, `sigma_obs`, …) at the top level, plus a `lakes` map of lake‑identity blocks
+(`reanalysis_lake`, `lake_bbox`, `lake_key`). `--lake <name>` picks one block (the only one by
+default) and merges it in; adding a lake is one more block.
 
 ### The forcing-perturbation calibration (one-time, offline)
 
@@ -61,7 +63,7 @@ once from ICON reanalysis and cached in **`perturbations/<lake>.json`** (committ
 needs the EAWAG ICON API (VPN) and is run separately, rarely:
 
 ```bash
-python src/fit_perturbations.py args/ensemble.json [--check]   # writes perturbations/<lake>.json
+python notebooks/perturbations_from_icon.py args/run_enkf.json [--check]   # writes perturbations/<lake>.json
 ```
 
 `--check` also writes QA plots to `run/<lake>/` (`check.png`: grid mask + lake-mean series;
@@ -69,7 +71,7 @@ python src/fit_perturbations.py args/ensemble.json [--check]   # writes perturba
 Once `perturbations/<lake>.json` exists, `main.py` step 3 needs no ICON access. If it's missing,
 step 3 errors with instructions.
 
-### Providing standard_inputs
+### Providing model_inputs
 
 Populate `inputs/<lake>/` manually with the Simstrat input set **plus a dated
 warm-start snapshot**:
@@ -116,24 +118,26 @@ No fixed depth list or time grid needs to be declared — both are read from the
 ├── src/
 │   ├── main.py                  Single entry point. Orchestrates steps 1–5 (skipping done ones)
 │   │                            and dispatches to the engine named in the run config.
-│   ├── perturbate.py            Step 3 (apply): perturbed Forcing.dat from perturbations/<lake>.json.
-│   ├── fit_perturbations.py     Offline calibration (Part 1): ICON -> perturbations/<lake>.json.
 │   └── assimilator/             Importable package (core library shared by both engines)
-│       ├── functions.py            Shared base: path/config helpers (loads static/general.json),
-│       │                           obs loaders, Docker/Simstrat run + .par helpers, arg validation,
-│       │                           copy_standard_inputs, build_python_run_args
-│       ├── snapshot.py             Read/write Simstrat Fortran binary snapshots
+│       ├── functions.py            Model-agnostic shared base: path/config helpers (loads
+│       │                           static/general.json), obs loaders, lake/obs resolvers,
+│       │                           arg validation, build_python_run_args
+│       ├── perturbate.py           Step 3 (apply): simulate AR(1) -> perturbed Forcing.dat per member
 │       ├── summarize.py            Posterior summary (.csv) + skill/bias report (.json) + report_summary
-│       ├── python/                 Native engines
+│       ├── models/                 Forward models, selected by the "model" arg / -m. Add a model = add a file
+│       │   ├── base.py                Model interface — the methods any model must implement
+│       │   └── simstrat.py            ALL Simstrat behaviour: Docker run, .par, z_out/T_out, binary snapshot I/O
+│       ├── algorithms/             Native engines (engine="python")
 │       │   ├── enkf.py                Ensemble Kalman Filter (run_enkf)
 │       │   └── pf.py                  Particle Filter (run_pf)
-│       ├── openda/                 OpenDA cross-validation bridge
-│       │   ├── adapter.py             Sync inputs/forcings/warmup + build observations (run_openda)
-│       │   └── config.py              Render run.oda + every .gen.xml from the FILTERS spec
-│       └── prep_reanalysis/        ICON reanalysis -> AR(1) forcing perturbation
-│           ├── ar1_fit.py            Part 1 impl: acquisition + AR(1) fit -> perturbations/<lake>.json
-│           ├── ar1_apply.py          Part 2 impl: simulate AR(1) -> perturbed member forcings
-│           └── check.py               QA plots (acquisition + fit diagnostics)
+│       └── openda/                 OpenDA cross-validation bridge
+│           ├── adapter.py             Sync inputs/forcings/warmup + build observations (run_openda)
+│           └── config.py              Render run.oda + every .gen.xml from the FILTERS spec
+│
+├── notebooks/               Standalone scripts (add src/ to the path, import assimilator)
+│   ├── perturbations_from_icon.py  Offline calibration: ICON acquisition + AR(1) fit -> perturbations/<lake>.json
+│   ├── check_perturbations.py      QA plots for the fit (acquisition + fit diagnostics)
+│   └── visualize.py                Comparison plots + RMSE table across engines
 │
 ├── args/                    One JSON config per entry point (see Configuration)
 ├── static/                  Version/lake-independent config + templates
@@ -157,23 +161,23 @@ No fixed depth list or time grid needs to be declared — both are read from the
 │
 │   Summaries (.csv = posterior mean + std per time/depth; .json = skill/bias report vs obs)
 │   are written into each run's own folder above — no top-level final_output/.
-├── scripts/                 Non-essential tooling (visualize.py + local analysis scripts)
 ├── logs/                    Timestamped pipeline logs
 └── docs/ + mkdocs.yml       Documentation site
 ```
 
 ## Configuration (`args/`)
 
-Run configs (`run_*.json`) are the entry points passed to `main.py`; they reference the
-per‑step arg files below.
+Run configs (`run_*.json`) are the entry points passed to `main.py`. Each holds the engine/model
+selection + engine knobs + the run window at the top level, plus a `lakes` map; `--lake <name>`
+selects a block (the only one by default) and merges it on top. No nested files.
 
-| File | Used by | Key fields |
+| Section | Engine | Key fields |
 |---|---|---|
-| `run_enkf.json` / `run_pf.json` | `main.py` | `engine:"python"`, `ensemble_args`, `run_args` |
-| `run_openda.json` / `run_openda_pf.json` | `main.py` | `engine:"openda"`, `ensemble_args`, `filter` (EnKF\|DEnKF\|EnSR\|PF), `openda_dir` |
-| `ensemble.json` | steps 2–3 + fit + **both engines** | `lake`, `n_members`, `start_date`, `end_date`, `sigma_obs` (obs error σ — shared by native EnKF + OpenDA), `lake_bbox`, `lake_key`, `reanalysis_lake` |
-| `enkf.json` | python `run_args` | `algorithm:"EnKF"`, `results_dir`, `par_file`, `inflation` (native-EnKF only), `reset` |
-| `pf.json` | python `run_args` | `algorithm:"PF"`, `results_dir`, `par_file`, `reset` |
+| top level — `run_enkf.json` / `run_pf.json` | python | `engine:"python"`, `algorithm` (`EnKF`\|`PF`), `results_dir`, `par_file`, `inflation` (native-EnKF only), `reset` |
+| top level — `run_openda.json` / `run_openda_pf.json` | openda | `engine:"openda"`, `filter` (EnKF\|DEnKF\|EnSR\|PF), `openda_bin`, `openda_dir` |
+| top level — run window (every config) | both | `n_members`, `start_date`, `end_date`, `sigma_obs` (obs error σ — shared by native EnKF + OpenDA), `rng_seed`, `sigma_scale` |
+| top level — file overrides (optional) | both | `obs_file` (observation CSV; default `observations/<lake>/temperature.csv`), `perturbations_file` (AR(1) calibration JSON; default `perturbations/<lake>.json`) — paths relative to the repo root or absolute. Also settable on the CLI: `--obs-file` / `--perturbations-file` (flag > config key > default) |
+| `lakes.<name>` — one block per lake | both + fit | `reanalysis_lake`, `lake_bbox`, `lake_key` (the lake identity; bbox/key used by the fit). `ensemble_base` defaults to `../run/<lake>` |
 
 The `lake` field resolves data and run paths by convention: observations from
 `observations/<lake>/temperature.csv`, ensemble from `run/<lake>/`, calibration from `perturbations/<lake>.json`.
@@ -192,7 +196,7 @@ member's temperature state at every analysis (observation) time.
   `stochModel/template/{time_control.yaml,obs_depths.json,timeSeriesFormatter.gen.xml}`, and
   `stochObserver/timeSeriesFormatter.gen.xml` — driven by `filter`, `n_members`, and the
   observation depths (auto‑detected from `observations/<lake>/temperature.csv`, restricted to model output depths).
-- `src/assimilator/openda/adapter.py` syncs `standard_inputs` → `stochModel/template/`,
+- `src/assimilator/openda/adapter.py` syncs `model_inputs` → `stochModel/template/`,
   the perturbed `Forcing_{0..N}.dat` → `forcings/`, the warmup snapshot →
   `template/Results/simulation-snapshot.dat`, seeds `temperature_state.txt`, builds the
   observation CSVs, and **copies the two hand-maintained files from `static/openda/`**
@@ -224,7 +228,6 @@ Then:
 
 ```bash
 python src/main.py args/run_openda.json            # full run
-python src/main.py args/run_openda.json --dry-run  # preview, write nothing
 python src/main.py args/run_openda.json --skip-oda # generate config, don't launch
 ```
 

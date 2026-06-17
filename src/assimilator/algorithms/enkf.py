@@ -1,17 +1,20 @@
 import os
 import time
+import logging
 import concurrent.futures
 import numpy as np
 import pandas as pd
 from datetime import timedelta
 
-from ..functions import (load_obs, obs_to_sim_col, filter_obs_to_model_depths,
-                         Logger, verify_args, build_python_run_args)
+from ..functions import (load_obs, filter_obs_to_model_depths,
+                         verify_args, build_python_run_args)
 from ..summarize import report_summary
 
+logger = logging.getLogger(__name__)
+
 REQUIRED_RUN  = ["algorithm", "results_dir", "par_file"]
-REQUIRED_ENKF = ["inflation"]               # run-args (enkf.json); Python-EnKF-only
-REQUIRED_ENKF_ENSEMBLE = ["sigma_obs"]      # ensemble-args (ensemble.json); shared with OpenDA
+REQUIRED_ENKF = ["inflation"]               # run config; Python-EnKF-only knob
+REQUIRED_ENKF_ENSEMBLE = ["sigma_obs"]      # run config; obs error std, shared with OpenDA
 
 
 # ---------------------------------------------------------------------------
@@ -26,7 +29,7 @@ REQUIRED_ENKF_ENSEMBLE = ["sigma_obs"]      # ensemble-args (ensemble.json); sha
 # analysis back as the next IC, and T_out.dat only holds the output depths. Future dev:
 # either output the full state from the model, or interpolate the snapshot state onto the
 # output depths for the comparison (compute-efficiency tradeoff).
-def window_obs_vector(obs_df, window_start, window_end):
+def window_obs_vector(obs_df, window_start, window_end, model):
     obs_win = obs_df[(obs_df["time"] >= window_start) & (obs_df["time"] < window_end)]
     if obs_win.empty:
         return None, None, None
@@ -34,11 +37,11 @@ def window_obs_vector(obs_df, window_start, window_end):
     if mean_per_depth.empty:
         return None, None, None
     obs_depths = list(mean_per_depth.index)
-    sim_depths = [obs_to_sim_col(d) for d in obs_depths]
+    sim_depths = [model.obs_to_sim_col(d) for d in obs_depths]
     return mean_per_depth.values, sim_depths, obs_depths
 
 
-def window_obs_vector_consistent(obs_df, window_start, window_end):
+def window_obs_vector_consistent(obs_df, window_start, window_end, model):
     """Pick, per depth, the single observation nearest the window END (vs window_obs_vector's
     daily mean). The EnKF assimilates into the end-of-window snapshot, so the obs nearest that
     instant is temporally consistent with the model state. window_end must be noon to match the
@@ -58,7 +61,7 @@ def window_obs_vector_consistent(obs_df, window_start, window_end):
     if nearest.empty:
         return None, None, None
     obs_depths = list(nearest.index)
-    sim_depths = [obs_to_sim_col(d) for d in obs_depths]
+    sim_depths = [model.obs_to_sim_col(d) for d in obs_depths]
     return nearest["value"].values, sim_depths, obs_depths
 
 
@@ -122,7 +125,7 @@ def enkf_update(X_f, y_obs, H, sigma_obs, inflation=1.0, rng=None):
     return X_a, diags
 
 
-def run_enkf_daily(args, log, model):
+def run_enkf_daily(args, model):
     member_ids  = args["member_ids"]
     sigma_obs   = args["sigma_obs"]
     inflation   = args["inflation"]
@@ -140,11 +143,10 @@ def run_enkf_daily(args, log, model):
         for p in [args["mean_traj_path"], diag_path, innov_path, kgain_path]:
             if os.path.exists(p):
                 os.remove(p)
-        log.info(f"Reset: cleared {args['results_dir']}/ snapshots and trajectory files.")
-        log.newline()
+        logger.info(f"Reset: cleared {args['results_dir']}/ snapshots and trajectory files.")
 
     obs        = load_obs(args["obs_path"])
-    obs        = filter_obs_to_model_depths(obs, model.model_output_depths(args["ensemble_base"]), log)
+    obs        = filter_obs_to_model_depths(obs, model.model_output_depths(args["ensemble_base"]))
     start_date = args["start_date"]
     end_date   = args["end_date"]
     rng        = np.random.default_rng()
@@ -161,10 +163,9 @@ def run_enkf_daily(args, log, model):
         raise ValueError(f"unknown obs_selector '{obs_selector_name}'; choose from {sorted(_OBS_SELECTORS)}")
     select_obs = _OBS_SELECTORS[obs_selector_name]
 
-    log.info(f"Daily EnKF: {start_date.date()} → {end_date.date()} "
-             f"({(end_date - start_date).days} days, {len(member_ids)} members, "
-             f"σ_obs={sigma_obs} °C, inflation={inflation}, obs_selector={obs_selector_name})")
-    log.newline()
+    logger.info(f"Daily EnKF: {start_date.date()} → {end_date.date()} "
+                f"({(end_date - start_date).days} days, {len(member_ids)} members, "
+                f"σ_obs={sigma_obs} °C, inflation={inflation}, obs_selector={obs_selector_name})")
 
     model.start_containers(args, max_workers=max_workers)
     try:
@@ -177,8 +178,7 @@ def run_enkf_daily(args, log, model):
         if obs_selector_name == "window_end":
             noon    = start_date.replace(hour=12, minute=0, second=0, microsecond=0)
             current = noon if noon >= start_date else noon + timedelta(days=1)
-            log.info(f"Noon-anchored windows: first window {current.isoformat()} → {(current + timedelta(days=1)).isoformat()}")
-            log.newline()
+            logger.info(f"Noon-anchored windows: first window {current.isoformat()} → {(current + timedelta(days=1)).isoformat()}")
         days_run     = 0
         days_updated = 0
 
@@ -191,7 +191,7 @@ def run_enkf_daily(args, log, model):
             days_run += 1
             t_docker = time.perf_counter() - t0
 
-            y_obs, sim_depths, obs_depths = select_obs(obs, current, window_end)
+            y_obs, sim_depths, obs_depths = select_obs(obs, current, window_end, model)
 
             t_enkf    = 0.0
             n_updated = 0
@@ -204,7 +204,7 @@ def run_enkf_daily(args, log, model):
                         try:
                             return i, *model.read_snapshot_T(i, args)
                         except Exception as e:
-                            print(f"[ensemble{i:02d}] snapshot read failed: {e}")
+                            logger.warning(f"[ensemble{i:02d}] snapshot read failed: {e}")
                             return i, None, None, None
 
                     with concurrent.futures.ThreadPoolExecutor() as pool:
@@ -225,7 +225,7 @@ def run_enkf_daily(args, log, model):
                             try:
                                 model.write_snapshot_T(i, X_a[:, col], args)
                             except Exception as e:
-                                print(f"[ensemble{i:02d}] snapshot write failed: {e}")
+                                logger.warning(f"[ensemble{i:02d}] snapshot write failed: {e}")
 
                         with concurrent.futures.ThreadPoolExecutor() as pool:
                             pool.map(_write_T, enumerate(readable))
@@ -266,12 +266,12 @@ def run_enkf_daily(args, log, model):
             timing  = f"docker={t_docker:.1f}s  enkf={t_enkf:.1f}s  total={t_total:.1f}s"
             obs_str = f"n_obs={len(y_obs)}  n_updated={n_updated}" if y_obs is not None else "no obs"
             status  = f"failed={failed}" if failed else "ok"
-            log.info(f"  {current.date()}  {obs_str}  [{status}]  [{timing}]")
+            logger.info(f"  {current.date()}  {obs_str}  [{status}]  [{timing}]")
 
             current = window_end
 
         model.accumulate_mean(member_ids, args)   # one-shot: ensemble-mean trajectory from full T_out.dat
-        log.end(f"Done. {days_run} days run, {days_updated} EnKF updates applied.")
+        logger.info(f"Done. {days_run} days run, {days_updated} EnKF updates applied.")
 
     finally:
         model.stop_containers(args)
@@ -289,9 +289,8 @@ def run_enkf(run_raw, ensemble_raw, ensemble_base, n_members, model):
     verify_args(ensemble_raw, REQUIRED_ENKF_ENSEMBLE)
     args = build_python_run_args(run_raw, ensemble_raw, ensemble_base, n_members, model)
 
-    log = Logger()
-    log.initialise(f"Alplakes DA — EnKF — {args['lake']}")
-    run_enkf_daily(args, log, model)
+    logger.info(f"=== Alplakes DA — EnKF — {args['lake']} ===")
+    run_enkf_daily(args, model)
 
     member_files = [os.path.join(ensemble_base, f"ensemble{i}", args["results_dir"], "T_out.dat")
                     for i in args["member_ids"]]
