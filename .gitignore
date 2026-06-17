@@ -1,71 +1,24 @@
-# Local reference docs
-docs/
+# Generated / data folders — keep the (empty) folder via .gitkeep, ignore its contents.
+run/*
+!run/.gitkeep
+inputs/*
+!inputs/.gitkeep
+logs/*
+!logs/.gitkeep
+observations/*
+!observations/.gitkeep
 
-# Ignore data folders
-inputs/
-datasets/
-output/
-snapshot_examples/
-openda_course/openda/
-.idea/
-run/upperlugano/
-run/murten/
-run/geneva/
-run/upperlugano_internaltest/
-run/openda/
-assimilation/
-old/
-bu/
+# Local-only scratch (notes, diagnostic scripts, their outputs) — one folder, ignored wholesale.
+local/
+
+# Orphaned generated OpenDA working dir (current runs go to run/openda_<model>_<lake>_<filter>/).
 openda_simstrat/
 
-# Local diagnostic scripts
-plot_ensemble.py
-settings.local.json
-in_depth.md
+# Tooling / caches / IDE / editor state.
+__pycache__/
+.idea/
+.claude/
 
-# Local migration / debugging notes (not part of the committed source)
-OPENDA_MIGRATION_DIFF.md
-
-# Ignore large files
-*.csv
-*.nc
-*.tif
-*.h5
-*.dat
-*.nml
-*.par
-*.dll
-*.tgz
-*.check.xml
-
-# Ignore temporary files
-*.log
-*.tmp
-
-# R / Python specific
+# R session state.
 .Rhistory
 .RData
-__pycache__/
-
-# Local refactoring notes
-REFACTORING.md
-
-# run/openda_<model>_<lake>_<filter>/ are fully generated working dirs, created on demand by
-# openda/adapter.py (sync) + openda/config.py (render); the static wrapper source lives
-# in static/openda/. Nothing here is tracked. (run/openda/ — the work dirs — is ignored above.)
-run/openda_*/
-
-final_output/upperlugano_python_EnKF.json
-final_output/upperlugano_python_PF.json
-final_output/upperlugano_openda_EnSR.json
-notebooks/perturbations.md
-
-# varia
-analyze_pf_process.png
-analyze_pf_process.py
-enkf_analysys_pres.png
-enkf_analysys_pres_seasonal.png
-enkf_analysys_pres_daily.png
-enkf_analysys_pres.py
-final_output/upperlugano_openda_PF.json
-
