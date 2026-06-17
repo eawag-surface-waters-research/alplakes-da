@@ -41,19 +41,6 @@ DEFAULT_WORKERS = 8
 PERTURB_VARS    = ["U", "V", "GLOB"]   # channels perturbed downstream (residual = ICON - control)
 
 
-def setup_logging(log_dir: str, level: int = logging.INFO) -> None:
-    """File + console logging for a fit run."""
-    os.makedirs(log_dir, exist_ok=True)
-    log_file = os.path.join(log_dir, f"fit_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log")
-    logging.basicConfig(
-        level=level,
-        format="%(asctime)s | %(levelname)-8s | %(name)-16s | %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        handlers=[logging.FileHandler(log_file, encoding="utf-8"), logging.StreamHandler()],
-    )
-    logging.getLogger(__name__).info(f"Log file: {log_file}")
-
-
 # ---------------------------------------------------------------------------
 # ICON acquisition: contours -> per-day download -> flatten -> lake mean
 # ---------------------------------------------------------------------------
@@ -347,14 +334,12 @@ def build_args(raw: dict) -> dict:
     args["ensemble_base"] = ensemble_base
     args.setdefault("model_inputs_path", os.path.join(ROOT, "inputs", args["lake"]))
     args.setdefault("perturbations_dir",    os.path.join(ROOT, "perturbations"))
-    args.setdefault("log_dir",              os.path.join(ROOT, "logs"))
     return args
 
 
 def fit(raw_args: dict, run_check: bool = False) -> dict:
     verify_args(raw_args, REQUIRED)
     args = build_args(raw_args)
-    setup_logging(args["log_dir"])
     return fit_perturbations(args, run_check=run_check)
 
 
@@ -364,6 +349,10 @@ if __name__ == "__main__":
     parser.add_argument("--lake", default=None, help="Lake to fit from the config's \"lakes\" block")
     parser.add_argument("--check", action="store_true", help="Also write the QA check.png")
     cli = parser.parse_args()
+
+    logging.basicConfig(level=logging.INFO,
+                        format="%(asctime)s | %(levelname)-8s | %(name)-16s | %(message)s",
+                        datefmt="%H:%M:%S")
 
     arg_file = cli.arg_file if os.path.isfile(cli.arg_file) else os.path.join(ROOT, cli.arg_file)
     if not os.path.isfile(arg_file):

@@ -26,6 +26,7 @@ import os
 import sys
 import logging
 import argparse
+from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # put src/ on the path
 
@@ -137,9 +138,14 @@ if __name__ == "__main__":
     parser.add_argument("--force-copy",       action="store_true", help="Re-run step 2 even if present")
     cli = parser.parse_args()
 
+    os.makedirs(os.path.join(ROOT, "logs"), exist_ok=True)
+    log_file = os.path.join(ROOT, "logs", f"pipeline_{datetime.now():%Y%m%d_%H%M%S}.log")
     logging.basicConfig(level=logging.INFO,
                         format="%(asctime)s | %(levelname)-8s | %(name)-16s | %(message)s",
-                        datefmt="%H:%M:%S")
+                        datefmt="%H:%M:%S",
+                        handlers=[logging.StreamHandler(),
+                                  logging.FileHandler(log_file, encoding="utf-8")])
+    logger.info(f"log file -> {os.path.relpath(log_file, ROOT)}")
 
     cfg = merge_lake_args(load_json(cli.arg_file), lake=cli.lake)   # pick the --lake block, flatten
     # CLI file overrides win over the config keys (resolved downstream against the repo root).
