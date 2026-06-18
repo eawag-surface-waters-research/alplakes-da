@@ -1,4 +1,4 @@
-# Generated / data folders — keep the (empty) folder via .gitkeep, ignore its contents.
+# Generated / data folders 
 run/*
 !run/.gitkeep
 inputs/*
@@ -8,17 +8,10 @@ logs/*
 observations/*
 !observations/.gitkeep
 
-# Local-only scratch (notes, diagnostic scripts, their outputs) — one folder, ignored wholesale.
+# Local-only scratch
 local/
 
-# Orphaned generated OpenDA working dir (current runs go to run/openda_<model>_<lake>_<filter>/).
-openda_simstrat/
-
-# Tooling / caches / IDE / editor state.
+# varia
 __pycache__/
 .idea/
 .claude/
-
-# R session state.
-.Rhistory
-.RData
