@@ -125,8 +125,9 @@ No fixed depth list or time grid needs to be declared — both are read from the
 │       ├── perturbate.py           Step 3 (apply): simulate AR(1) -> perturbed Forcing.dat per member
 │       ├── summarize.py            Posterior summary (.csv) + skill/bias report (.json) + report_summary
 │       ├── models/                 Forward models, selected by the "model" arg / -m. Add a model = add a file
-│       │   ├── base.py                Model interface — the methods any model must implement
+│       │   ├── __init__.py            Registry (MODELS / get_model) — the model selection point
 │       │   └── simstrat.py            ALL Simstrat behaviour: Docker run, .par, z_out/T_out, binary snapshot I/O
+│       │                              (its module docstring lists the method contract the engines call)
 │       ├── algorithms/             Native engines (engine="python")
 │       │   ├── enkf.py                Ensemble Kalman Filter (run_enkf)
 │       │   └── pf.py                  Particle Filter (run_pf)

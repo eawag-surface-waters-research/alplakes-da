@@ -5,10 +5,23 @@ holds everything that knows about Simstrat's mechanics — Docker container life
 `Settings.par` editing, the day-since-reference-year time convention, the output
 formats (`z_out.dat` / `T_out.dat`), the input layout, and the binary snapshot I/O
 (`read_snapshot`/`write_snapshot`, at the bottom of this module) — and exposes it
-through the `Model` interface as the
-`Simstrat` class.  Adding another model means writing a sibling module with the same
-surface and registering it in `models/__init__.py`; the engines call only the
-interface, so they don't change.
+through the `Simstrat` class.
+
+The engines (`algorithms/enkf.py`, `algorithms/pf.py`) and the orchestrator
+(`main.py`) call models only through the methods of this class — selecting one via
+`get_model()` in `models/__init__.py` — so the contract is whatever those methods are:
+
+    run_config                       runtime knobs merged into the engine's run args
+    model_inputs_ready / instances_ready / copy_model_inputs   input readiness & setup
+    start_containers / stop_containers / run_window            per-window run machinery
+    read_ref_date / model_output_depths / set_output_depths    state / output IO
+    obs_to_sim_col / load_T / clear_member_outputs
+    accumulate_mean / mean_traj_path
+    read_snapshot_T / write_snapshot_T
+
+Adding another model means writing a sibling class with the same surface and
+registering it in `models/__init__.py`; the engines don't change. Once a second model
+exists, extract the shared subset into an ABC — for now it's just Simstrat.
 
 The functions below keep their original signatures (taking the pipeline's `args`/`raw`
 dicts) and are bound onto `Simstrat` as static methods at the bottom.
@@ -32,7 +45,6 @@ import numpy as np
 import pandas as pd
 
 from ..functions import ROOT, GENERAL, resolve_src, verify_args
-from .base import Model
 
 logger = logging.getLogger(__name__)
 
@@ -380,10 +392,10 @@ def write_snapshot_T(member_id, T_new, args):
 
 
 # ---------------------------------------------------------------------------
-# The model: binds the functions above onto the Model interface.
+# The model: binds the functions above onto the Simstrat class.
 # ---------------------------------------------------------------------------
 
-class Simstrat(Model):
+class Simstrat:
     """The Simstrat 1D lake model, run in Docker (eawag/simstrat:<version>)."""
 
     name              = "simstrat"

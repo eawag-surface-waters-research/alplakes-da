@@ -1,11 +1,10 @@
 """Forward-model registry. `main.py -m/--model` (or the arg file's "model" field)
-selects one via `get_model()`; add a model by writing a `Model` subclass module and
+selects one via `get_model()`; add a model by writing a model-class module and
 registering it in `MODELS`."""
 
-from .base import Model
 from .simstrat import Simstrat
 
-# name -> Model subclass
+# name -> model class
 MODELS = {Simstrat.name: Simstrat}
 
 

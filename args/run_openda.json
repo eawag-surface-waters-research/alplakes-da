@@ -2,7 +2,7 @@
     "engine":     "openda",
     "model":      "simstrat",
     "filter":     "EnSR",
-    "openda_bin": "~/openda_3.4.0/bin",
+    "openda_bin": "/mnt/c/Users/toschith/Documents/Work/openda_3.4.0/bin",
 
     "n_members":   20,
     "start_date":  "2025-01-01",
