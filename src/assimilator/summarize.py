@@ -12,9 +12,11 @@ native engines use run/<lake>/, OpenDA its run/openda_<model>_<lake>_<filter>/ d
                                 time,depth,T_mean,T_std  (hourly, full column)
 
   <lake>_<engine>_<label>.json  skill/bias report, scoring the posterior mean
-                                against ALL raw observations in observations/<lake>/temperature.csv
-                                (model interpolated in depth to each obs depth,
-                                matched to the nearest model output time).  The
+                                against the observations in observations/<lake>/temperature.csv
+                                at the model-output depths (obs below the grid bed are
+                                dropped — the same set the engines assimilate; model
+                                interpolated in depth to each obs depth, matched to the
+                                nearest model output time).  The
                                 same reference is used for both engines so the
                                 numbers are directly comparable.  bias = model - obs
                                 (+ = model too warm).  Not a withheld set — both
@@ -23,14 +25,19 @@ native engines use run/<lake>/, OpenDA its run/openda_<model>_<lake>_<filter>/ d
 """
 
 import os
+import sys
 import json
 import logging
 import numpy as np
 import pandas as pd
 from datetime import datetime, timezone
 
-from .functions import ROOT
-from .models.simstrat import SIMSTRAT_REF_YEAR
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))   # put src/ on the path
+from assimilator.functions import (
+    ROOT, load_obs, filter_obs_to_model_depths,
+    load_json, merge_lake_args, resolve_src, resolve_root, resolve_obs_path,
+)
+from assimilator.models.simstrat import SIMSTRAT_REF_YEAR
 
 logger = logging.getLogger(__name__)
 
@@ -93,8 +100,18 @@ def _agg(err, spread):
 
 
 def _score(times, depths, mean, std, obs_csv):
-    """Score posterior mean vs all raw obs; returns (overall, by_depth) or None."""
-    obs = pd.read_csv(obs_csv).dropna(subset=["value"])
+    """Score posterior mean vs the obs at model-output depths; returns (overall, by_depth) or None."""
+    # Score against the SAME obs the engines assimilate (and visualize plots): the centered
+    # hourly mean (load_obs), not the raw samples — so the JSON skill numbers line up with the
+    # plot's pooled RMSE.
+    obs = load_obs(obs_csv).dropna(subset=["value"])
+    if obs.empty:
+        return None
+
+    # Same depth set the engines assimilate: drop obs with no model-output depth (e.g. deeper than
+    # the grid bed). z_out.dat carries the obs-depth superset (main.py step 2b), so every in-grid
+    # obs depth lands on an exact model column.
+    obs = filter_obs_to_model_depths(obs, [abs(float(d)) for d in depths])
     if obs.empty:
         return None
 
@@ -148,7 +165,7 @@ def summarize_run(final_dir, lake, engine, label, member_files, obs_csv=None):
                 "lake": lake, "engine": engine, "filter": label,
                 "n_members": len(member_files),
                 "period": {"start": _r(times[0]), "end": _r(times[-1])},
-                "scored_against": "all raw obs (model interpolated to obs depth, "
+                "scored_against": "obs at model-output depths (model interpolated to obs depth, "
                                   "nearest output time); analysis fit, not withheld",
                 "bias_sign": "model - obs (+ = model too warm)",
                 "n_obs": overall["n"],
@@ -168,3 +185,52 @@ def report_summary(engine, label, member_files, lake, obs_csv, out_dir):
     _, n_mem, T, D = summarize_run(out_dir, lake, engine, label, member_files, obs_csv=obs_csv)
     logger.info(f"[summary] {n_mem} members, {T} steps x {D} depths "
                 f"-> {os.path.relpath(out_dir, ROOT)}/{lake}_{engine}_{label}.csv")
+
+
+# ---------------------------------------------------------------------------
+# CLI — regenerate the summary (.csv + .json) from existing member T_out.dat,
+# without rerunning the assimilation. Same path resolution as the engines.
+# ---------------------------------------------------------------------------
+
+def summarize_from_config(cfg, model_name="simstrat"):
+    """Rebuild the summary for the run described by `cfg` (a flattened run config) by reading the
+    member T_out.dat already on disk. Mirrors the member_files / out_dir each engine uses."""
+    engine    = cfg.get("engine", "python")
+    lake      = cfg["lake"]
+    n_members = cfg["n_members"]
+    obs_csv   = resolve_obs_path(cfg)
+
+    if engine == "python":
+        ensemble_base = resolve_src(cfg["ensemble_base"])
+        results_dir   = cfg["results_dir"]
+        label         = cfg["algorithm"]                       # "EnKF" / "PF"
+        member_files  = [os.path.join(ensemble_base, f"ensemble{i}", results_dir, "T_out.dat")
+                         for i in range(1, n_members + 1)]
+        report_summary("python", label, member_files, lake, obs_csv, ensemble_base)
+    elif engine == "openda":
+        filter_type = cfg.get("filter", "EnKF")
+        default_dir = f"run/openda_{model_name}_{lake}_{filter_type.lower()}"
+        openda_dir  = resolve_root(cfg.get("openda_dir") or default_dir)
+        work_base   = os.path.join(openda_dir, "Results")
+        member_files = [os.path.join(work_base, f"work{i}", "Results", "T_out.dat")
+                        for i in range(1, n_members + 1)]
+        report_summary("openda", filter_type, member_files, lake, obs_csv, openda_dir)
+    else:
+        raise ValueError(f"unknown engine '{engine}'; choose 'python' or 'openda'")
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Regenerate the run summary (.csv + .json) from existing member T_out.dat")
+    parser.add_argument("arg_file", help="Run config JSON (e.g. args/run_enkf.json)")
+    parser.add_argument("--lake", default=None, help="Lake to summarize from the config's \"lakes\" block")
+    parser.add_argument("-m", "--model", default=None, help="Forward model (default: arg file's \"model\", else simstrat)")
+    cli = parser.parse_args()
+
+    logging.basicConfig(level=logging.INFO, format="%(levelname)-8s | %(message)s")
+
+    cfg   = merge_lake_args(load_json(cli.arg_file), lake=cli.lake)
+    model = cli.model or cfg.get("model") or "simstrat"
+    summarize_from_config(cfg, model_name=model)

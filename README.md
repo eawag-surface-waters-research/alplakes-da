@@ -258,6 +258,24 @@ trajectory and diagnostics alongside in `run/<lake>/`. On completion a posterior
 mean + 1σ per time/depth) and a skill/bias report are auto‑written to
 `run/<lake>/<lake>_python_<algo>.{csv,json}`.
 
+The skill report scores the posterior mean against the **same observations the engines assimilate**
+— the centered hourly mean (`load_obs`), restricted to the model‑output depths (obs below the grid
+bed are dropped). So the JSON `overall.rmse` is the count‑weighted *pooled* RMSE over that obs set,
+and lines up with the `pooled` annotation `visualize.py` puts on each RMSE bar.
+
+### Re‑running only the summary
+
+To regenerate the `.csv`/`.json` from member `T_out.dat` already on disk — e.g. after changing the
+scoring — without re‑running the assimilation:
+
+```bash
+python src/assimilator/summarize.py args/run_enkf.json      # python EnKF/PF run
+python src/assimilator/summarize.py args/run_openda.json    # OpenDA run (filter from the config)
+```
+
+It reconstructs the same member paths and output folder each engine uses. Optional `--lake <name>`
+(multi‑lake configs) and `-m/--model` (defaults to the config's `"model"`).
+
 ## Prerequisites
 
 - Python 3 with `numpy`, `pandas`, `geopandas`, `requests`, `tqdm`, `matplotlib`.

@@ -108,6 +108,20 @@ def rmse_by_depth(traj, obs_df, obs_depths):
     return result
 
 
+def pooled_rmse(traj, obs_df, obs_depths):
+    """Single RMSE over all (time, depth) obs pooled together — sqrt(mean(err**2)) across the
+    whole obs set. Matches summarize.py's overall.rmse (and is count-weighted), unlike the
+    unweighted mean of the per-depth RMSEs shown as the bar 'avg'."""
+    errs = []
+    for d in obs_depths:
+        col     = nearest_col(traj, -d)
+        obs_sub = obs_df[obs_df["depth"] == d].set_index("time")["value"]
+        merged  = traj[[col]].join(obs_sub.rename("obs"), how="inner").dropna()
+        if len(merged):
+            errs.append(merged[col].values - merged["obs"].values)
+    return np.sqrt(np.mean(np.concatenate(errs) ** 2)) if errs else np.nan
+
+
 # ── Plots ─────────────────────────────────────────────────────────────────────
 
 def plot_timeseries(entries, obs, obs_depths, lake_label, year, spreads=None):
@@ -188,22 +202,25 @@ def plot_rmse_bar(entries, obs, obs_depths, lake_label, year):
                     color="white" if d_idx > len(obs_depths) / 2 else "black")
         bottoms += vals
 
-    ref_total = totals.get("ref")
-    n_depths  = len(obs_depths)
+    pooled     = {lbl: pooled_rmse(traj, obs, obs_depths) for lbl, traj in entries}
+    ref_pooled = pooled.get("ref")
     for xi, lbl in enumerate(labels):
         total = bottoms[xi]
-        avg   = total / n_depths                              # mean RMSE across the depths
+        p     = pooled.get(lbl, np.nan)                       # count-weighted pooled RMSE (matches JSON)
         ax.bar(xi, total, bottom=0, color="none", edgecolor=COLORS.get(lbl, "k"), lw=2, width=0.6)
-        if ref_total and lbl != "ref":
-            gain = (total - ref_total) / ref_total * 100      # negative = gain
-            ann  = f"avg {avg:.3f}°C\nΣ {total:.3f}°C  {gain:+.1f}%"
+        if np.isnan(p):
+            continue
+        if ref_pooled and lbl != "ref":
+            pct = (p - ref_pooled) / ref_pooled * 100         # negative = improvement vs the free run
+            ann = f"pooled {p:.3f}°C  {pct:+.1f}%"
         else:
-            ann = f"avg {avg:.3f}°C\nΣ {total:.3f}°C"
-        ax.text(xi, total + 0.01 * (ref_total or total), ann, ha="center", va="bottom", fontsize=9)
+            ann = f"pooled {p:.3f}°C"
+        ax.text(xi, total + 0.15, ann, ha="center", va="bottom", fontsize=9)
 
     ax.set_xticks(x)
     ax.set_xticklabels(labels)
     ax.set_ylabel("RMSE (°C)")
+    ax.set_ylim(0, 18)                                        # headroom for the pooled-RMSE annotation line
     ax.set_title(f"Annual RMSE — {lake_label}" + (f" {year}" if year else ""))
     handles, lbls = ax.get_legend_handles_labels()
     ax.legend(handles[::-1], lbls[::-1], fontsize=8, loc="upper left",
@@ -251,12 +268,10 @@ def visualize(args, save=False):
         raise RuntimeError("No trajectory data found — has the assimilation been run?")
 
     obs = load_obs(obs_path)
-    # For plotting, snap the shallowest sensor to the surface (0 m) so it still shows as a 0 m
-    # reference bar/series against the model surface output. NOTE: the engines do NOT assimilate it
-    # (it has no exact model-output depth and is dropped) — this is a diagnostic comparison only.
-    # All other depths must still match a model-output depth.
-    min_obs_depth = float(obs["depth"].min())
-    obs["depth"]  = obs["depth"].apply(lambda d: 0.0 if d == min_obs_depth else d)
+    # z_out.dat is overwritten per run with the obs-depth superset (main.py step 2b), so the model
+    # now outputs at every obs depth within the grid — including the shallowest sensor. No snapping
+    # needed; just drop any obs deeper than the grid bed (no model column), matching the set the
+    # engines assimilate.
     obs = filter_obs_to_model_depths(obs, model_obj.model_output_depths(ensemble_base))
     if year is not None:
         obs = obs[obs["time"].dt.year == year]
