@@ -142,6 +142,8 @@ if __name__ == "__main__":
     parser.add_argument("--no-progress", action="store_true",
                         help="Disable the progress bar (auto-disabled when stderr is not a TTY). "
                              "Per-step detail still goes to the log file either way")
+    parser.add_argument("--max-workers", type=int, default=None,
+                        help="Cap concurrent members (both engines). Default: min(CPU cores, members)")
     cli = parser.parse_args()
 
     os.makedirs(os.path.join(ROOT, "logs"), exist_ok=True)
@@ -167,6 +169,10 @@ if __name__ == "__main__":
     # Progress bar on/off resolved once here (CLI --no-progress > config "progress" >
     # TTY auto-detect) and carried in cfg so both engines read the same flag.
     cfg["progress"] = resolve_progress(cfg, cli.no_progress)
+    # Parallelism cap: CLI --max-workers overrides the config key; both engines resolve the
+    # actual worker count (auto = min(cpu, members)) from cfg via functions.resolve_max_workers.
+    if cli.max_workers is not None:
+        cfg["max_workers"] = cli.max_workers
     # Model selection: CLI -m wins, else the arg file's "model" field, else simstrat.
     model = cli.model or cfg.get("model") or "simstrat"
     run(cfg,

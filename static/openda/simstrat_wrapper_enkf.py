@@ -50,6 +50,15 @@ _ROOT_DIR   = os.path.dirname(os.path.dirname(_OPENDA_DIR))   # run/openda_simst
 sys.path.insert(0, os.path.join(_ROOT_DIR, "src"))
 from assimilator.models.simstrat import read_snapshot, write_snapshot
 
+# --- Shared persistent Simstrat container (PERF) ---------------------------
+# run_openda starts ONE long-lived sleeping container for the whole run (mounting openda_dir at
+# mount_base) and we `docker exec` Simstrat into it per step — instead of a fresh `docker run --rm`
+# every step (container creation dominated each step's wall time). The container name, mount_base
+# and binary come from the generated template/model.json (single source of truth: models.py /
+# run_openda); this work dir maps to <mount_base>/<relpath-from-openda_dir> inside the mount. We
+# call the binary directly rather than the image /entrypoint.sh, whose hardcoded `cd /simstrat/run`
+# (= the mount root) would ignore -w — same single-container model as the native engine.
+
 # ---------------------------------------------------------------------------
 # IC depth levels (kept for legacy size detection only)
 # ---------------------------------------------------------------------------
@@ -206,22 +215,32 @@ if __name__ == '__main__':
     # ------------------------------------------------------------------
     # 5. Run Simstrat
     # ------------------------------------------------------------------
-    # Image comes from the generated template/model.json (single source of truth:
-    # src/models.py, written by the openda adapter), with a fallback for standalone runs.
+    # The container/mount_base/binary/image come from the generated template/model.json (single
+    # source of truth: models.py, written by run_openda), with fallbacks for standalone runs.
     _model_file = os.path.join(_OPENDA_DIR, "stochModel", "template", "model.json")
     try:
         with open(_model_file) as f:
-            SIMSTRAT_IMAGE = json.load(f).get("image", "eawag/simstrat:3.0.4")
+            _model_cfg = json.load(f)
     except FileNotFoundError:
-        SIMSTRAT_IMAGE = "eawag/simstrat:3.0.4"
+        _model_cfg = {}
+    SIMSTRAT_IMAGE = _model_cfg.get("image", "eawag/simstrat:3.0.4")
+    container      = _model_cfg.get("container")
+    mount_base     = _model_cfg.get("mount_base", "/simstrat/run")
+    binary         = _model_cfg.get("binary", "/simstrat/build/simstrat")
     work_dir = os.path.abspath(os.getcwd()).replace("\\", "/")
 
-    logger.info("Running Simstrat via Docker image %s in %s", SIMSTRAT_IMAGE, work_dir)
-    cmd = (
-        f"docker run --rm "
-        f"-v {work_dir}:/simstrat/run "
-        f"{SIMSTRAT_IMAGE} {args.config}"
-    )
+    if container:
+        # Exec into the shared run-wide container (started by run_openda), in this work dir's path
+        # inside the mount: run_openda mounts openda_dir at mount_base, so the container path is
+        # mount_base + the work dir relative to openda_dir. Binary called directly (-w selects the dir).
+        rel = os.path.relpath(work_dir, _OPENDA_DIR).replace("\\", "/")
+        container_workdir = f"{mount_base}/{rel}"
+        logger.info("Running Simstrat in container %s -w %s", container, container_workdir)
+        cmd = f"docker exec -w {container_workdir} {container} {binary} {args.config}"
+    else:
+        # Standalone fallback (no run_openda-managed container): one-off container per call.
+        logger.info("Running Simstrat via Docker image %s in %s", SIMSTRAT_IMAGE, work_dir)
+        cmd = f"docker run --rm -v {work_dir}:/simstrat/run {SIMSTRAT_IMAGE} {args.config}"
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     if result.stdout:
         logger.debug("stdout: %s", result.stdout)
@@ -234,7 +253,14 @@ if __name__ == '__main__':
     # 6. Read T_out.dat and write predictor CSV files
     # ------------------------------------------------------------------
     t_out_file = os.path.join(output_dir, 'T_out.dat')
+    # TEMP[phase5-probe] — time the full (growing) T_out.dat read to decide if Phase 5 (read only the
+    # tail instead of the whole file each step) is worth it. Grep "[PHASE5-PROBE]" in the OpenDA log
+    # after a run: if read-s grows over the run / is a big fraction of the [TIMING] step-s, do Phase 5;
+    # if it stays small, drop Phase 5. Remove this block when decided (see refactoring.md Phase 5).
+    _t_read = time.perf_counter()
     times, depths, T_rows = read_t_out(t_out_file)
+    logger.info("[PHASE5-PROBE] read T_out.dat: %d rows, %.1f MB, %.2f s",
+                len(times), os.path.getsize(t_out_file) / 1e6, time.perf_counter() - _t_read)
 
     # Depths to extract come from the generated obs_depths.json (single source of
     # truth shared with the model config + formatters); fall back to the legacy set.

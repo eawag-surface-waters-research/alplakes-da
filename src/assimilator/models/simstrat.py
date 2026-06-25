@@ -244,43 +244,39 @@ def load_T(ensemble_dir, args):
 # Per-window run machinery (Docker container lifecycle + Settings.par dates)
 # ---------------------------------------------------------------------------
 
-def _container_name(i, args):
-    return f"simstrat_{args['algorithm'].lower()}_{i}"
+def _container_name(args):
+    """ONE persistent container per run (was one per member). Named by algorithm + lake so
+    concurrent runs of different lakes/algorithms don't clash."""
+    return f"simstrat_{args['algorithm'].lower()}_{args['lake']}"
 
 
 def start_containers(args, max_workers=None):
-    def _start_one(i):
-        name  = _container_name(i, args)
-        mount = os.path.join(args["ensemble_base"], f"ensemble{i}").replace("\\", "/")
-        subprocess.run(f"docker rm -f {name}", shell=True, capture_output=True)
-        cmd = (
-            f"docker run -d --name {name} "
-            f"-v {mount}:{args['simstrat_workdir']} "
-            f"--entrypoint sleep "
-            f"eawag/simstrat:{args['simstrat_version']} infinity"
-        )
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-        if result.returncode != 0:
-            logger.warning(f"[ensemble{i:02d}] container start failed: {result.stderr.strip()}")
-        return i, result.returncode
-
-    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as pool:
-        results = list(pool.map(_start_one, args["member_ids"]))
-    failed = [i for i, code in results if code != 0]
-    if failed:
-        raise RuntimeError(f"Containers failed to start for members: {failed}")
-    logger.info(f"Started {len(args['member_ids'])} persistent containers.")
+    """Start ONE persistent sleeping container for the whole run, mounting ensemble_base at the
+    workdir base. Each member i is then run via `docker exec -w <workdir>/ensemble{i}` against the
+    Simstrat binary directly (see run_one_window). Collapsed from one-container-per-member: all
+    Simstrat paths are workdir-relative, so a single mount of the parent serves every member — far
+    less startup/footprint. `max_workers` is unused here now (single container); per-member
+    concurrency is the exec ThreadPool in run_window_parallel."""
+    name  = _container_name(args)
+    mount = args["ensemble_base"].replace("\\", "/")
+    subprocess.run(f"docker rm -f {name}", shell=True, capture_output=True)   # drop a stale one
+    cmd = (
+        f"docker run -d --name {name} "
+        f"-v {mount}:{args['simstrat_workdir']} "
+        f"--entrypoint sleep "
+        f"eawag/simstrat:{args['simstrat_version']} infinity"
+    )
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise RuntimeError(f"container start failed ({name}): {result.stderr.strip()}")
+    logger.info(f"Started 1 persistent container ({name}) for {len(args['member_ids'])} members.")
 
 
 def stop_containers(args):
-    def _stop_one(i):
-        name = _container_name(i, args)
-        subprocess.run(f"docker stop {name}", shell=True, capture_output=True)
-        subprocess.run(f"docker rm   {name}", shell=True, capture_output=True)
-
-    with concurrent.futures.ThreadPoolExecutor() as pool:
-        list(pool.map(_stop_one, args["member_ids"]))
-    logger.info("Containers stopped and removed.")
+    name = _container_name(args)
+    subprocess.run(f"docker stop {name}", shell=True, capture_output=True)
+    subprocess.run(f"docker rm   {name}", shell=True, capture_output=True)
+    logger.info(f"Container stopped and removed ({name}).")
 
 
 def run_one_window(i, window_start, window_end, args):
@@ -304,8 +300,13 @@ def run_one_window(i, window_start, window_end, args):
         window_start, window_end, args["ref_date"],
     )
 
-    name   = _container_name(i, args)
-    cmd    = f"docker exec -w {args['simstrat_workdir']} {name} {args['simstrat_binary']} {args['par_file']}"
+    name   = _container_name(args)
+    # Exec the Simstrat binary directly in the member's subdir (the shared container mounts the
+    # parent at simstrat_workdir). We bypass the image's /entrypoint.sh because it hardcodes
+    # `cd /simstrat/run` (the mount root = ensemble_base), which would ignore -w; the entrypoint
+    # otherwise only calls this same binary, so -w + the binary is equivalent and per-member-correct.
+    member_workdir = f"{args['simstrat_workdir']}/ensemble{i}"
+    cmd    = f"docker exec -w {member_workdir} {name} {args['simstrat_binary']} {args['par_file']}"
     result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
     if result.returncode != 0:
         logger.warning(f"[ensemble{i:02d}] FAILED  {window_start.date()}\n{result.stderr[-400:]}")
@@ -409,8 +410,10 @@ class Simstrat:
     name              = "simstrat"
     image             = "eawag/simstrat"
     version           = "3.0.4"
-    binary            = "/entrypoint.sh"
-    workdir           = "/simstrat/run"
+    binary            = "/simstrat/build/simstrat"   # the executable directly (image /entrypoint.sh
+                                                     # is just `cd /simstrat/run; /simstrat/build/simstrat "$@"`;
+                                                     # we call the binary so one container can serve all members via -w)
+    workdir           = "/simstrat/run"              # ensemble_base mount point; members at workdir/ensemble{i}
     snapshot_filename = "simulation-snapshot.dat"
 
     def run_config(self):

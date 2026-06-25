@@ -59,7 +59,8 @@ import time
 import subprocess
 
 from assimilator.functions import (verify_args, resolve_src, resolve_root, resolve_obs_path,
-                                   merge_lake_args, make_progress, log_run_header, log_run_footer)
+                                   merge_lake_args, make_progress, log_run_header, log_run_footer,
+                                   resolve_max_workers)
 from assimilator.models.simstrat import read_snapshot, SIMSTRAT_REF_YEAR
 from assimilator.summarize import report_summary
 from .config import FILTERS, render as render_oda
@@ -342,6 +343,28 @@ def _reformat_forecast(line):
             f"(sim-day {m.group(1)}->{m.group(2)})")
 
 
+def _start_run_container(name, openda_dir, image, mount_base):
+    """Start ONE persistent sleeping container for the whole OpenDA run, mounting openda_dir at
+    `mount_base`. The wrapper then execs Simstrat into it per instance per step (instead of a fresh
+    `docker run --rm` every step) — the same single-container model the native engine uses. OpenDA
+    creates the Results/work{N} dirs at runtime, but they appear inside this bind mount of the
+    parent, so they need not exist when the container starts. Clears a stale same-named container."""
+    mount = openda_dir.replace("\\", "/")
+    subprocess.run(f"docker rm -f {name}", shell=True, capture_output=True)
+    cmd = (f"docker run -d --name {name} -v {mount}:{mount_base} "
+           f"--entrypoint sleep {image} infinity")
+    res = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    if res.returncode != 0:
+        raise RuntimeError(f"failed to start Simstrat container {name}: {res.stderr.strip()}")
+    logger.info(f"      started 1 persistent Simstrat container ({name})")
+
+
+def _stop_run_container(name):
+    subprocess.run(f"docker stop {name}", shell=True, capture_output=True)
+    subprocess.run(f"docker rm   {name}", shell=True, capture_output=True)
+    logger.info(f"      removed persistent Simstrat container ({name})")
+
+
 def _launch_oda_with_progress(oda_exe, oda_file, openda_dir, env, total, enabled):
     """Launch oda_run.sh (non-blocking) and drive a progress bar by tailing
     openda_logfile.txt for "Forecast from" lines. `total` is the expected step count
@@ -457,25 +480,34 @@ def run_openda(cfg, ensemble_raw, ensemble_base, n_members, skip_oda=False,
     logger.info(f"[4/5] adapt framework -> {os.path.relpath(openda_dir, ROOT)}")
     obs_depths, n_analysis = adapt({**ensemble_raw, "openda_dir": openda_dir})
 
-    # Bridge the model's Docker image to the (separate-process) wrapper via a generated
-    # file. Single source of truth: models.py. Version-only base "eawag/simstrat" mirrors
-    # functions.py; the wrapper falls back to the same default if the file is absent.
-    if model_cfg:
-        image = f"eawag/simstrat:{model_cfg.get('simstrat_version', '3.0.4')}"
-        model_json = os.path.join(openda_dir, "stochModel", "template", "model.json")
-        with open(model_json, "w") as f:
-            json.dump({"image": image}, f)
-        logger.info(f"      wrote {os.path.relpath(model_json, openda_dir)} (image={image})")
+    # Bridge the model image + the shared-container contract to the (separate-process) wrapper via a
+    # generated file (single source of truth: models.py). The wrapper execs Simstrat into ONE
+    # persistent container that run_openda starts below (mounting openda_dir at mount_base); it maps
+    # its work dir to <mount_base>/<relpath-from-openda_dir> and runs `binary` there — bypassing the
+    # image's /entrypoint.sh (hardcoded `cd /simstrat/run`), exactly as the native engine does.
+    image      = f"eawag/simstrat:{(model_cfg or {}).get('simstrat_version', '3.0.4')}"
+    binary     = (model_cfg or {}).get("simstrat_binary", "/simstrat/build/simstrat")
+    container  = os.path.basename(openda_dir)
+    mount_base = "/simstrat/run"
+    model_json = os.path.join(openda_dir, "stochModel", "template", "model.json")
+    with open(model_json, "w") as f:
+        json.dump({"image": image, "container": container,
+                   "mount_base": mount_base, "binary": binary}, f)
+    logger.info(f"      wrote {os.path.relpath(model_json, openda_dir)} "
+                f"(image={image}, container={container})")
 
     # --- 5. render filter config + run OpenDA ------------------------------
     # Note: obs error std comes from the run config's "sigma_obs" (the same key the native
     # EnKF reads), so the two engines can't silently diverge. (config.py's internal param is still
     # named obs_std.)
+    # OpenDA runs n_members + 1 instances (the main/control model + every member), so the cap is
+    # n_members+1 — matching the original full-parallel maxThreads. (auto = min(cpu, n_members+1).)
+    max_threads = resolve_max_workers(cfg, n_members + 1)
     oda_file = render_oda(openda_dir, filter_type, n_members, obs_depths,
                           ensemble_raw["start_date"], ensemble_raw["end_date"],
-                          obs_std=ensemble_raw.get("sigma_obs", 0.5))
+                          obs_std=ensemble_raw.get("sigma_obs", 0.5), max_threads=max_threads)
     logger.info(f"[5/5] rendered {oda_file} + chain for filter={filter_type} "
-                f"(Results/work0..N, {len(obs_depths)} obs depths)")
+                f"(Results/work0..N, {len(obs_depths)} obs depths, maxThreads={max_threads})")
     # OpenDA launch: build the full OpenDA environment in-process from cfg["openda_bin"] (the dir
     # holding the OpenDA binaries, e.g. .../openda_3.4.0/bin) so it does NOT need sourcing in the
     # shell first. Everything is derived from that one path — OPENDADIR/OPENDALIB, the bundled JRE
@@ -507,6 +539,7 @@ def run_openda(cfg, ensemble_raw, ensemble_base, n_members, skip_oda=False,
     # Results/ holds both the per-member work dirs (Results/work0..N) and the PythonResultWriter
     # output; create it up front so OpenDA's result writer has somewhere to write.
     os.makedirs(os.path.join(openda_dir, "Results"), exist_ok=True)
+    _start_run_container(container, openda_dir, image, mount_base)
     logger.info(f"      {oda_exe} {oda_file}  (cwd={os.path.relpath(openda_dir, ROOT)})")
     # Progress bar driven by tailing the logfile (see _launch_oda_with_progress). Same on/off flag
     # as the native engines (cfg["progress"], resolved in main.py). total = number of analysis
@@ -521,6 +554,10 @@ def run_openda(cfg, ensemble_raw, ensemble_base, n_members, skip_oda=False,
         raise RuntimeError(
             "oda_run.sh not found — set \"openda_bin\" in the arg file to the OpenDA bin dir, "
             "or source the OpenDA environment so oda_run.sh is on PATH")
+    finally:
+        # Remove the shared persistent Simstrat container (the wrapper exec'd into it instead of
+        # docker-run-per-step). Runs on success or failure.
+        _stop_run_container(container)
     elapsed = time.perf_counter() - t0
 
     # Tidy the run dir: OpenDA writes its run log into the .oda cwd — move it into log/.

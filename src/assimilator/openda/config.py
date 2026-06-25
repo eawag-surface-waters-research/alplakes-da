@@ -317,13 +317,17 @@ def _write(path, text):
 
 
 def render(openda_dir, filter_type, n_members, obs_depths, start_date, end_date,
-           obs_std=DEFAULT_OBS_STD, results_subdir="Results"):
+           obs_std=DEFAULT_OBS_STD, results_subdir="Results", max_threads=None):
     """Render the full lake-specific OpenDA config for `filter_type` into `openda_dir`.
 
     `obs_depths` is the list of assimilated depths (e.g. auto-detected from the obs
     CSV); it drives the model exchangeItems, the stochModel predictors, both
     timeSeriesFormatter files and the wrapper's depth list.  Returns the .oda
     filename (relative to openda_dir) to hand to oda_run.sh.
+
+    `max_threads` caps OpenDA's concurrent model instances (the parallelisation knob); None =
+    the default n_members+1 (main + every member run in parallel). Lower it to throttle CPU/IO
+    contention or memory on a single machine.
     """
     if filter_type not in FILTERS:
         raise ValueError(f"unknown filter '{filter_type}'; choose from {sorted(FILTERS)}")
@@ -350,7 +354,7 @@ def render(openda_dir, filter_type, n_members, obs_depths, start_date, end_date,
         filter=filter_type, algo_class=spec["class"], algo_config=algo_file,
         results_dir=results_subdir, results_file=results_filename(filter_type),
     )
-    parallel   = _PARALLEL.format(max_threads=n_members + 1)
+    parallel   = _PARALLEL.format(max_threads=max_threads if max_threads else n_members + 1)
     stochmodel = _STOCHMODEL.format(predictors=_predictor_lines(depths),
                                     stoch_restart_info=_STOCH_RESTART_INFO if spec.get("needs_restart") else "")
     # instanceDir: relative is fine for the Kalman filters.  PF additionally uses the INSTANCE_DIR

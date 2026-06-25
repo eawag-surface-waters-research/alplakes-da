@@ -75,6 +75,22 @@ def make_progress(total, enabled, desc=None):
                 unit="day", dynamic_ncols=True, leave=True)
 
 
+def resolve_max_workers(cfg, n_members):
+    """How many ensemble members to run concurrently (the parallelisation knob, shared by both
+    engines: the native ThreadPool and OpenDA's maxThreads). DEFAULT is full concurrency (all at
+    once) — matching the original behavior. The workload is IO-bound (Simstrat in Docker over a
+    slow bind mount), so high concurrency hides IO latency and capping to CPU cores measurably HURT
+    it; so 'max_workers' (config key or --max-workers) is a knob to RESTRICT, not the default. An
+    explicit value is clamped to [1, n_members] (n_members = the cap the caller passes: members for
+    native, members+1 for OpenDA's main+members)."""
+    cpu       = os.cpu_count() or 1
+    requested = cfg.get("max_workers")
+    workers   = max(1, min(int(requested), n_members)) if requested else n_members
+    src       = f"cfg max_workers={requested}" if requested else "default=full"
+    logger.info(f"parallelism: {workers} concurrent (cpu={cpu}, cap={n_members}, {src})")
+    return workers
+
+
 def log_obs_summary(obs, obs_path, label="Obs"):
     """Log the loaded + depth-filtered observation set (count, depths, time span, source).
     Setup-time narrative shared by the native engines, so the log shows exactly what will be
@@ -235,6 +251,7 @@ def build_python_run_args(run_raw, ensemble_raw, ensemble_base, n_members, model
     args["member_ids"]    = list(range(1, n_members + 1))
 
     args["obs_path"] = resolve_obs_path(args)   # 'obs_file' override, else observations/<lake>/temperature.csv
+    args["max_workers"] = resolve_max_workers(args, n_members)   # concurrent members (auto = min(cpu, members))
     for k, v in model.run_config().items():   # model's Docker/runtime defaults (fallback)
         args.setdefault(k, v)
 

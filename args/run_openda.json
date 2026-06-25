@@ -1,10 +1,11 @@
 {
     "engine":     "openda",
     "model":      "simstrat",
-    "filter":     "EnSR",
+    "filter":     "DEnKF",
     "openda_bin": "/mnt/c/Users/toschith/Documents/Work/openda_3.4.0/bin",
 
     "n_members":   20,
+    "max_workers": 21,
     "start_date":  "2025-01-01",
     "end_date":    "2025-12-31",
     "sigma_obs":   0.5,
