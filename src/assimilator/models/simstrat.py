@@ -12,7 +12,7 @@ The engines (`algorithms/enkf.py`, `algorithms/pf.py`) and the orchestrator
 `get_model()` in `models/__init__.py` — so the contract is whatever those methods are:
 
     run_config                       runtime knobs merged into the engine's run args
-    model_inputs_ready / instances_ready / copy_model_inputs   input readiness & setup
+    model_inputs_ready / warmup_snapshot / instances_ready / copy_model_inputs   input readiness & setup
     start_containers / stop_containers / run_window            per-window run machinery
     read_ref_date / model_output_depths / set_output_depths    state / output IO
     obs_to_sim_col / load_T / clear_member_outputs
@@ -62,6 +62,14 @@ def model_inputs_ready(model_inputs):
     """True if a dated simulation-snapshot_*.dat and Forcing.dat exist (step 1 precondition)."""
     return (bool(glob.glob(os.path.join(model_inputs, "simulation-snapshot_*.dat")))
             and os.path.isfile(os.path.join(model_inputs, "Forcing.dat")))
+
+
+def warmup_snapshot(model_inputs):
+    """The dated warm-start snapshot the members restart from — the latest
+    simulation-snapshot_*.dat (same latest-wins pick as the per-member seeding), or None
+    if absent. Logged by main.py step 1 so the run's starting state is named in the log."""
+    snaps = sorted(glob.glob(os.path.join(model_inputs, "simulation-snapshot_*.dat")))
+    return snaps[-1] if snaps else None
 
 
 def instances_ready(ensemble_base, n_members):
@@ -417,6 +425,7 @@ class Simstrat:
 
     # input readiness / setup
     model_inputs_ready = staticmethod(model_inputs_ready)
+    warmup_snapshot       = staticmethod(warmup_snapshot)
     instances_ready       = staticmethod(instances_ready)
     copy_model_inputs  = staticmethod(copy_model_inputs)
     # per-window run machinery

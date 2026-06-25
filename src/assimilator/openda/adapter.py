@@ -45,18 +45,21 @@ import glob
 import json
 import shutil
 import logging
+import re
 import argparse
 from collections import defaultdict
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timezone, timedelta
 
 # this file lives at src/assimilator/openda/adapter.py
 SRC_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # src/
 ROOT    = os.path.dirname(SRC_DIR)                                                       # repo root
 sys.path.insert(0, SRC_DIR)
 
+import time
 import subprocess
 
-from assimilator.functions import verify_args, resolve_src, resolve_root, resolve_obs_path, merge_lake_args
+from assimilator.functions import (verify_args, resolve_src, resolve_root, resolve_obs_path,
+                                   merge_lake_args, make_progress, log_run_header, log_run_footer)
 from assimilator.models.simstrat import read_snapshot, SIMSTRAT_REF_YEAR
 from assimilator.summarize import report_summary
 from .config import FILTERS, render as render_oda
@@ -192,7 +195,14 @@ def _build_observations(raw, openda_dir, model_inputs):
                 s, c = records[day_str]
                 f.write(f"{_noon_simstrat_day(day_str, ref_date):.6f},{s / c:.6f}\n")
     logger.info(f"  wrote {len(depths)} depth files -> {os.path.relpath(stoch_dir, ROOT)}")
-    return depths
+
+    # Distinct analysis (noon-obs) times across the kept depths = how many forecast/analysis
+    # steps OpenDA will run. Drives the progress-bar total so the bar tracks the real step count
+    # for ANY cadence (daily, sub-daily, or sparse obs), not just calendar days.
+    analysis_days = set()
+    for d in depths:
+        analysis_days.update(acc[d])
+    return depths, len(analysis_days)
 
 
 def adapt(raw):
@@ -287,15 +297,134 @@ def adapt(raw):
     #    (noon-snapshot per depth; formerly prepare_real_obs.py).  Returns the
     #    auto-detected depth list for the config generator to wire everywhere.
     # ------------------------------------------------------------------
-    obs_depths = _build_observations(raw, openda_dir, model_inputs)
+    obs_depths, n_analysis = _build_observations(raw, openda_dir, model_inputs)
 
     logger.info("[adapter] done.")
-    return obs_depths
+    return obs_depths, n_analysis
 
 
 # ---------------------------------------------------------------------------
 # End-to-end OpenDA run (adapt -> render config -> launch oda_run.sh -> summarise)
 # ---------------------------------------------------------------------------
+
+# OpenDA writes one "Forecast from <t0> to <t1>" line per analysis step. We can't read these
+# from the subprocess stdout pipe: oda_run.sh runs java with `> openda_logfile.txt 2>&1`, so all
+# of OpenDA's output is redirected into that file, not the pipe. So we tail the logfile as it
+# grows and advance one bar per "Forecast from" line — the file is the only place they appear.
+#
+# While tailing we also lift a handful of milestone lines into the unified pipeline log so the
+# OpenDA run reads like the native one (the rest of the ~300k-line logfile stays only in
+# log/openda_logfile.txt). Tiers extracted:
+#   A header (once, file_only): version, algorithm className (filter), localization, instance count
+#   B per-step (file_only):     the "Forecast from" line (also drives the bar)
+#   C failures (WARNING, loud):  "Simstrat finished (exit N)" with N != 0
+#   D footer (file_only):       "Application Done"
+# Deliberately NOT lifted (would flood): "Written T_*.csv" (~115k) and the per-member-per-step
+# wrapper lines ([TIMING]/[STATE]/[RESTART]/"Running Simstrat via Docker", ~7.7k each).
+_FORECAST_MARK = b"Forecast from"
+_FORECAST_DAYS = re.compile(r"\(([\d.]+)\s*-+>\s*([\d.]+)\)")   # the "(A-->B)" Simstrat day span
+
+
+def _reformat_forecast(line):
+    """OpenDA prints the Forecast line as '... <ts>UTC to <ts>UTC (A-->B)', but the <ts>UTC strings
+    render the Simstrat day number against the WRONG epoch (the MJD epoch 1858-11-17, not the
+    Simstrat reference year), giving nonsensical ~1902 dates. The '(A-->B)' Simstrat day numbers ARE
+    correct (the same convention summarize/_score use), so convert THOSE to real calendar dates and
+    drop the bogus UTC — and the per-step line then shows the same dates as the native engines.
+    Falls back to the original line if the day span can't be parsed."""
+    m = _FORECAST_DAYS.search(line)
+    if not m:
+        return line
+    epoch = datetime(SIMSTRAT_REF_YEAR, 1, 1)
+    t0 = epoch + timedelta(days=float(m.group(1)))
+    t1 = epoch + timedelta(days=float(m.group(2)))
+    return (f"Forecast {t0:%Y-%m-%d %H:%M} -> {t1:%Y-%m-%d %H:%M} "
+            f"(sim-day {m.group(1)}->{m.group(2)})")
+
+
+def _launch_oda_with_progress(oda_exe, oda_file, openda_dir, env, total, enabled):
+    """Launch oda_run.sh (non-blocking) and drive a progress bar by tailing
+    openda_logfile.txt for "Forecast from" lines. `total` is the expected step count
+    from the run dates; tqdm tolerates overflow if OpenDA's half-day spin-up/tail
+    windows nudge the count past it. Raises CalledProcessError on a non-zero exit
+    (mirroring the old subprocess.run(check=True))."""
+    logfile = os.path.join(openda_dir, "openda_logfile.txt")
+    if os.path.exists(logfile):
+        os.remove(logfile)            # drop a stale logfile from a prior aborted run
+
+    proc = subprocess.Popen([oda_exe, oda_file], cwd=openda_dir, env=env)
+    bar  = make_progress(total, enabled, desc="OpenDA")
+    pos       = 0                     # byte offset already consumed from the logfile
+    instances = 0                     # count of "Creating model instance" (members initialized)
+    pending   = None                  # the current step's Forecast line, awaiting its member tally
+    step_ok = step_fail = 0           # Simstrat exits seen since `pending` (this step's instances)
+
+    # The instances run AFTER their step's Forecast line and BEFORE the next one, so a step's
+    # member tally is only complete when the next Forecast (or "Application Done") arrives. We hold
+    # the Forecast line in `pending` and emit it annotated with instances_ok once the tally closes —
+    # the OpenDA counterpart to the native per-step "n_updated" (symmetry-2). Per-step timing is
+    # deliberately NOT parsed: the wrapper's "[TIMING]" lines are per-member compute time, not step
+    # wall-time (members may overlap), so summing/maxing them would mislead; total time is in the
+    # footer instead.
+    def _flush_pending():
+        nonlocal pending, step_ok, step_fail
+        if pending is None:
+            return
+        n = step_ok + step_fail
+        tally = f"instances={step_ok}" + (f"/{n} ({step_fail} failed)" if step_fail else "")
+        logger.info(f"{pending}  {tally}", extra={"file_only": True})   # per-step record -> logs/
+        pending, step_ok, step_fail = None, 0, 0
+
+    try:
+        while True:
+            done = proc.poll() is not None
+            if os.path.exists(logfile):
+                with open(logfile, "rb") as fh:
+                    fh.seek(pos)
+                    data = fh.read()
+                nl = data.rfind(b"\n")    # process only up to the last complete line so a
+                if nl != -1:              # marker can't be split across two reads
+                    complete = data[:nl + 1]
+                    pos     += len(complete)
+                    for raw_line in complete.split(b"\n"):
+                        if _FORECAST_MARK in raw_line:
+                            bar.update(1)
+                            _flush_pending()              # close out the previous step's tally
+                            pending = _reformat_forecast(raw_line.decode("utf-8", "replace").strip())
+                        elif b"Simstrat finished (exit 0)" in raw_line:
+                            step_ok += 1                  # this step's member ran OK
+                        elif b"Simstrat finished (exit" in raw_line:   # exit 0 handled above -> non-zero
+                            step_fail += 1
+                            # Tier C: a non-zero Simstrat exit — surface LOUDLY (console + file). A
+                            # failed member otherwise hides in the 300k-line log while OpenDA still
+                            # prints "Application Done" (this is how the §8 CRLF bug went unnoticed).
+                            logger.warning("OpenDA member run failed: "
+                                           + raw_line.decode("utf-8", "replace").strip())
+                        elif b"Creating model instance" in raw_line:
+                            instances += 1                # Tier A: count members initialized
+                        elif b"Application initializing finished" in raw_line:
+                            logger.info(f"OpenDA: initialized ({instances} model instances)",
+                                        extra={"file_only": True})
+                        elif (b"OpenDA version" in raw_line or b"className:" in raw_line
+                              or b"Selected localization method" in raw_line):
+                            logger.info("OpenDA: " + raw_line.decode("utf-8", "replace").strip(),
+                                        extra={"file_only": True})   # Tier A: run provenance/config
+                        elif b"Application Done" in raw_line:
+                            _flush_pending()              # close out the final step
+                            logger.info("OpenDA: application done", extra={"file_only": True})  # Tier D
+            if done:
+                break
+            # Java flushes the logfile on its own cadence, so the bar advances in
+            # bursts rather than perfectly smoothly — a buffering artefact, not a stall.
+            time.sleep(0.5)
+        _flush_pending()                  # emit the last step if "Application Done" never appeared
+    finally:
+        bar.close()
+
+    if proc.returncode != 0:
+        raise subprocess.CalledProcessError(proc.returncode, [oda_exe, oda_file])
+    return proc.returncode
+
 
 def run_openda(cfg, ensemble_raw, ensemble_base, n_members, skip_oda=False,
                model_cfg=None, model_name="simstrat"):
@@ -319,13 +448,14 @@ def run_openda(cfg, ensemble_raw, ensemble_base, n_members, skip_oda=False,
     filter_type = cfg.get("filter", "EnKF")
     if filter_type not in FILTERS:
         raise ValueError(f"unknown filter '{filter_type}'; choose from {sorted(FILTERS)}")
+    log_run_header(cfg)
     default_dir = f"run/openda_{model_name}_{ensemble_raw['lake']}_{filter_type.lower()}"
     openda_dir  = resolve_root(cfg.get("openda_dir") or default_dir)
 
     # --- 4. adapter (always): sync inputs/forcings/warmup + build observations,
     #         returning the auto-detected obs depth list for the render below ----
     logger.info(f"[4/5] adapt framework -> {os.path.relpath(openda_dir, ROOT)}")
-    obs_depths = adapt({**ensemble_raw, "openda_dir": openda_dir})
+    obs_depths, n_analysis = adapt({**ensemble_raw, "openda_dir": openda_dir})
 
     # Bridge the model's Docker image to the (separate-process) wrapper via a generated
     # file. Single source of truth: models.py. Version-only base "eawag/simstrat" mirrors
@@ -378,12 +508,20 @@ def run_openda(cfg, ensemble_raw, ensemble_base, n_members, skip_oda=False,
     # output; create it up front so OpenDA's result writer has somewhere to write.
     os.makedirs(os.path.join(openda_dir, "Results"), exist_ok=True)
     logger.info(f"      {oda_exe} {oda_file}  (cwd={os.path.relpath(openda_dir, ROOT)})")
+    # Progress bar driven by tailing the logfile (see _launch_oda_with_progress). Same on/off flag
+    # as the native engines (cfg["progress"], resolved in main.py). total = number of analysis
+    # (noon-obs) times from the adapter, so the bar tracks the real step count for any cadence; the
+    # ±1 spin-up/boundary forecast is absorbed by tqdm's overflow tolerance (never asserted exact).
+    progress = cfg.get("progress", False)
+    total    = max(1, n_analysis)
+    t0 = time.perf_counter()
     try:
-        subprocess.run([oda_exe, oda_file], cwd=openda_dir, check=True, env=env)
+        _launch_oda_with_progress(oda_exe, oda_file, openda_dir, env, total, progress)
     except FileNotFoundError:
         raise RuntimeError(
             "oda_run.sh not found — set \"openda_bin\" in the arg file to the OpenDA bin dir, "
             "or source the OpenDA environment so oda_run.sh is on PATH")
+    elapsed = time.perf_counter() - t0
 
     # Tidy the run dir: OpenDA writes its run log into the .oda cwd — move it into log/.
     log_src = os.path.join(openda_dir, "openda_logfile.txt")
@@ -398,7 +536,9 @@ def run_openda(cfg, ensemble_raw, ensemble_base, n_members, skip_oda=False,
     member_files = [os.path.join(work_base, f"work{i}", "Results", "T_out.dat")
                     for i in range(1, n_members + 1)]
     obs_csv = resolve_obs_path(ensemble_raw)
-    report_summary("openda", filter_type, member_files, ensemble_raw["lake"], obs_csv, openda_dir)
+    out_csv, skill = report_summary("openda", filter_type, member_files, ensemble_raw["lake"], obs_csv, openda_dir)
+    # updates=None: OpenDA has no separate update count distinct from its analysis steps.
+    log_run_footer(cfg, skill, n_analysis, None, elapsed, out_csv)
 
 
 if __name__ == "__main__":

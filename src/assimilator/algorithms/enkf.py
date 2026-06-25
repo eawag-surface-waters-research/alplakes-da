@@ -1,5 +1,6 @@
 import os
 import time
+import math
 import logging
 import concurrent.futures
 import numpy as np
@@ -7,7 +8,8 @@ import pandas as pd
 from datetime import timedelta
 
 from ..functions import (load_obs, filter_obs_to_model_depths,
-                         verify_args, build_python_run_args)
+                         verify_args, build_python_run_args, make_progress, log_obs_summary,
+                         log_run_header, log_run_footer)
 from ..summarize import report_summary
 
 logger = logging.getLogger(__name__)
@@ -147,6 +149,7 @@ def run_enkf_daily(args, model):
 
     obs        = load_obs(args["obs_path"])
     obs        = filter_obs_to_model_depths(obs, model.model_output_depths(args["ensemble_base"]))
+    log_obs_summary(obs, args["obs_path"])
     start_date = args["start_date"]
     end_date   = args["end_date"]
     rng        = np.random.default_rng()
@@ -181,6 +184,14 @@ def run_enkf_daily(args, model):
             logger.info(f"Noon-anchored windows: first window {current.isoformat()} → {(current + timedelta(days=1)).isoformat()}")
         days_run     = 0
         days_updated = 0
+
+        # One progress bar per run instead of a log line per day. Disabled for
+        # server runs (resolved upstream into args["progress"]); when off, the
+        # per-day logger.info below still fires. total is the window count from
+        # the dates — tqdm tolerates overflow if the last (clamped) window nudges it.
+        progress = args.get("progress", False)
+        total    = max(1, math.ceil((end_date - current).total_seconds() / 86400))
+        bar      = make_progress(total, progress, desc=f"EnKF {args['lake']}")
 
         while current < end_date:
             window_end = min(current + timedelta(days=1), end_date)
@@ -266,12 +277,20 @@ def run_enkf_daily(args, model):
             timing  = f"docker={t_docker:.1f}s  enkf={t_enkf:.1f}s  total={t_total:.1f}s"
             obs_str = f"n_obs={len(y_obs)}  n_updated={n_updated}" if y_obs is not None else "no obs"
             status  = f"failed={failed}" if failed else "ok"
-            logger.info(f"  {current.date()}  {obs_str}  [{status}]  [{timing}]")
+            # Per-day detail always goes to the log file (file_only keeps it off the console —
+            # see main.py); the console shows the bar instead when progress is on.
+            logger.info(f"  {current.date()}  {obs_str}  [{status}]  [{timing}]",
+                        extra={"file_only": True})
+            if progress:
+                bar.set_postfix_str(f"{current.date()}  {obs_str}  [{status}]")
+                bar.update(1)
 
             current = window_end
 
+        bar.close()
         model.accumulate_mean(member_ids, args)   # one-shot: ensemble-mean trajectory from full T_out.dat
         logger.info(f"Done. {days_run} days run, {days_updated} EnKF updates applied.")
+        return days_run, days_updated
 
     finally:
         model.stop_containers(args)
@@ -289,9 +308,11 @@ def run_enkf(run_raw, ensemble_raw, ensemble_base, n_members, model):
     verify_args(ensemble_raw, REQUIRED_ENKF_ENSEMBLE)
     args = build_python_run_args(run_raw, ensemble_raw, ensemble_base, n_members, model)
 
-    logger.info(f"=== Alplakes DA — EnKF — {args['lake']} ===")
-    run_enkf_daily(args, model)
+    log_run_header(ensemble_raw)
+    t0 = time.perf_counter()
+    days_run, days_updated = run_enkf_daily(args, model)
 
     member_files = [os.path.join(ensemble_base, f"ensemble{i}", args["results_dir"], "T_out.dat")
                     for i in args["member_ids"]]
-    report_summary("python", "EnKF", member_files, args["lake"], args["obs_path"], ensemble_base)
+    out_csv, skill = report_summary("python", "EnKF", member_files, args["lake"], args["obs_path"], ensemble_base)
+    log_run_footer(ensemble_raw, skill, days_run, days_updated, time.perf_counter() - t0, out_csv)

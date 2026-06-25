@@ -32,7 +32,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # put src/ on t
 
 from assimilator.perturbate      import perturbator, load_perturbations
 from assimilator.models          import get_model
-from assimilator.functions       import ROOT, resolve_src, load_json, load_obs, resolve_obs_path, merge_lake_args
+from assimilator.functions       import ROOT, resolve_src, load_json, load_obs, resolve_obs_path, merge_lake_args, resolve_progress
 from assimilator.algorithms.enkf import run_enkf
 from assimilator.algorithms.pf   import run_pf
 from assimilator.openda.adapter import run_openda
@@ -73,6 +73,9 @@ def run(cfg, model="simstrat", skip_oda=False, force=None):
             f"provide it manually — a dated simulation-snapshot_*.dat, Forcing.dat, "
             f"Settings.par and the remaining Simstrat inputs.")
     logger.info(f"[1/5] model inputs present -> {os.path.relpath(model_inputs, ROOT)}")
+    warmup = model_obj.warmup_snapshot(model_inputs)
+    if warmup:
+        logger.info(f"      warm-start snapshot: {os.path.basename(warmup)}")
 
     # --- 2. copy into instances -------------------------------------------
     if force.get("copy") or not model_obj.instances_ready(ensemble_base, n_members):
@@ -136,14 +139,22 @@ if __name__ == "__main__":
                         help="AR(1) calibration JSON, overriding the config's \"perturbations_file\" "
                              "(default: perturbations/<lake>.json)")
     parser.add_argument("--force-copy",       action="store_true", help="Re-run step 2 even if present")
+    parser.add_argument("--no-progress", action="store_true",
+                        help="Disable the progress bar (auto-disabled when stderr is not a TTY). "
+                             "Per-step detail still goes to the log file either way")
     cli = parser.parse_args()
 
     os.makedirs(os.path.join(ROOT, "logs"), exist_ok=True)
     log_file = os.path.join(ROOT, "logs", f"pipeline_{datetime.now():%Y%m%d_%H%M%S}.log")
+    # Per-day assimilation lines are logged with extra={"file_only": True} so they always land in
+    # the log file but never clutter the console — the console shows the progress bar (or, when it's
+    # off, just the milestones). The filter on the console handler drops those file-only records.
+    console = logging.StreamHandler()
+    console.addFilter(lambda r: not getattr(r, "file_only", False))
     logging.basicConfig(level=logging.INFO,
                         format="%(asctime)s | %(levelname)-8s | %(name)-16s | %(message)s",
                         datefmt="%H:%M:%S",
-                        handlers=[logging.StreamHandler(),
+                        handlers=[console,
                                   logging.FileHandler(log_file, encoding="utf-8")])
     logger.info(f"log file -> {os.path.relpath(log_file, ROOT)}")
 
@@ -153,6 +164,9 @@ if __name__ == "__main__":
         cfg["obs_file"] = cli.obs_file
     if cli.perturbations_file:
         cfg["perturbations_file"] = cli.perturbations_file
+    # Progress bar on/off resolved once here (CLI --no-progress > config "progress" >
+    # TTY auto-detect) and carried in cfg so both engines read the same flag.
+    cfg["progress"] = resolve_progress(cfg, cli.no_progress)
     # Model selection: CLI -m wins, else the arg file's "model" field, else simstrat.
     model = cli.model or cfg.get("model") or "simstrat"
     run(cfg,

@@ -1,6 +1,7 @@
 import os
 import shutil
 import time
+import math
 import concurrent.futures
 import numpy as np
 from datetime import timedelta
@@ -8,7 +9,8 @@ from datetime import timedelta
 import logging
 
 from ..functions import (load_obs, filter_obs_to_model_depths,
-                         verify_args, build_python_run_args)
+                         verify_args, build_python_run_args, make_progress, log_obs_summary,
+                         log_run_header, log_run_footer)
 from ..summarize import report_summary
 
 logger = logging.getLogger(__name__)
@@ -92,6 +94,7 @@ def run_pf_daily(args, model):
 
     obs           = load_obs(args["obs_path"])
     obs           = filter_obs_to_model_depths(obs, model.model_output_depths(args["ensemble_base"]))
+    log_obs_summary(obs, args["obs_path"])
     depth_weights = compute_depth_weights(obs, model)
     start_date    = args["start_date"]
     end_date      = args["end_date"]
@@ -111,6 +114,13 @@ def run_pf_daily(args, model):
         logger.info(f"Noon-anchored windows: first window {current.isoformat()} → {(current + timedelta(days=1)).isoformat()}")
         days_run    = 0
         days_copied = 0
+
+        # One progress bar per run instead of a log line per day (see enkf.py).
+        # Disabled for server runs via args["progress"]; when off the per-day
+        # logger.info lines below still fire. total tolerates clamped-window overflow.
+        progress = args.get("progress", False)
+        total    = max(1, math.ceil((end_date - current).total_seconds() / 86400))
+        bar      = make_progress(total, progress, desc=f"PF {args['lake']}")
 
         while current < end_date:
             window_end = min(current + timedelta(days=1), end_date)
@@ -155,18 +165,30 @@ def run_pf_daily(args, model):
                 copy_best_to_all(best_id, member_ids, args)
                 days_copied += 1
                 status = f"failed={failed}" if failed else "ok"
+                # Per-day detail always to the log file (file_only keeps it off the console —
+                # see main.py); the console shows the bar instead when progress is on.
                 logger.info(f"  {current.date()}  best=ensemble{best_id:02d}  RMSE={best_rmse:.4f} °C  "
-                            f"obs_raw={n_obs_raw}  matched={n_matched}  [{status}]  [{timing}]")
+                            f"obs_raw={n_obs_raw}  matched={n_matched}  [{status}]  [{timing}]",
+                            extra={"file_only": True})
+                if progress:
+                    bar.set_postfix_str(f"{current.date()}  best=ens{best_id:02d}  RMSE={best_rmse:.3f}  [{status}]")
             else:
                 obs_win = obs[(obs["time"] >= current) & (obs["time"] < window_end)]
                 status  = f"  failed={failed}" if failed else ""
                 logger.info(f"  {current.date()}  no obs — snapshots unchanged  "
-                            f"obs_raw={len(obs_win)}  matched={n_matched}{status}  [{timing}]")
+                            f"obs_raw={len(obs_win)}  matched={n_matched}{status}  [{timing}]",
+                            extra={"file_only": True})
+                if progress:
+                    bar.set_postfix_str(f"{current.date()}  no obs{status}")
+            if progress:
+                bar.update(1)
 
             current = window_end
 
+        bar.close()
         model.accumulate_mean(member_ids, args)   # one-shot: ensemble-mean trajectory from full T_out.dat
         logger.info(f"Done. {days_run} windows run, {days_copied} best-copy steps applied.")
+        return days_run, days_copied
 
     finally:
         model.stop_containers(args)
@@ -183,9 +205,11 @@ def run_pf(run_raw, ensemble_raw, ensemble_base, n_members, model):
     verify_args(run_raw, REQUIRED_RUN)
     args = build_python_run_args(run_raw, ensemble_raw, ensemble_base, n_members, model)
 
-    logger.info(f"=== Alplakes DA — PF — {args['lake']} ===")
-    run_pf_daily(args, model)
+    log_run_header(ensemble_raw)
+    t0 = time.perf_counter()
+    days_run, days_copied = run_pf_daily(args, model)
 
     member_files = [os.path.join(ensemble_base, f"ensemble{i}", args["results_dir"], "T_out.dat")
                     for i in args["member_ids"]]
-    report_summary("python", "PF", member_files, args["lake"], args["obs_path"], ensemble_base)
+    out_csv, skill = report_summary("python", "PF", member_files, args["lake"], args["obs_path"], ensemble_base)
+    log_run_footer(ensemble_raw, skill, days_run, days_copied, time.perf_counter() - t0, out_csv)

@@ -149,7 +149,8 @@ def summarize_run(final_dir, lake, engine, label, member_files, obs_csv=None):
     """Write <final_dir>/<lake>_<engine>_<label>.{csv,json} from members 1..N.
 
     The CSV is always written; the JSON skill report is written when `obs_csv`
-    exists.  Returns (csv_path, n_members, n_timesteps, n_depths)."""
+    exists.  Returns (csv_path, n_members, n_timesteps, n_depths, overall_skill)
+    where overall_skill is the scored dict (rmse/bias/n/...) or None."""
     os.makedirs(final_dir, exist_ok=True)
     base = f"{lake}_{engine}_{label}"
     times, depths, mean, std = _load_members(member_files)
@@ -157,6 +158,7 @@ def summarize_run(final_dir, lake, engine, label, member_files, obs_csv=None):
     out_csv = os.path.join(final_dir, base + ".csv")
     _write_csv(times, depths, mean, std, out_csv)
 
+    overall = None
     if obs_csv and os.path.isfile(obs_csv):
         scored = _score(times, depths, mean, std, obs_csv)
         if scored is not None:
@@ -175,16 +177,17 @@ def summarize_run(final_dir, lake, engine, label, member_files, obs_csv=None):
             with open(os.path.join(final_dir, base + ".json"), "w") as f:
                 json.dump(report, f, indent=2)
 
-    return out_csv, len(member_files), mean.shape[0], mean.shape[1]
+    return out_csv, len(member_files), mean.shape[0], mean.shape[1], overall
 
 
 def report_summary(engine, label, member_files, lake, obs_csv, out_dir):
     """Write the posterior summary + skill report into `out_dir` (the run's own folder under run/)
     and print a one-line recap. Shared tail for both native (run_enkf/run_pf) and OpenDA
-    (run_openda) runs."""
-    _, n_mem, T, D = summarize_run(out_dir, lake, engine, label, member_files, obs_csv=obs_csv)
+    (run_openda) runs. Returns (csv_path, overall_skill) for the caller's run footer."""
+    out_csv, n_mem, T, D, overall = summarize_run(out_dir, lake, engine, label, member_files, obs_csv=obs_csv)
     logger.info(f"[summary] {n_mem} members, {T} steps x {D} depths "
                 f"-> {os.path.relpath(out_dir, ROOT)}/{lake}_{engine}_{label}.csv")
+    return out_csv, overall
 
 
 # ---------------------------------------------------------------------------

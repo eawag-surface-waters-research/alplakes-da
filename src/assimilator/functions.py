@@ -1,8 +1,11 @@
 import os
+import sys
 import json
 import logging
 import pandas as pd
 from datetime import datetime, timezone
+
+from tqdm import tqdm
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +46,89 @@ def load_json(path):
         raise FileNotFoundError(f"args file not found: {path}")
     with open(p) as f:
         return json.load(f)
+
+
+# ---------------------------------------------------------------------------
+# Progress reporting
+# ---------------------------------------------------------------------------
+#   Both engines report run progress through a single tqdm bar instead of a log
+#   line per assimilation step. The bar is auto-disabled for headless/server runs
+#   (no TTY) so log files don't fill with redraw spam; when disabled the engines
+#   fall back to their per-step logger.info lines. One resolver keeps the on/off
+#   rule in one place (precedence: CLI --no-progress > config "progress" > isatty).
+
+def resolve_progress(cfg, no_progress_flag=False):
+    """Decide whether to show the progress bar. CLI --no-progress wins; else an
+    explicit "progress" config key; else auto-detect (on only with a real TTY)."""
+    if no_progress_flag:
+        return False
+    if "progress" in cfg:
+        return bool(cfg["progress"])
+    return sys.stderr.isatty()
+
+
+def make_progress(total, enabled, desc=None):
+    """Return a tqdm bar with consistent styling. When `enabled` is False the bar
+    is a no-op (update/set_postfix do nothing), so callers need no branching to
+    advance it — they only branch to keep the plain logger.info lines when off."""
+    return tqdm(total=total, disable=not enabled, desc=desc,
+                unit="day", dynamic_ncols=True, leave=True)
+
+
+def log_obs_summary(obs, obs_path, label="Obs"):
+    """Log the loaded + depth-filtered observation set (count, depths, time span, source).
+    Setup-time narrative shared by the native engines, so the log shows exactly what will be
+    assimilated — the counterpart to the OpenDA adapter's '[adapter] observations: ...' line."""
+    if obs.empty:
+        logger.warning(f"{label}: no observations after filtering <- {os.path.relpath(obs_path, ROOT)}")
+        return
+    depths = sorted(obs["depth"].unique())
+    logger.info(f"{label}: {len(obs)} readings, {len(depths)} depths {[f'{d:g}' for d in depths]}, "
+                f"{obs['time'].min().date()}..{obs['time'].max().date()} "
+                f"<- {os.path.relpath(obs_path, ROOT)}")
+
+
+# A run-config-echo header and a result footer, in ONE layout shared by both engines, so two runs'
+# logs line up at the cross-validation junctions: A (same config?) and D (same result?). Defined
+# here once so the native engines (run_enkf/run_pf) and OpenDA (run_openda) can't drift apart, and
+# using a standardized key vocabulary (engine= algo=/filter= window= n_members= sigma_obs= ...).
+
+def _run_selector(cfg):
+    """The engine's algorithm/filter label for the header & footer (vocab: 'algo=' or 'filter=')."""
+    engine = cfg.get("engine", "python")
+    return f"algo={cfg.get('algorithm')}" if engine == "python" else f"filter={cfg.get('filter')}"
+
+
+def log_run_header(cfg):
+    """Echo the resolved run config as one diffable block (junction A). Reads cfg with .get();
+    prints whichever knobs apply (inflation is native-EnKF-only)."""
+    engine = cfg.get("engine", "python")
+    logger.info(f"=== RUN | engine={engine} {_run_selector(cfg)} "
+                f"model={cfg.get('model', 'simstrat')} lake={cfg.get('lake')} ===")
+    logger.info(f"      window={cfg.get('start_date')}..{cfg.get('end_date')}  "
+                f"n_members={cfg.get('n_members')}")
+    knobs = [f"sigma_obs={cfg.get('sigma_obs')}"]
+    if engine == "python" and cfg.get("inflation") is not None:
+        knobs.append(f"inflation={cfg.get('inflation')}")
+    knobs += [f"sigma_scale={cfg.get('sigma_scale', 1.0)}", f"rng_seed={cfg.get('rng_seed', 42)}"]
+    logger.info("      " + "  ".join(knobs))
+    logger.info(f"      obs={os.path.relpath(resolve_obs_path(cfg), ROOT)}")
+
+
+def log_run_footer(cfg, skill, steps, updates, elapsed_s, out_path=None):
+    """Echo the run result as one diffable block (junction D). `skill` is report_summary's overall
+    dict (rmse/bias/n) or None; `updates` may be None where the engine has no separate count."""
+    logger.info(f"=== DONE | engine={cfg.get('engine', 'python')} {_run_selector(cfg)} "
+                f"lake={cfg.get('lake')} ===")
+    line = f"      steps={steps}"
+    if updates is not None:
+        line += f"  updates={updates}"
+    line += f"  elapsed={elapsed_s:.1f}s"
+    logger.info(line)
+    if skill:
+        logger.info(f"      rmse={skill['rmse']}  bias={skill['bias']}  n_obs={skill['n']}  (analysis fit)")
+    if out_path:
+        logger.info(f"      output={os.path.relpath(out_path, ROOT)}")
 
 
 def merge_lake_args(cfg, lake=None):
