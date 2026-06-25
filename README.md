@@ -1,10 +1,10 @@
 # Data Assimilation for Lake Hydrodynamic Models
 
 Improve lake-temperature forecasts by blending in-situ observations into lake models
-(e.g. **[Simstrat](https://github.com/Eawag-AppliedSystemAnalysis/Simstrat)**), for the
+(e.g. **[Simstrat](https://github.com/Eawag-AppliedSystemAnalysis/Simstrat)**), developed for the
 [Alplakes](https://www.alplakes.eawag.ch) platform at [Eawag](https://www.eawag.ch).
 
-You give it a lake's model setup and a CSV of measured temperatures. It runs an ensemble of simulations, corrects them toward the observations at each assimilation step, and returns a corrected temperature profile through time — with a skill report against the data.
+You give it a lake's model setup and a CSV of measured temperatures. It runs an ensemble of simulations, corrects them toward the observations at each assimilation step, and returns a corrected temperature profile through time — with a skill report against the assimilated data.
 
 ## What you can do
 
@@ -12,17 +12,17 @@ Pick an **assimilation method** by choosing a run config; everything else is the
 
 | You want | Run config | Method |
 |---|---|---|
-| Ensemble Kalman Filter (default) | `args/run_enkf.json` | EnKF |
+| Ensemble Kalman Filter | `args/run_enkf.json` | EnKF |
 | Particle Filter | `args/run_pf.json` | PF |
 | An independent cross-check via [OpenDA](https://www.openda.org) | `args/run_openda.json` | EnKF / DEnKF / EnSR / PF |
 
-The first two are the native, in-house engine. The OpenDA engine runs the *same* ensemble and
-observations through a separate, established toolkit, so you can cross-validate the results or build custom functionalities easily in the native setup.
+The first two are the native, in-house engines. The OpenDA engines run the *same* ensemble and
+observations through a separate, established toolkit, so you can cross-validate the results or choose to build custom functionalities or adapt the available algorithms easily in the native setup.
 
 With the OpenDA engine you also choose *which* EnKF filter variant to run by editing the `filter`
 field in `args/run_openda.json` — `EnKF`, `DEnKF`, `EnSR` — without touching anything else.
 
-To tune a run to the desired settings, edit these fields in the run config:
+To tune a run to desired settings, edit these fields in the run config:
 
 | Field | What it controls |
 |---|---|
@@ -42,7 +42,7 @@ To tune a run to the desired settings, edit these fields in the run config:
 
 **2. Provide the two inputs for your lake** (here e.g. `upperlugano`)
 
-- `inputs/upperlugano/` — the Simstrat model setup plus a dated warm-start snapshot
+- `inputs/upperlugano/` — the Simstrat **model setup (inputs)** plus a **dated warm-start snapshot**
   (`simulation-snapshot_<YYYYMMDD>.dat`, `Forcing.dat`, `Settings.par`, bathymetry, grid, …)
 - `observations/upperlugano/temperature.csv` — long-format measurements, one row per reading:
 
@@ -77,7 +77,7 @@ Compare engines or visualize a run with `python notebooks/visualize.py`.
 | Topic | Where |
 |---|---|
 | Running the OpenDA engine (needs WSL/Linux + OpenDA 3.4.0) | `args/run_openda.json` & `args/run_openda_pf.json`; set `openda_bin` |
-| Calibrating the forcing perturbation (one-time, offline) | `notebooks/perturbations_from_icon.py` (needs EAWAG ICON API / VPN) |
+| Calibrating the forcing perturbation (one-time, offline) | `notebooks/perturbations_from_icon.py` (needs EAWAG ICON API / EAWAG network access) |
 
 ## How it works
 
