@@ -48,7 +48,7 @@ _BIN_DIR    = os.path.dirname(os.path.abspath(__file__))
 _OPENDA_DIR = os.path.dirname(os.path.dirname(_BIN_DIR))
 _ROOT_DIR   = os.path.dirname(os.path.dirname(_OPENDA_DIR))   # run/openda_simstrat -> run -> repo root
 sys.path.insert(0, os.path.join(_ROOT_DIR, "src"))
-from assimilator.models.simstrat import read_snapshot, write_snapshot
+from assimilator.models.simstrat import read_snapshot_T_at, write_snapshot_T_at
 
 # --- Shared persistent Simstrat container (PERF) ---------------------------
 # run_openda starts ONE long-lived sleeping container for the whole run (mounting openda_dir at
@@ -99,6 +99,57 @@ def read_t_out(filename):
             continue
         times.append(float(parts[0]))
         T_rows.append([float(x) for x in parts[1:]])
+    return times, depths, T_rows
+
+
+# Sidecar file (next to T_out.dat) that records the byte offset read so far, so each step
+# resumes from where the last one stopped instead of re-parsing the whole growing file.
+T_OUT_OFFSET_FILE = '.t_out_read_offset'
+
+
+def read_t_out_tail(filename, offset_path, window_start=None, window_end=None):
+    """Read only the rows Simstrat appended to T_out.dat since the previous step (tail read).
+
+    T_out.dat itself is never truncated — Simstrat keeps the full cumulative series; we just
+    resume from the byte offset stored in `offset_path`.  Flexible by construction:
+      * no rows-per-window assumption — works for any Simstrat output interval (hourly, daily, …);
+      * works for any analysis-window length (we read whatever was appended);
+      * self-healing — if the offset is missing or out of range (first run, instance dir reused,
+        file shrank/rotated) it falls back to reading from just after the header;
+      * optional [window_start, window_end] filter as a safety net, so the result is the current
+        window even when the offset had to fall back to a full re-read.
+
+    Binary mode is used so the offset is an exact byte position.  Returns (times, depths, T_rows)
+    for the new rows only.
+    """
+    with open(filename, 'rb') as f:
+        depths = [float(h) for h in f.readline().decode().strip().split(',')[1:]]
+        data_start = f.tell()
+        size = os.fstat(f.fileno()).st_size
+        offset = data_start
+        try:
+            stored = int(open(offset_path).read().strip())
+            if data_start <= stored <= size:
+                offset = stored
+        except (OSError, ValueError):
+            pass
+        f.seek(offset)
+        body = f.read().decode()
+        new_offset = f.tell()
+    times, T_rows = [], []
+    for line in body.splitlines():
+        parts = line.strip().split(',')
+        if not parts or not parts[0]:
+            continue
+        t = float(parts[0])
+        if window_start is not None and t < window_start - 1e-9:
+            continue
+        if window_end is not None and t > window_end + 1e-9:
+            continue
+        times.append(t)
+        T_rows.append([float(x) for x in parts[1:]])
+    with open(offset_path, 'w') as f:
+        f.write(str(new_offset))
     return times, depths, T_rows
 
 
@@ -186,15 +237,11 @@ if __name__ == '__main__':
     # 3.5  Inject full-grid T state into snapshot (EnKF correction path)
     # ------------------------------------------------------------------
     if snap_exists and len(T_state) > len(IC_DEPTHS):
-        snap_pre = read_snapshot(snapshot_path, par_path=args.config)
-        n_grid = len(snap_pre.model['T'])
-        if len(T_state) == n_grid:
-            snap_pre.model['T'] = np.array(T_state, dtype=np.float64)
-            write_snapshot(snapshot_path, snap_pre)
-            logger.info("[STATE-INJECT] Injected %d-cell T into snapshot", n_grid)
-        else:
-            logger.warning("[STATE-INJECT] Size mismatch: state=%d grid=%d — skipping",
-                           len(T_state), n_grid)
+        try:
+            write_snapshot_T_at(snapshot_path, args.config, np.array(T_state, dtype=np.float64))
+            logger.info("[STATE-INJECT] Injected %d-cell T into snapshot", len(T_state))
+        except ValueError as e:
+            logger.warning("[STATE-INJECT] %s — skipping", e)
     else:
         logger.info("[STATE-INJECT] Skipped (first run or legacy state, %d values)",
                     len(T_state))
@@ -253,14 +300,18 @@ if __name__ == '__main__':
     # 6. Read T_out.dat and write predictor CSV files
     # ------------------------------------------------------------------
     t_out_file = os.path.join(output_dir, 'T_out.dat')
-    # TEMP[phase5-probe] — time the full (growing) T_out.dat read to decide if Phase 5 (read only the
-    # tail instead of the whole file each step) is worth it. Grep "[PHASE5-PROBE]" in the OpenDA log
-    # after a run: if read-s grows over the run / is a big fraction of the [TIMING] step-s, do Phase 5;
-    # if it stays small, drop Phase 5. Remove this block when decided (see refactoring.md Phase 5).
+    # Tail read: only the rows Simstrat appended for THIS window are read (resuming from the byte
+    # offset stored next to T_out.dat), instead of re-parsing the whole growing file each step. The
+    # full cumulative T_out.dat is left intact for the summary/plots; only this per-step read and the
+    # predictor CSVs below see the current window. Window bounds passed as a safety net so a fallback
+    # full re-read (fresh run / reused instance dir) still yields just the current window. See step 1
+    # for start_day/end_day; the read is independent of the Simstrat output interval and window length.
     _t_read = time.perf_counter()
-    times, depths, T_rows = read_t_out(t_out_file)
-    logger.info("[PHASE5-PROBE] read T_out.dat: %d rows, %.1f MB, %.2f s",
-                len(times), os.path.getsize(t_out_file) / 1e6, time.perf_counter() - _t_read)
+    offset_path = os.path.join(output_dir, T_OUT_OFFSET_FILE)
+    times, depths, T_rows = read_t_out_tail(t_out_file, offset_path,
+                                            window_start=start_day, window_end=end_day)
+    logger.info("[TAIL-READ] T_out.dat: %d new rows (window %.4f->%.4f), %.2f s",
+                len(times), start_day, end_day, time.perf_counter() - _t_read)
 
     # Depths to extract come from the generated obs_depths.json (single source of
     # truth shared with the model config + formatters); fall back to the legacy set.
@@ -280,8 +331,7 @@ if __name__ == '__main__':
     # ------------------------------------------------------------------
     # 7. Update temperature state: full grid from snapshot (no interpolation)
     # ------------------------------------------------------------------
-    snap_end = read_snapshot(snapshot_path, par_path=args.config)
-    new_T = list(snap_end.model['T'])
+    new_T = list(read_snapshot_T_at(snapshot_path, args.config)[0])
     write_state_file(state_file, new_T)
     logger.info("temperature_state.txt updated (%d cells) from snapshot", len(new_T))
 

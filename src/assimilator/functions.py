@@ -2,10 +2,13 @@ import os
 import sys
 import json
 import logging
-import pandas as pd
 from datetime import datetime, timezone
 
 from tqdm import tqdm
+
+# pandas is imported lazily inside load_obs (the only user here): this module is on the import path
+# of the OpenDA wrapper (via models.simstrat), launched 21×/step, and a top-level `import pandas`
+# cost ~2.6s per process for nothing.
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +40,32 @@ def resolve_src(path):
 def resolve_root(path):
     """Resolve a possibly-relative repo path ('openda_simstrat', 'args/x.json') against ROOT."""
     return path if os.path.isabs(path) else os.path.normpath(os.path.join(ROOT, path))
+
+
+def resolve_run_root(cfg):
+    """Base directory for all run OUTPUT — the per-lake ensemble instances (ensemble_base) and the
+    OpenDA work dirs (openda_dir) both default under it. Model INPUTS stay in-repo (ROOT/inputs).
+
+    Defaults to the in-repo ROOT/run, so a fresh checkout is self-contained — nothing to configure
+    when running on a remote Linux server. Override to relocate ALL run output (e.g. point local
+    tests at a fast native-ext4 path while the /mnt/c source tree stays put) via the 'run_root'
+    config key or the ALPLAKES_RUN_ROOT env var (config key wins). '~' and $ENV are expanded; a
+    relative value resolves against ROOT. Explicit 'ensemble_base'/'openda_dir' still override per-dir."""
+    raw = cfg.get("run_root") or os.environ.get("ALPLAKES_RUN_ROOT")
+    if not raw:
+        return os.path.join(ROOT, "run")
+    return resolve_root(os.path.expanduser(os.path.expandvars(raw)))
+
+
+def display_path(path):
+    """Pretty path for logs: relative to ROOT when inside the repo, else the absolute path with
+    $HOME collapsed to '~'. Keeps in-repo logs terse while a rerouted run_root (e.g. on ext4) reads
+    as '~/alplakes-da_res/run/...' instead of '../../../../home/...'."""
+    rel = os.path.relpath(path, ROOT)
+    if not rel.startswith(".."):
+        return rel
+    home = os.path.expanduser("~")
+    return "~" + path[len(home):] if path.startswith(home) else path
 
 
 def load_json(path):
@@ -78,11 +107,16 @@ def make_progress(total, enabled, desc=None):
 def resolve_max_workers(cfg, n_members):
     """How many ensemble members to run concurrently (the parallelisation knob, shared by both
     engines: the native ThreadPool and OpenDA's maxThreads). DEFAULT is full concurrency (all at
-    once) — matching the original behavior. The workload is IO-bound (Simstrat in Docker over a
-    slow bind mount), so high concurrency hides IO latency and capping to CPU cores measurably HURT
-    it; so 'max_workers' (config key or --max-workers) is a knob to RESTRICT, not the default. An
-    explicit value is clamped to [1, n_members] (n_members = the cap the caller passes: members for
-    native, members+1 for OpenDA's main+members)."""
+    once). 'max_workers' (config key or --max-workers) is a knob to RESTRICT, not the default.
+
+    Capping to CPU cores looks tempting — the synchronized per-step snapshot read/write inflates
+    sharply under oversubscription (a per-member "storm"). But it's measured to HURT wall-clock: an
+    A/B on ext4 (21 vs 8 workers, 8 cores) cut the per-member inject 6.06s->2.30s yet made the WINDOW
+    ~14% slower (21.5s -> 24.5s), because the members just serialise into waves. The storm is a
+    symptom of beneficial overlap, not wasted work; full concurrency hides the latency (more so on a
+    slow IO-bound bind mount). So don't auto-cap — set max_workers explicitly only to throttle
+    CPU/RAM. An explicit value is clamped to [1, n_members] (n_members = the cap the caller passes:
+    members for native, members+1 for OpenDA's main+members)."""
     cpu       = os.cpu_count() or 1
     requested = cfg.get("max_workers")
     workers   = max(1, min(int(requested), n_members)) if requested else n_members
@@ -166,7 +200,7 @@ def merge_lake_args(cfg, lake=None):
     merged = {k: v for k, v in cfg.items() if k != "lakes"}
     merged.update(lakes[lake])
     merged["lake"] = lake
-    merged.setdefault("ensemble_base", f"../run/{lake}")
+    merged.setdefault("ensemble_base", os.path.join(resolve_run_root(merged), lake))
     return merged
 
 
@@ -203,6 +237,7 @@ def discover_n_members(ensemble_base):
 # with the noon state. Labels stay on the hour, so the PF's obs<->T_out time intersection
 # (rmse_in_window) is unaffected.
 def load_obs(obs_path):
+    import pandas as pd
     obs = pd.read_csv(obs_path, parse_dates=["time"])
     obs["time"] = pd.to_datetime(obs["time"], utc=True)
     obs["time"] = (obs["time"] + pd.Timedelta(minutes=30)).dt.floor("1h")

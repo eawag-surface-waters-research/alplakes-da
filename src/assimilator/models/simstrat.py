@@ -42,7 +42,9 @@ from datetime import datetime, timezone
 from typing import Optional, Tuple
 
 import numpy as np
-import pandas as pd
+# NOTE: pandas is imported lazily inside the functions that need it (accumulate_mean, load_T).
+# The OpenDA wrapper imports read_snapshot/write_snapshot from this module 21×/step and those use
+# only numpy; a top-level `import pandas` cost ~2.6s per process launch for nothing. (numpy ~0.7s.)
 
 from ..functions import ROOT, GENERAL, resolve_src, verify_args
 
@@ -207,6 +209,7 @@ def accumulate_mean(member_ids, args):
     (full, accumulated) T_out.dat. One-shot: call once after the run. Averages across
     whatever members are present at each timestamp, so it tolerates a member missing a
     failed window."""
+    import pandas as pd
     def _read(i):
         path = os.path.join(args["ensemble_base"], f"ensemble{i}", args["results_dir"], "T_out.dat")
         if not os.path.exists(path):
@@ -230,6 +233,7 @@ def mean_traj_path(ensemble_base, algorithm):
 
 
 def load_T(ensemble_dir, args):
+    import pandas as pd
     path = os.path.join(ensemble_dir, args["results_dir"], "T_out.dat")
     ref  = pd.Timestamp(args["ref_date"])
     df = pd.read_csv(path)
@@ -375,10 +379,13 @@ def overwrite_par_dates(par_path, window_start, window_end, ref_date):
 # Snapshot temperature column read/write (full-grid T as the DA state)
 # ---------------------------------------------------------------------------
 
-def read_snapshot_T(member_id, args):
-    """Read member `member_id`'s warmup snapshot -> (T column, z_volume, lake_level)."""
-    snap_path = os.path.join(args["ensemble_base"], f"ensemble{member_id}", args["results_dir"], "simulation-snapshot.dat")
-    par_path  = os.path.join(args["ensemble_base"], f"ensemble{member_id}", args["par_file"])
+# --- snapshot T-column round-trip: single source of truth for BOTH engines ------------------------
+# The native engine (read_snapshot_T/write_snapshot_T, keyed by member_id) and the OpenDA wrapper
+# (keyed by an explicit instance path) both read/inject the analysed temperature column. These two
+# path-based helpers are that shared core; the member-id wrappers below just build the paths.
+
+def read_snapshot_T_at(snap_path, par_path):
+    """Read a snapshot's temperature column + grid geometry -> (T, z_volume, lake_level)."""
     snap  = read_snapshot(snap_path, par_path=par_path)
     T     = snap.model["T"]
     # VERIFIED: there is a vertical-alignment assumption. This takes the TOP len(T) cells of
@@ -389,15 +396,34 @@ def read_snapshot_T(member_id, args):
     return T.copy(), z_vol.copy(), float(snap.grid["lake_level"])
 
 
-def write_snapshot_T(member_id, T_new, args):
-    """Write the analysis temperature column back into member `member_id`'s snapshot."""
-    snap_path = os.path.join(args["ensemble_base"], f"ensemble{member_id}", args["results_dir"], "simulation-snapshot.dat")
-    par_path  = os.path.join(args["ensemble_base"], f"ensemble{member_id}", args["par_file"])
+def write_snapshot_T_at(snap_path, par_path, T_new):
+    """Inject an analysed temperature column into a snapshot (atomic via tmp + os.replace).
+    Raises if T_new's length doesn't match the snapshot grid (caller guards/handles)."""
     snap = read_snapshot(snap_path, par_path=par_path)
+    if len(T_new) != len(snap.model["T"]):
+        raise ValueError(f"T length {len(T_new)} != snapshot grid {len(snap.model['T'])}")
     snap.model["T"][:] = T_new
     tmp = snap_path + ".tmp"
     write_snapshot(tmp, snap)
     os.replace(tmp, snap_path)
+
+
+def _member_snapshot_paths(member_id, args):
+    base = os.path.join(args["ensemble_base"], f"ensemble{member_id}")
+    return (os.path.join(base, args["results_dir"], "simulation-snapshot.dat"),
+            os.path.join(base, args["par_file"]))
+
+
+def read_snapshot_T(member_id, args):
+    """Read member `member_id`'s snapshot -> (T column, z_volume, lake_level)."""
+    snap_path, par_path = _member_snapshot_paths(member_id, args)
+    return read_snapshot_T_at(snap_path, par_path)
+
+
+def write_snapshot_T(member_id, T_new, args):
+    """Write the analysis temperature column back into member `member_id`'s snapshot."""
+    snap_path, par_path = _member_snapshot_paths(member_id, args)
+    write_snapshot_T_at(snap_path, par_path, T_new)
 
 
 # ---------------------------------------------------------------------------
@@ -456,6 +482,56 @@ class Simstrat:
 # write order so a read-then-write round trip is byte-identical. read_snapshot returns a
 # Snapshot dataclass (sections are OrderedDicts mirroring the Fortran field names).
 # ===========================================================================
+
+
+# --- Fortran unformatted record I/O --------------------------------------
+# Minimal drop-in for scipy.io.FortranFile, supporting exactly the calls the snapshot helpers make
+# (read_ints / read_reals / write_record of a single array). It exists so snapshot I/O does NOT
+# import scipy: `from scipy.io import FortranFile` costs ~2 s per interpreter, which the OpenDA
+# wrapper paid on every member every step (a fresh process each time) — the bulk of the per-step
+# "snapshot inject" storm. The native engine paid it once. numpy + struct only here.
+#
+# A Fortran sequential unformatted record is  [int32 nbytes][data][int32 nbytes]  with the marker in
+# native byte order and 4-byte width (gfortran default) — matching scipy's defaults, so files stay
+# byte-identical. read_* return writable copies (scipy semantics: callers mutate model['T'] in place).
+class FortranFile:
+    _MARK = np.dtype(np.uint32)   # record-length marker: uint32, native byte order (scipy default)
+
+    def __init__(self, path, mode="r"):
+        self._f = open(path, "rb" if mode == "r" else "wb")
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        self._f.close()
+
+    def close(self):
+        self._f.close()
+
+    def _read_record(self) -> bytes:
+        head = self._f.read(4)
+        if len(head) < 4:
+            raise EOFError("end of Fortran file")
+        n = int(np.frombuffer(head, dtype=self._MARK)[0])
+        data = self._f.read(n)
+        tail = self._f.read(4)
+        if len(data) != n or len(tail) < 4 or int(np.frombuffer(tail, dtype=self._MARK)[0]) != n:
+            raise ValueError("corrupt Fortran record (length-marker mismatch)")
+        return data
+
+    def read_ints(self, dtype=np.int32) -> np.ndarray:
+        return np.frombuffer(self._read_record(), dtype=dtype).copy()
+
+    def read_reals(self, dtype=np.float64) -> np.ndarray:
+        return np.frombuffer(self._read_record(), dtype=dtype).copy()
+
+    def write_record(self, arr: np.ndarray) -> None:
+        b = np.ascontiguousarray(arr).tobytes()
+        marker = np.array(len(b), dtype=self._MARK).tobytes()
+        self._f.write(marker)
+        self._f.write(b)
+        self._f.write(marker)
 
 
 # --- low-level record helpers --------------------------------------------
@@ -888,7 +964,6 @@ def read_snapshot(
         inflow_mode=inflow_mode,
         has_lateral_state=has_lateral_state,
     )
-    from scipy.io import FortranFile   # lazy: only snapshot read/write needs scipy
     with FortranFile(path, "r") as f:
         _read_model_state(f, snap)
         _read_grid(f, snap)
@@ -901,7 +976,6 @@ def read_snapshot(
 
 def write_snapshot(path: str, snap: Snapshot) -> None:
     """Write a Snapshot back to a Fortran unformatted file."""
-    from scipy.io import FortranFile   # lazy: only snapshot read/write needs scipy
     with FortranFile(path, "w") as f:
         _write_model_state(f, snap)
         _write_grid(f, snap)

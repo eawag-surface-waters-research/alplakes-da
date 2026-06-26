@@ -60,7 +60,7 @@ import subprocess
 
 from assimilator.functions import (verify_args, resolve_src, resolve_root, resolve_obs_path,
                                    merge_lake_args, make_progress, log_run_header, log_run_footer,
-                                   resolve_max_workers)
+                                   resolve_max_workers, resolve_run_root, display_path)
 from assimilator.models.simstrat import read_snapshot, SIMSTRAT_REF_YEAR
 from assimilator.summarize import report_summary
 from .config import FILTERS, render as render_oda
@@ -225,8 +225,8 @@ def adapt(raw):
     # on demand (nothing is committed; the static wrapper lives in static/openda/).
     os.makedirs(template_dir, exist_ok=True)   # also creates openda_dir/stochModel
 
-    logger.info(f"[adapter] lake={lake}  framework={os.path.relpath(ensemble_base, ROOT)}  "
-                f"-> openda={os.path.relpath(openda_dir, ROOT)}")
+    logger.info(f"[adapter] lake={lake}  framework={display_path(ensemble_base)}  "
+                f"-> openda={display_path(openda_dir)}")
 
     # ------------------------------------------------------------------
     # 0. Hand-maintained wrapper: static/openda/* -> working dir
@@ -472,12 +472,13 @@ def run_openda(cfg, ensemble_raw, ensemble_base, n_members, skip_oda=False,
     if filter_type not in FILTERS:
         raise ValueError(f"unknown filter '{filter_type}'; choose from {sorted(FILTERS)}")
     log_run_header(cfg)
-    default_dir = f"run/openda_{model_name}_{ensemble_raw['lake']}_{filter_type.lower()}"
+    default_dir = os.path.join(resolve_run_root(cfg),
+                               f"openda_{model_name}_{ensemble_raw['lake']}_{filter_type.lower()}")
     openda_dir  = resolve_root(cfg.get("openda_dir") or default_dir)
 
     # --- 4. adapter (always): sync inputs/forcings/warmup + build observations,
     #         returning the auto-detected obs depth list for the render below ----
-    logger.info(f"[4/5] adapt framework -> {os.path.relpath(openda_dir, ROOT)}")
+    logger.info(f"[4/5] adapt framework -> {display_path(openda_dir)}")
     obs_depths, n_analysis = adapt({**ensemble_raw, "openda_dir": openda_dir})
 
     # Bridge the model image + the shared-container contract to the (separate-process) wrapper via a
@@ -516,6 +517,11 @@ def run_openda(cfg, ensemble_raw, ensemble_base, n_members, skip_oda=False,
     # "openda_bin" to fall back to an externally-sourced environment.
     openda_bin = cfg.get("openda_bin")
     env = os.environ.copy()
+    # The wrapper subprocesses OpenDA spawns must import the assimilator package (read_snapshot etc.).
+    # They infer src/ by walking up from their own location, which breaks when openda_dir is rerouted
+    # off the repo (run_root on ext4): pin PYTHONPATH to the repo src so the import resolves wherever
+    # openda_dir lives. Java inherits this env and passes it to the wrapper processes.
+    env["PYTHONPATH"] = os.pathsep.join([os.path.join(ROOT, "src"), env.get("PYTHONPATH", "")])
     if openda_bin:
         openda_bin  = os.path.expanduser(openda_bin)
         openda_root = os.path.dirname(openda_bin)                 # e.g. .../openda_3.4.0

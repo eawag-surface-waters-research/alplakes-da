@@ -61,6 +61,15 @@ assimilation, and writes the results. Re-running re-uses any finished steps.
 
 > Multiple lakes in one config? Add `--lake <name>` to pick one.
 
+> **WSL users — route the run folder off `/mnt/c` for a big speed-up.** Keep the repo on the Windows
+> drive if you like, but write run output to the native Linux filesystem with the `--run-root` flag:
+> ```bash
+> python src/main.py args/run_openda.json --run-root ~/alplakes-da_res/run
+> ```
+> The `/mnt/c` mount is slow for the many small reads/writes the pipeline and Docker do; native ext4
+> avoids that. (Equivalent: set `ALPLAKES_RUN_ROOT`, or a `"run_root"` key in the config.) With nothing
+> set, output goes to the in-repo `run/` — self-contained, e.g. for a remote Linux server.
+
 ## Outputs
 
 In the run folder (`run/<lake>/` for the native engine):

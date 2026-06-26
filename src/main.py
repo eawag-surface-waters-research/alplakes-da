@@ -32,7 +32,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # put src/ on t
 
 from assimilator.perturbate      import perturbator, load_perturbations
 from assimilator.models          import get_model
-from assimilator.functions       import ROOT, resolve_src, load_json, load_obs, resolve_obs_path, merge_lake_args, resolve_progress
+from assimilator.functions       import ROOT, resolve_src, load_json, load_obs, resolve_obs_path, merge_lake_args, resolve_progress, display_path
 from assimilator.algorithms.enkf import run_enkf
 from assimilator.algorithms.pf   import run_pf
 from assimilator.openda.adapter import run_openda
@@ -63,7 +63,7 @@ def run(cfg, model="simstrat", skip_oda=False, force=None):
     # resolution differences between the sub-scripts).
     ensemble_raw["ensemble_base"] = ensemble_base
 
-    logger.info(f"=== DA pipeline - lake={lake}  base={os.path.relpath(ensemble_base, ROOT)}"
+    logger.info(f"=== DA pipeline - lake={lake}  base={display_path(ensemble_base)}"
                 f"  model={model}  engine={engine} ===")
 
     # --- 1. model inputs (provided manually) ---------------------------
@@ -143,7 +143,11 @@ if __name__ == "__main__":
                         help="Disable the progress bar (auto-disabled when stderr is not a TTY). "
                              "Per-step detail still goes to the log file either way")
     parser.add_argument("--max-workers", type=int, default=None,
-                        help="Cap concurrent members (both engines). Default: min(CPU cores, members)")
+                        help="Cap concurrent members (both engines). Default: full concurrency (all at once)")
+    parser.add_argument("--run-root", default=None,
+                        help="Base dir for run OUTPUT (ensemble instances + OpenDA work dir); overrides "
+                             "the config 'run_root' key and $ALPLAKES_RUN_ROOT. Default: in-repo ./run "
+                             "(self-contained). '~'/$VARS expand; relative resolves against the repo root.")
     cli = parser.parse_args()
 
     os.makedirs(os.path.join(ROOT, "logs"), exist_ok=True)
@@ -160,7 +164,12 @@ if __name__ == "__main__":
                                   logging.FileHandler(log_file, encoding="utf-8")])
     logger.info(f"log file -> {os.path.relpath(log_file, ROOT)}")
 
-    cfg = merge_lake_args(load_json(cli.arg_file), lake=cli.lake)   # pick the --lake block, flatten
+    raw = load_json(cli.arg_file)
+    # CLI --run-root wins over the config 'run_root' key (and over $ALPLAKES_RUN_ROOT). Applied to the
+    # raw config BEFORE merge_lake_args, since that's where ensemble_base picks up its run_root default.
+    if cli.run_root:
+        raw["run_root"] = cli.run_root
+    cfg = merge_lake_args(raw, lake=cli.lake)   # pick the --lake block, flatten
     # CLI file overrides win over the config keys (resolved downstream against the repo root).
     if cli.obs_file:
         cfg["obs_file"] = cli.obs_file

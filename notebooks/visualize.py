@@ -21,7 +21,8 @@ from assimilator.models import get_model
 
 # Plot colour per trajectory label
 COLORS = {"ref": "dimgrey", "EnKF": "steelblue", "PF": "darkorange",
-          "EnKF (oda)": "seagreen", "EnSR (oda)": "mediumpurple", "PF (oda)": "crimson"}
+          "EnKF (oda)": "seagreen", "DEnKF (oda)": "goldenrod",
+          "EnSR (oda)": "mediumpurple", "PF (oda)": "crimson"}
 
 
 # ── Data loading ───────────────────────────────────────────────────────────────
@@ -256,15 +257,18 @@ def visualize(args, save=False):
     pf_py_traj = load_traj(pf_py_path, ref_date)
     print(f"     PF: {pf_py_path if pf_py_traj is not None else 'NOT FOUND'}")
 
-    # OpenDA EnKF + EnSR + PF: mean + spread from each run's analysis ensemble members
+    # OpenDA EnKF + DEnKF + EnSR + PF: mean + spread from each run's analysis ensemble members
     enkf_oda_members = load_openda_members(oda_dir("enkf"), "EnKF (oda)", ref_date)
     enkf_oda_traj    = ensemble_mean(enkf_oda_members)
+    denkf_oda_members = load_openda_members(oda_dir("denkf"), "DEnKF (oda)", ref_date)
+    denkf_oda_traj    = ensemble_mean(denkf_oda_members)
     ensr_oda_members = load_openda_members(oda_dir("ensr"), "EnSR (oda)", ref_date)
     ensr_oda_traj    = ensemble_mean(ensr_oda_members)
     pf_members   = load_openda_members(oda_dir("pf"), "PF (oda)", ref_date)
     pf_traj      = ensemble_mean(pf_members)
 
-    if all(t is None for t in (e0_traj, enkf_traj, pf_py_traj, enkf_oda_traj, ensr_oda_traj, pf_traj)):
+    if all(t is None for t in (e0_traj, enkf_traj, pf_py_traj, enkf_oda_traj,
+                               denkf_oda_traj, ensr_oda_traj, pf_traj)):
         raise RuntimeError("No trajectory data found — has the assimilation been run?")
 
     obs = load_obs(obs_path)
@@ -279,8 +283,8 @@ def visualize(args, save=False):
 
     entries = [(lbl, t) for lbl, t in
                [("ref", e0_traj), ("EnKF", enkf_traj), ("PF", pf_py_traj),
-                ("EnKF (oda)", enkf_oda_traj), ("EnSR (oda)", ensr_oda_traj),
-                ("PF (oda)", pf_traj)] if t is not None]
+                ("EnKF (oda)", enkf_oda_traj), ("DEnKF (oda)", denkf_oda_traj),
+                ("EnSR (oda)", ensr_oda_traj), ("PF (oda)", pf_traj)] if t is not None]
 
     # RMSE table
     print(f"\nAnnual RMSE (°C) — {lake_label}" + (f" {year}" if year else ""))
@@ -297,6 +301,8 @@ def visualize(args, save=False):
         spreads["EnKF"] = enkf_members
     if enkf_oda_members:
         spreads["EnKF (oda)"] = enkf_oda_members
+    if denkf_oda_members:
+        spreads["DEnKF (oda)"] = denkf_oda_members
     if ensr_oda_members:
         spreads["EnSR (oda)"] = ensr_oda_members
     if pf_members:
@@ -325,6 +331,10 @@ if __name__ == "__main__":
     parser.add_argument("--lake", default=None, help="Lake to plot from the config's \"lakes\" block")
     parser.add_argument("--year", type=int, default=None, help="Filter to a specific year")
     parser.add_argument("--save", action="store_true", help="Save plots to run/{lake}/ instead of displaying")
+    parser.add_argument("--run-root", default=None,
+                        help="Base dir where the run output lives (ensemble + OpenDA work dirs); must match "
+                             "what the run used. Overrides config 'run_root' and $ALPLAKES_RUN_ROOT. "
+                             "Default: in-repo ./run. Point at the WSL ext4 base, e.g. ~/alplakes-da_res/run.")
     cli = parser.parse_args()
 
     arg_file = cli.arg_file
@@ -334,7 +344,12 @@ if __name__ == "__main__":
         raise ValueError(f"Args file not found: {cli.arg_file}")
 
     with open(arg_file) as f:
-        raw = merge_lake_args(json.load(f), lake=cli.lake)   # pick the --lake block, flatten
+        loaded = json.load(f)
+    # CLI --run-root wins over the config 'run_root' key and $ALPLAKES_RUN_ROOT; inject it before the
+    # merge so ensemble_base (and thus the openda_<...> dir lookup) resolve under the same base the run used.
+    if cli.run_root:
+        loaded["run_root"] = cli.run_root
+    raw = merge_lake_args(loaded, lake=cli.lake)   # pick the --lake block, flatten
 
     raw.setdefault("ensemble_base", os.path.join(ROOT, "run", raw["lake"]))
     # ensemble_base may be a relative path ('../run/<lake>') resolved against src/ —
