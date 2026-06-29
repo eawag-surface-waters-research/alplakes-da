@@ -1,3 +1,5 @@
+THIS REPOSITORY IS ARCHIVED. PLEASE SEE https://github.com/eawag-surface-waters-research/alplakes-data-assimilation FOR ONGOING DEVELOPMENTS.
+
 # Data Assimilation for Lake Models
 
 Correct lake-temperature simulations by blending in-situ measurements into a hydrodynamic model
