@@ -48,7 +48,8 @@ _BIN_DIR    = os.path.dirname(os.path.abspath(__file__))
 _OPENDA_DIR = os.path.dirname(os.path.dirname(_BIN_DIR))
 _ROOT_DIR   = os.path.dirname(os.path.dirname(_OPENDA_DIR))   # run/openda_simstrat -> run -> repo root
 sys.path.insert(0, os.path.join(_ROOT_DIR, "src"))
-from assimilator.models.simstrat import read_snapshot_T_at, write_snapshot_T_at
+from assimilator.models.simstrat import (read_snapshot_T_at, write_snapshot_T_at,
+                                         read_t_out_tail, T_OUT_OFFSET_FILE)
 
 # --- Shared persistent Simstrat container (PERF) ---------------------------
 # run_openda starts ONE long-lived sleeping container for the whole run (mounting openda_dir at
@@ -86,71 +87,8 @@ def read_time_control(yaml_file):
     return values[0], values[1], values[2]
 
 
-def read_t_out(filename):
-    with open(filename) as f:
-        lines = f.readlines()
-    header_parts = lines[0].strip().split(',')
-    depths = [float(h) for h in header_parts[1:]]
-    times = []
-    T_rows = []
-    for line in lines[1:]:
-        parts = line.strip().split(',')
-        if not parts or not parts[0]:
-            continue
-        times.append(float(parts[0]))
-        T_rows.append([float(x) for x in parts[1:]])
-    return times, depths, T_rows
-
-
-# Sidecar file (next to T_out.dat) that records the byte offset read so far, so each step
-# resumes from where the last one stopped instead of re-parsing the whole growing file.
-T_OUT_OFFSET_FILE = '.t_out_read_offset'
-
-
-def read_t_out_tail(filename, offset_path, window_start=None, window_end=None):
-    """Read only the rows Simstrat appended to T_out.dat since the previous step (tail read).
-
-    T_out.dat itself is never truncated — Simstrat keeps the full cumulative series; we just
-    resume from the byte offset stored in `offset_path`.  Flexible by construction:
-      * no rows-per-window assumption — works for any Simstrat output interval (hourly, daily, …);
-      * works for any analysis-window length (we read whatever was appended);
-      * self-healing — if the offset is missing or out of range (first run, instance dir reused,
-        file shrank/rotated) it falls back to reading from just after the header;
-      * optional [window_start, window_end] filter as a safety net, so the result is the current
-        window even when the offset had to fall back to a full re-read.
-
-    Binary mode is used so the offset is an exact byte position.  Returns (times, depths, T_rows)
-    for the new rows only.
-    """
-    with open(filename, 'rb') as f:
-        depths = [float(h) for h in f.readline().decode().strip().split(',')[1:]]
-        data_start = f.tell()
-        size = os.fstat(f.fileno()).st_size
-        offset = data_start
-        try:
-            stored = int(open(offset_path).read().strip())
-            if data_start <= stored <= size:
-                offset = stored
-        except (OSError, ValueError):
-            pass
-        f.seek(offset)
-        body = f.read().decode()
-        new_offset = f.tell()
-    times, T_rows = [], []
-    for line in body.splitlines():
-        parts = line.strip().split(',')
-        if not parts or not parts[0]:
-            continue
-        t = float(parts[0])
-        if window_start is not None and t < window_start - 1e-9:
-            continue
-        if window_end is not None and t > window_end + 1e-9:
-            continue
-        times.append(t)
-        T_rows.append([float(x) for x in parts[1:]])
-    with open(offset_path, 'w') as f:
-        f.write(str(new_offset))
-    return times, depths, T_rows
+# read_t_out_tail + T_OUT_OFFSET_FILE now live in assimilator.models.simstrat (imported above),
+# shared with the native PF engine (load_T_window) so both engines read T_out.dat the same way.
 
 
 def find_depth_col(depths, target_depth):

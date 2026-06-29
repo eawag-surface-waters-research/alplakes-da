@@ -135,12 +135,14 @@ def run_pf_daily(args, model):
                 if i in failed:
                     return i, np.nan, 0, 0
                 try:
-                    # PERF FLAG: T_out.dat now accumulates the whole run (Simstrat appends), so
-                    # load_T re-reads an ever-growing file every window — O(n) per window, O(n^2)
-                    # over the run. rmse_in_window still scores only the current window (obs-time
-                    # intersection), so it's correct, just increasingly slow on long runs. If this
-                    # bites, read only the current window's tail instead of the full file.
-                    sim = model.load_T(os.path.join(args["ensemble_base"], f"ensemble{i}"), args)
+                    # T_out.dat accumulates the whole run (Simstrat appends), so we tail-read only
+                    # the rows appended for THIS window (resuming from the per-member offset sidecar)
+                    # instead of re-parsing the ever-growing file every window — O(1) per window vs
+                    # the old load_T's O(n) (O(n^2) over the run). Shares read_t_out_tail with the
+                    # OpenDA wrapper. rmse_in_window scores the same window as before, so it's
+                    # correctness-neutral. The full T_out.dat stays intact for accumulate_mean.
+                    sim = model.load_T_window(os.path.join(args["ensemble_base"], f"ensemble{i}"),
+                                              args, current, window_end)
                     rmse, n_raw, n_matched = rmse_in_window(sim, obs, current, window_end, depth_weights, model)
                     return i, rmse, n_raw, n_matched
                 except Exception:

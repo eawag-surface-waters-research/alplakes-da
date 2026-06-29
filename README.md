@@ -1,54 +1,46 @@
-# Data Assimilation for Lake Hydrodynamic Models
+# Data Assimilation for Lake Models
 
-Improve lake-temperature forecasts by blending in-situ observations into lake models
-(e.g. **[Simstrat](https://github.com/Eawag-AppliedSystemAnalysis/Simstrat)**), developed for the
-[Alplakes](https://www.alplakes.eawag.ch) platform at [Eawag](https://www.eawag.ch).
+Correct lake-temperature simulations by blending in-situ measurements into a hydrodynamic model
+(e.g. [Simstrat](https://github.com/Eawag-AppliedSystemAnalysis/Simstrat)). Built for the
+[Alplakes](https://www.alplakes.eawag.ch) platform.
 
-You give it a lake's model setup and a CSV of measured temperatures. It runs an ensemble of simulations, corrects them toward the observations at each assimilation step, and returns a corrected temperature profile through time — with a skill report against the assimilated data.
+Give it a lake's model setup and a CSV of measured temperatures. It runs an ensemble,
+nudges it toward the observations at each step, and writes a corrected temperature profile
+through time plus a skill report (RMSE / bias) scored against the data it assimilated.
 
 ## What you can do
 
-Pick an **assimilation method** by choosing a run config; everything else is the same:
+Pick a method by choosing a run config — nothing else changes:
 
-| You want | Run config | Method |
+| You want | Run with | Method |
 |---|---|---|
-| Ensemble Kalman Filter | `args/run_enkf.json` | EnKF |
-| Particle Filter | `args/run_pf.json` | PF |
-| An independent cross-check via [OpenDA](https://www.openda.org) | `args/run_openda.json` | EnKF / DEnKF / EnSR / PF |
+| Ensemble Kalman Filter | `args/run_enkf.json` | EnKF (native) |
+| Particle Filter | `args/run_pf.json` | PF (native) |
+| Independent cross-check via [OpenDA](https://www.openda.org) | `args/run_openda.json` | EnKF / DEnKF / EnSR / PF |
 
-The first two are the native, in-house engines. The OpenDA engines run the *same* ensemble and
-observations through a separate, established toolkit, so you can cross-validate the results or choose to build custom functionalities or adapt the available algorithms easily in the native setup.
-
-With the OpenDA engine you also choose *which* EnKF filter variant to run by editing the `filter`
-field in `args/run_openda.json` — `EnKF`, `DEnKF`, `EnSR` — without touching anything else.
-
-To tune a run to desired settings, edit these fields in the run config:
-
-| Field | What it controls |
-|---|---|
-| `n_members` | Ensemble size (more members → better spread and statistics, with the cost of a slower run) |
-| `start_date`, `end_date` | The simulation window |
-| `sigma_obs` | Observation error σ in °C — how much to trust the measurements (smaller = pulled harder toward the data). |
-| `inflation` | Variance inflation factor (native EnKF only); `1.0` = off, `>1.0` counters ensemble collapse |
-| `sigma_scale` | Scales the forcing-perturbation strength applied to the members to artificially increase the spread (1.0 = no scaling)|
-| `rng_seed` | Random seed for reproducible runs |
+The native engines are the in-house ones. The OpenDA engine runs the *same* ensemble and
+observations through an established toolkit, so you can cross-validate results
+(like-for-like is native-EnKF ↔ OpenDA-`EnKF`). With OpenDA, set the `filter` field to pick
+the variant. OpenDA needs WSL/Linux + OpenDA 3.4.0 — set its `bin/` path in `openda_bin`.
 
 ## Quick start
 
-**1. Install prerequisites**
+**1. Install** — Python 3 (`numpy pandas geopandas requests tqdm matplotlib`) and
+[Docker](https://www.docker.com/) with the `eawag/simstrat:3.0.4` image (Simstrat runs in
+Docker — no local build).
 
-- Python 3 with `numpy`, `pandas`, `geopandas`, `requests`, `tqdm`, `matplotlib`
-- [Docker](https://www.docker.com/) with the `eawag/simstrat:3.0.4` image (Simstrat runs in Docker — no local build)
+**2. Provide two inputs** for your lake (e.g. `upperlugano`):
 
-**2. Provide the two inputs for your lake** (here e.g. `upperlugano`)
-
-- `inputs/upperlugano/` — the Simstrat **model setup (inputs)** plus a **dated warm-start snapshot**
-  (`simulation-snapshot_<YYYYMMDD>.dat`, `Forcing.dat`, `Settings.par`, bathymetry, grid, …)
-- `observations/upperlugano/temperature.csv` — long-format measurements, one row per reading:
+- `inputs/<lake>/` — the Simstrat model setup (inputs) + a dated warm-start snapshot
+  (`simulation-snapshot_<YYYYMMDD>.dat`, `Forcing.dat`, `Settings.par`, bathymetry, grid …).
+- `observations/<lake>/temperature.csv` — one reading per row:
 
   | `time` | `depth` | `value` |
   |---|---|---|
   | `2025-06-01T11:55:00+00:00` (UTC) | `0.5` (m, positive down) | `12.3` (°C) |
+
+You also need the forcing-perturbation calibration `perturbations/<lake>.json` (fit once,
+offline, via `notebooks/perturbations_from_icon.py`).
 
 **3. Run**
 
@@ -56,49 +48,40 @@ To tune a run to desired settings, edit these fields in the run config:
 python src/main.py args/run_enkf.json
 ```
 
-The pipeline copies the setup into an ensemble, perturbs the forcing, runs the
-assimilation, and writes the results. Re-running re-uses any finished steps.
-
-> Multiple lakes in one config? Add `--lake <name>` to pick one.
-
-> **WSL users — route the run folder off `/mnt/c` for a big speed-up.** Keep the repo on the Windows
-> drive if you like, but write run output to the native Linux filesystem with the `--run-root` flag:
-> ```bash
-> python src/main.py args/run_openda.json --run-root ~/alplakes-da_res/run
-> ```
-> The `/mnt/c` mount is slow for the many small reads/writes the pipeline and Docker do; native ext4
-> avoids that. (Equivalent: set `ALPLAKES_RUN_ROOT`, or a `"run_root"` key in the config.) With nothing
-> set, output goes to the in-repo `run/` — self-contained, e.g. for a remote Linux server.
+It copies the setup into an ensemble, perturbs the forcing, assimilates, and writes results.
+Re-running re-uses finished steps. Add `--lake <name>` if a config defines several.
 
 ## Outputs
 
-In the run folder (`run/<lake>/` for the native engine):
+In the run folder (`run/<lake>/` for native, `run/openda_<model>_<lake>_<filter>/` for OpenDA):
 
-- **`<lake>_python_<algo>.csv`** — the corrected temperature profile: posterior mean ± 1σ per
-  time and depth.
-- **`<lake>_python_<algo>.json`** — a skill report (RMSE / bias) scoring the result against the
-  observations it assimilated.
+- **`<lake>_<engine>_<label>.csv`** — posterior mean ± 1σ per time and depth.
+- **`<lake>_<engine>_<label>.json`** — skill report (RMSE / bias) vs the assimilated obs.
 
-Compare engines or visualize a run with `python notebooks/visualize.py`.
+Compare engines or plot a run with `python notebooks/visualize.py`.
 
-## Notes on setting up a simulation
+## Tuning a run
 
-| Topic | Where |
+Edit these top-level fields in the run config:
+
+| Field | Controls |
 |---|---|
-| Running the OpenDA engine (needs WSL/Linux + OpenDA 3.4.0) | `args/run_openda.json` & `args/run_openda_pf.json`; set `openda_bin` |
-| Calibrating the forcing perturbation (one-time, offline) | `notebooks/perturbations_from_icon.py` (needs EAWAG ICON API / EAWAG network access) |
+| `n_members` | Ensemble size (more = better spread, slower) |
+| `start_date`, `end_date` | Simulation window |
+| `sigma_obs` | Observation error σ (°C); smaller = trust the data more |
+| `inflation` | Variance inflation (native EnKF only); `1.0` = off |
+| `sigma_scale` | Scales forcing-perturbation strength to widen spread (`1.0` = none) |
+| `rng_seed` | Seed for reproducible runs |
+| `filter` | OpenDA only: `EnKF` / `DEnKF` / `EnSR` / `PF` |
 
-## How it works
+Useful CLI flags:
 
-`src/main.py` is the single entry point of the module. It runs five steps, skipping any already done:
-
-```
-1. require model inputs   inputs/<lake>/                  (you provide this)
-2. copy to ensemble       -> ensemble0..N  (0 = control, 1..N = members)
-3. perturb forcing        AR(1) noise on the members' Forcing.dat
-4. assimilate             EnKF / PF / OpenDA update toward the observations
-5. summarize              posterior mean ± std + skill report
-```
-
-Both engines share a core library (`src/assimilator/`) and they assimilate the identical
-observations (for now the centered noon-hour profile each day).
+- `--no-progress` — disable the progress bar (auto-off when not a TTY; for server/headless runs).
+  Per-step detail still goes to `logs/pipeline_<timestamp>.log` either way.
+- `--max-workers N` — cap concurrent ensemble members (default: all at once).
+- `--run-root <dir>` — write run output elsewhere. **On WSL, route output to native ext4** for a
+  large speed-up — the `/mnt/c` mount is slow for the many small Docker IOs:
+  ```bash
+  python src/main.py args/run_openda.json --run-root ~/alplakes-da_res/run
+  ```
+  (Equivalent: `ALPLAKES_RUN_ROOT` env or a `"run_root"` config key. Default: in-repo `run/`.)

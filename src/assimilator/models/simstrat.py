@@ -200,7 +200,7 @@ def clear_member_outputs(ensemble_base, member_ids, results_dir):
         rdir = os.path.join(ensemble_base, f"ensemble{i}", results_dir)
         if os.path.isdir(rdir):
             for fname in os.listdir(rdir):
-                if fname.endswith("_out.dat"):
+                if fname.endswith("_out.dat") or fname == T_OUT_OFFSET_FILE:
                     os.remove(os.path.join(rdir, fname))
 
 
@@ -241,6 +241,85 @@ def load_T(ensemble_dir, args):
     df["time"] = (ref + pd.to_timedelta(df["Datetime"], unit="D")).dt.round("1h")
     df = df.drop(columns=["Datetime"]).set_index("time")
     df.columns = df.columns.astype(float)
+    return df
+
+
+# Sidecar file (next to T_out.dat) recording the byte offset read so far, so a per-window read
+# resumes from where the last one stopped instead of re-parsing the whole growing file. Single
+# source of truth for BOTH engines: the native PF (load_T_window, below) and the OpenDA wrapper
+# (static/openda/simstrat_wrapper_enkf.py imports this and read_t_out_tail).
+T_OUT_OFFSET_FILE = ".t_out_read_offset"
+
+
+def read_t_out_tail(filename, offset_path, window_start=None, window_end=None):
+    """Read only the rows Simstrat appended to T_out.dat since the previous step (tail read).
+
+    T_out.dat itself is never truncated — Simstrat keeps the full cumulative series; we just
+    resume from the byte offset stored in `offset_path`.  Flexible by construction:
+      * no rows-per-window assumption — works for any Simstrat output interval (hourly, daily, …);
+      * works for any analysis-window length (we read whatever was appended);
+      * self-healing — if the offset is missing or out of range (first run, instance dir reused,
+        file shrank/rotated) it falls back to reading from just after the header;
+      * optional [window_start, window_end] filter (fractional Simstrat days) as a safety net, so
+        the result is the current window even when the offset had to fall back to a full re-read.
+
+    Binary mode is used so the offset is an exact byte position.  Returns (times, depths, T_rows)
+    for the new rows only.  Pure-Python parsing (no pandas): the OpenDA wrapper imports this into a
+    fresh per-step subprocess, where a pandas import would cost ~2.6 s for nothing.
+    """
+    with open(filename, 'rb') as f:
+        depths = [float(h) for h in f.readline().decode().strip().split(',')[1:]]
+        data_start = f.tell()
+        size = os.fstat(f.fileno()).st_size
+        offset = data_start
+        try:
+            stored = int(open(offset_path).read().strip())
+            if data_start <= stored <= size:
+                offset = stored
+        except (OSError, ValueError):
+            pass
+        f.seek(offset)
+        body = f.read().decode()
+        new_offset = f.tell()
+    times, T_rows = [], []
+    for line in body.splitlines():
+        parts = line.strip().split(',')
+        if not parts or not parts[0]:
+            continue
+        t = float(parts[0])
+        if window_start is not None and t < window_start - 1e-9:
+            continue
+        if window_end is not None and t > window_end + 1e-9:
+            continue
+        times.append(t)
+        T_rows.append([float(x) for x in parts[1:]])
+    with open(offset_path, 'w') as f:
+        f.write(str(new_offset))
+    return times, depths, T_rows
+
+
+def load_T_window(ensemble_dir, args, window_start, window_end):
+    """Like load_T, but returns ONLY the current window's rows via a tail read of T_out.dat
+    (resuming from the per-member offset sidecar) instead of re-parsing the whole accumulated
+    file each window — O(1) per window vs load_T's O(n), which is O(n^2) over a long run. Shares
+    read_t_out_tail with the OpenDA wrapper. Returns the same shape as load_T (datetime index,
+    float depth columns) so rmse_in_window is unchanged."""
+    import pandas as pd
+    results_dir = args["results_dir"]
+    path        = os.path.join(ensemble_dir, results_dir, "T_out.dat")
+    offset_path = os.path.join(ensemble_dir, results_dir, T_OUT_OFFSET_FILE)
+    ref_date    = args["ref_date"]
+    # Window bounds -> fractional Simstrat days (inverse of load_T's day->datetime), as the
+    # safety-net filter; the offset alone already isolates this window's appended rows.
+    ws = (window_start - ref_date).total_seconds() / 86400.0
+    we = (window_end   - ref_date).total_seconds() / 86400.0
+    times, depths, rows = read_t_out_tail(path, offset_path, window_start=ws, window_end=we)
+    cols = [float(d) for d in depths]
+    if not times:
+        return pd.DataFrame(columns=cols)
+    idx = (pd.Timestamp(ref_date) + pd.to_timedelta(times, unit="D")).round("1h")
+    df  = pd.DataFrame(rows, columns=cols, index=idx)
+    df.index.name = "time"
     return df
 
 
@@ -467,6 +546,7 @@ class Simstrat:
     set_output_depths     = staticmethod(set_output_depths)
     obs_to_sim_col        = staticmethod(obs_to_sim_col)
     load_T                = staticmethod(load_T)
+    load_T_window         = staticmethod(load_T_window)
     clear_member_outputs  = staticmethod(clear_member_outputs)
     accumulate_mean       = staticmethod(accumulate_mean)
     mean_traj_path        = staticmethod(mean_traj_path)
